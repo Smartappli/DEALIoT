@@ -1,0 +1,45 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+      timezone: "Etc/UTC"
+    labels:
+      - "dependencies"
+      - "dependabot"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:30"
+      timezone: "Etc/UTC"
+    labels:
+      - "dependencies"
+      - "dependabot"
+
+  - package-ecosystem: "pip"
+    directory: "/beam"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Etc/UTC"
+    labels:
+      - "dependencies"
+      - "dependabot"
+
+  - package-ecosystem: "pip"
+    directory: "/flink"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:10"
+      timezone: "Etc/UTC"
+    labels:
+      - "dependencies"
+      - "dependabot"
