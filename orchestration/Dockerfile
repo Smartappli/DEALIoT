@@ -4,7 +4,7 @@ USER airflow
 
 RUN pip install --no-cache-dir \
     "apache-airflow[statsd]==${AIRFLOW_VERSION}" \
-    "apache-beam==2.71.0" \
+    "apache-beam==2.72.0" \
     "psycopg[binary]" \
     "kafka-python" \
     "cachetools>=6.0" \
