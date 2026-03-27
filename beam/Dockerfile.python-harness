@@ -1,0 +1,58 @@
+ARG PYTHON_VERSION=3.12
+ARG BEAM_GIT_REF=master
+
+FROM golang:1.24-bookworm AS boot-builder
+ARG BEAM_GIT_REF
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    curl \
+    ca-certificates \
+    unzip \
+    zip \
+    openjdk-17-jdk-headless \
+    bash \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+RUN git clone https://github.com/apache/beam.git beam
+WORKDIR /src/beam
+RUN git checkout "${BEAM_GIT_REF}"
+
+# Beam indique que le bootloader Python se construit depuis cette partie du repo.
+RUN ./gradlew --no-daemon :sdks:python:container:gobuild
+
+FROM python:${PYTHON_VERSION}-bookworm
+ARG BEAM_GIT_REF
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_NO_CACHE_DIR=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libsnappy-dev \
+    libyaml-dev \
+    libgeos-dev \
+    curl \
+    ca-certificates \
+    bash \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip setuptools wheel
+
+# Installe le SDK Python Beam depuis le même ref Git que le bootloader.
+RUN pip install "apache-beam[gcp] @ git+https://github.com/apache/beam.git@${BEAM_GIT_REF}#subdirectory=sdks/python"
+
+# Copie le bootloader Beam compilé depuis le même ref.
+COPY --from=boot-builder /src/beam/sdks/python/container/build/target/launcher/linux_amd64/boot /opt/apache/beam/boot
+
+RUN chmod +x /opt/apache/beam/boot
+
+# Vérification minimale
+RUN python - <<'PY'
+import apache_beam
+print("Beam SDK version:", apache_beam.__version__)
+PY
+
+ENTRYPOINT ["/opt/apache/beam/boot"]
+CMD ["--worker_pool"]

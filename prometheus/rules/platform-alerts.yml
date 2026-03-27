@@ -1,0 +1,20 @@
+groups:
+  - name: platform
+    rules:
+      - alert: TargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cible indisponible"
+          description: "Le job {{ $labels.job }} sur {{ $labels.instance }} ne répond plus."
+
+      - alert: PrometheusTargetFlapping
+        expr: changes(up[10m]) > 4
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Target instable"
+          description: "Le job {{ $labels.job }} sur {{ $labels.instance }} change fréquemment d’état."

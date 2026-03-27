@@ -1,0 +1,9 @@
+FROM apache/beam_python3.13_sdk:2.71.0
+
+WORKDIR /opt/pipelines
+
+COPY beam/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+COPY pipelines /opt/pipelines
+ENV PYTHONPATH="/opt/pipelines"

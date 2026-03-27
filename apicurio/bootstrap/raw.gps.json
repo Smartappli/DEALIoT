@@ -1,0 +1,16 @@
+{
+  "artifactId": "raw.gps",
+  "artifactType": "JSON",
+  "firstVersion": {
+    "content": {
+      "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"RawGpsEvent\",\"type\":\"object\",\"required\":[\"device_id\",\"timestamp\",\"latitude\",\"longitude\"],\"properties\":{\"device_id\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"string\",\"format\":\"date-time\"},\"latitude\":{\"type\":\"number\",\"minimum\":-90,\"maximum\":90},\"longitude\":{\"type\":\"number\",\"minimum\":-180,\"maximum\":180},\"altitude_m\":{\"type\":\"number\"},\"speed_m_s\":{\"type\":\"number\",\"minimum\":0},\"heading_deg\":{\"type\":\"number\",\"minimum\":0,\"maximum\":360},\"source\":{\"type\":\"string\"},\"mqtt_topic\":{\"type\":\"string\"},\"payload\":{\"type\":\"object\",\"additionalProperties\":true}},\"additionalProperties\":true}",
+      "contentType": "application/json"
+    },
+    "version": "1.0.0"
+  },
+  "labels": {
+    "domain": "telemetry",
+    "topic": "raw.gps"
+  },
+  "name": "Raw GPS Event"
+}
