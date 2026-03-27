@@ -1,0 +1,16 @@
+{
+  "artifactId": "raw.sensor",
+  "artifactType": "JSON",
+  "firstVersion": {
+    "content": {
+      "content": "{\"$schema\":\"https://json-schema.org/draft/2020-12/schema\",\"title\":\"RawSensorEvent\",\"type\":\"object\",\"required\":[\"device_id\",\"timestamp\",\"payload\"],\"properties\":{\"device_id\":{\"type\":\"string\"},\"timestamp\":{\"type\":\"string\"},\"payload\":{\"type\":\"object\"}}}",
+      "contentType": "application/json"
+    },
+    "version": "1.0.0"
+  },
+  "labels": {
+    "domain": "telemetry",
+    "topic": "raw.sensor"
+  },
+  "name": "Raw Sensor Event"
+}
