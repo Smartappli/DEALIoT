@@ -113,12 +113,12 @@
       },
       "targets": [
         {
-          "expr": "up{job=\"minio\"}",
+          "expr": "up{job=\"seaweedfs\"}",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "MinIO Up",
+      "title": "SeaweedFS Up",
       "type": "stat"
     },
     {
@@ -331,12 +331,12 @@
       },
       "targets": [
         {
-          "expr": "up{job=\"minio\"}",
+          "expr": "up{job=\"seaweedfs\"}",
           "legendFormat": "{{instance}}",
           "refId": "A"
         }
       ],
-      "title": "MinIO Target Health",
+      "title": "SeaweedFS Target Health",
       "type": "timeseries"
     },
     {
@@ -437,7 +437,7 @@
       },
       "targets": [
         {
-          "expr": "count(up{job=~\"flink|minio|statsd-exporter|prometheus\"} == 0)",
+          "expr": "count(up{job=~\"flink|seaweedfs|statsd-exporter|prometheus\"} == 0)",
           "legendFormat": "down",
           "refId": "A"
         }
@@ -452,7 +452,7 @@
   "tags": [
     "streaming",
     "flink",
-    "minio",
+    "seaweedfs",
     "full"
   ],
   "templating": {
