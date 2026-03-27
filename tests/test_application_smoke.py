@@ -53,7 +53,9 @@ class ApplicationSmokeTests(unittest.TestCase):
         ]
 
         for workflow in expected_workflows:
-            self.assertTrue((workflow_dir / workflow).is_file(), f"Missing workflow: {workflow}")
+            self.assertTrue(
+                (workflow_dir / workflow).is_file(), f"Missing workflow: {workflow}"
+            )
 
     def test_critical_bootstrap_json_files_are_valid(self) -> None:
         bootstrap_dir = REPO_ROOT / "apicurio" / "bootstrap"
