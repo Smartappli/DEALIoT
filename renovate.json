@@ -3,13 +3,13 @@
   "extends": [
     "config:recommended",
     ":dependencyDashboard",
-    ":semanticCommits"
+    ":semanticCommits",
+    "docker:pinDigestsDisabled"
   ],
   "labels": [
     "dependencies",
     "renovate"
   ],
-  "gitAuthor": "renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
   "rangeStrategy": "bump",
   "timezone": "Etc/UTC",
   "schedule": [
