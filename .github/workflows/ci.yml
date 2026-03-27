@@ -35,17 +35,18 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install tooling
-        run: |
-          python -m pip install --upgrade pip
-          pip install yamllint
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Pre-commit checks
+        run: uvx pre-commit run --all-files --show-diff-on-failure
 
       - name: YAML lint
-        run: yamllint -s .
+        run: uvx yamllint -s .
 
       - name: JSON syntax validation
         run: |
-          python - <<'PY'
+          uv run python - <<'PY'
           import json
           from pathlib import Path
 
@@ -65,7 +66,19 @@ jobs:
           PY
 
       - name: Python syntax validation
-        run: python -m compileall -q airflow/dags mqtt-kafka-bridge pipelines flink/jobs
+        run: uv run python -m compileall -q airflow/dags mqtt-kafka-bridge pipelines flink/jobs
+
+      - name: Unit test suite
+        run: uv run python -m unittest -v tests/unit/test_repository_unit.py
+
+      - name: Integration test suite
+        run: uv run python -m unittest -v tests/integration/test_platform_integration.py
+
+      - name: Deployment test suite
+        run: uv run python -m unittest -v tests/deployment/test_deployment_readiness.py
+
+      - name: Application smoke test suite
+        run: uv run python -m unittest -v tests/test_application_smoke.py
 
       - name: Compose file validation
         run: docker compose -f docker-compose.yml config -q
