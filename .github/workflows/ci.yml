@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  lint-and-validate:
+    name: Lint & Validate Repository Assets
+    runs-on: ubuntu-latest
+
+    env:
+      AIRFLOW_FERNET_KEY: "ci-fernet-key-32-bytes-minimum-value"
+      AIRFLOW_API_SECRET_KEY: "ci-api-secret"
+      AIRFLOW_JWT_SECRET: "ci-jwt-secret"
+      SEAWEEDFS_S3_ACCESS_KEY: "ci-access-key"
+      SEAWEEDFS_S3_SECRET_KEY: "ci-secret-key"
+      ACME_EMAIL: "ci@example.com"
+      STORAGE_BASE_DOMAIN: "local.test"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install yamllint
+
+      - name: YAML lint
+        run: yamllint -s .
+
+      - name: JSON syntax validation
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          failures = []
+          for path in Path('.').rglob('*.json'):
+            if '.git' in path.parts:
+              continue
+            try:
+              json.loads(path.read_text(encoding='utf-8'))
+            except Exception as exc:
+              failures.append(f"{path}: {exc}")
+
+          if failures:
+            raise SystemExit("\n".join(failures))
+
+          print("All JSON files are syntactically valid.")
+          PY
+
+      - name: Python syntax validation
+        run: python -m compileall -q airflow/dags mqtt-kafka-bridge pipelines flink/jobs
+
+      - name: Compose file validation
+        run: docker compose -f docker-compose.yml config -q
