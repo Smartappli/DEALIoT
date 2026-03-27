@@ -1,9 +1,8 @@
 extends: default
 
 rules:
-  line-length:
-    max: 180
-    level: warning
+  line-length: disable
   truthy: disable
   comments:
     min-spaces-from-content: 1
+  document-start: disable
