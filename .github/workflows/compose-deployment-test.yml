@@ -8,10 +8,16 @@ on:
       - "scripts/**"
       - ".github/workflows/compose-deployment-test.yml"
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   compose-smoke-test:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: read
     env:
       AIRFLOW_FERNET_KEY: "ci-fernet-key-32-bytes-minimum-value"
       AIRFLOW_API_SECRET_KEY: "ci-api-secret"
@@ -35,6 +41,10 @@ jobs:
 
       - name: Check containers status
         run: docker compose -f docker-compose.yml ps
+
+      - name: Dump compose logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.yml logs --no-color --timestamps
 
       - name: Tear down
         if: always()
