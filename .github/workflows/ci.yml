@@ -37,6 +37,9 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
 
+      - name: Pre-commit checks
+        run: uvx pre-commit run --all-files --show-diff-on-failure
+
       - name: YAML lint
         run: uvx yamllint -s .
 
