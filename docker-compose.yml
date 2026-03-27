@@ -234,11 +234,11 @@ services:
       - debezium_password
     entrypoint: ["/bin/sh", "/scripts/start-patroni.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -q -h 127.0.0.1 -p 5432 -d postgres || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 12
-      start_period: 60s
+      retries: 30
+      start_period: 180s
 
   pg2:
     image: timescale/timescaledb-ha:pg18.3-ts2.25.2
@@ -269,11 +269,11 @@ services:
       - debezium_password
     entrypoint: ["/bin/sh", "/scripts/start-patroni.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -q -h 127.0.0.1 -p 5432 -d postgres || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 12
-      start_period: 60s
+      retries: 30
+      start_period: 180s
 
   pg3:
     image: timescale/timescaledb-ha:pg18.3-ts2.25.2
@@ -304,11 +304,11 @@ services:
       - debezium_password
     entrypoint: ["/bin/sh", "/scripts/start-patroni.sh"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -q -h 127.0.0.1 -p 5432 -d postgres || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 12
-      start_period: 60s
+      retries: 30
+      start_period: 180s
 
   haproxy:
     image: haproxy:lts
@@ -549,16 +549,16 @@ services:
           echo "Waiting for Kafka...";
           sleep 3;
         done;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw.gps --partitions 24 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw.sensor --partitions 24 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw.image2d.meta --partitions 12 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw.image3d.meta --partitions 12 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw.video2d.meta --partitions 12 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw.video3d.meta --partitions 12 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic media.object.events --partitions 12 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic features.events --partitions 24 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic alerts.events --partitions 12 --replication-factor 3;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dlq.events --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw-gps --partitions 24 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw-sensor --partitions 24 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw-image2d-meta --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw-image3d-meta --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw-video2d-meta --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic raw-video3d-meta --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic media-object-events --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic features-events --partitions 24 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic alerts-events --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dlq-events --partitions 12 --replication-factor 3;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-journal-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-snapshots-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic registry-events-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
@@ -566,8 +566,8 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __connect-offsets --partitions 12 --replication-factor 3 --config cleanup.policy=compact;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __connect-status --partitions 6 --replication-factor 3 --config cleanup.policy=compact;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __debezium-heartbeat.appdb --partitions 1 --replication-factor 3 --config min.insync.replicas=2;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic state.latest --partitions 12 --replication-factor 3 --config cleanup.policy=compact --config min.cleanable.dirty.ratio=0.1 --config delete.retention.ms=86400000 --config min.insync.replicas=2;
-        /opt/kafka/bin/kafka-configs.sh --bootstrap-server kafka1:9092 --alter --entity-type topics --entity-name state.latest --add-config cleanup.policy=compact,min.cleanable.dirty.ratio=0.1,delete.retention.ms=86400000,min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic state-latest --partitions 12 --replication-factor 3 --config cleanup.policy=compact --config min.cleanable.dirty.ratio=0.1 --config delete.retention.ms=86400000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-configs.sh --bootstrap-server kafka1:9092 --alter --entity-type topics --entity-name state-latest --add-config cleanup.policy=compact,min.cleanable.dirty.ratio=0.1,delete.retention.ms=86400000,min.insync.replicas=2;
         echo "Kafka topics created."
     networks:
       - kafka_net
@@ -980,7 +980,7 @@ services:
         [notification.kafka]
         enabled = true
         hosts = ["kafka1:9092", "kafka2:9092", "kafka3:9092"]
-        topic = "media.object.events"
+        topic = "media-object-events"
         offsetFile = "/var/lib/seaweedfs/seaweedfs-notification.offset"
         offsetSaveIntervalSeconds = 10
         EOF
@@ -1208,7 +1208,7 @@ services:
       MQTT_PASSWORD: "${VERNEMQ_ADMIN_PASSWORD:-change-this-password}"
       MQTT_TOPIC: "$$share/ingestors/devices/#"
       KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
-      DEFAULT_KAFKA_TOPIC: "raw.sensor"
+      DEFAULT_KAFKA_TOPIC: "raw-sensor"
     networks:
       - ingest_net
       - kafka_net
@@ -1819,13 +1819,13 @@ services:
           echo "Artifact created: $$group/$$artifact"
         }
 
-        post_artifact telemetry raw.sensor JSON /bootstrap/raw.sensor.json
-        post_artifact telemetry raw.gps JSON /bootstrap/raw.gps.json
-        post_artifact media raw.image2d.meta JSON /bootstrap/raw.image2d.meta.json
-        post_artifact media raw.image3d.meta JSON /bootstrap/raw.image3d.meta.json
-        post_artifact media raw.video2d.meta JSON /bootstrap/raw.video2d.meta.json
-        post_artifact media raw.video3d.meta JSON /bootstrap/raw.video3d.meta.json
-        post_artifact media media.object.events JSON /bootstrap/media.object.events.json
+        post_artifact telemetry raw-sensor JSON /bootstrap/raw.sensor.json
+        post_artifact telemetry raw-gps JSON /bootstrap/raw.gps.json
+        post_artifact media raw-image2d-meta JSON /bootstrap/raw.image2d.meta.json
+        post_artifact media raw-image3d-meta JSON /bootstrap/raw.image3d.meta.json
+        post_artifact media raw-video2d-meta JSON /bootstrap/raw.video2d.meta.json
+        post_artifact media raw-video3d-meta JSON /bootstrap/raw.video3d.meta.json
+        post_artifact media media-object-events JSON /bootstrap/media.object.events.json
 
         echo "Apicurio bootstrap done."
     networks:
