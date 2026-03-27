@@ -23,7 +23,11 @@ class DeploymentReadinessTests(unittest.TestCase):
             "seaweedfs-s3",
         ]
         for target in expected_targets:
-            self.assertIn(target, workflow_text, f"Missing deployment target in workflow: {target}")
+            self.assertIn(
+                target,
+                workflow_text,
+                f"Missing deployment target in workflow: {target}",
+            )
 
     def test_compose_smoke_workflow_has_cleanup_and_failure_logs(self) -> None:
         workflow_text = (
@@ -32,7 +36,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("Dump compose logs on failure", workflow_text)
         self.assertIn("if: failure()", workflow_text)
         self.assertIn("if: always()", workflow_text)
-        self.assertIn("docker compose -f docker-compose.yml down -v --remove-orphans", workflow_text)
+        self.assertIn(
+            "docker compose -f docker-compose.yml down -v --remove-orphans",
+            workflow_text,
+        )
 
     def test_ci_workflow_executes_test_layers(self) -> None:
         workflow_text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(
