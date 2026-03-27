@@ -5,10 +5,16 @@ on:
     branches: ["**"]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint-and-validate:
     name: Lint & Validate Repository Assets
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     env:
       AIRFLOW_FERNET_KEY: "ci-fernet-key-32-bytes-minimum-value"
@@ -27,6 +33,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+          cache: pip
 
       - name: Install tooling
         run: |
@@ -59,6 +66,9 @@ jobs:
 
       - name: Python syntax validation
         run: python -m compileall -q airflow/dags mqtt-kafka-bridge pipelines flink/jobs
+
+      - name: Application smoke test suite
+        run: python -m unittest -v tests/test_application_smoke.py
 
       - name: Compose file validation
         run: docker compose -f docker-compose.yml config -q
