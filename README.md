@@ -15,11 +15,11 @@ The platform combines six logical planes:
    - Apicurio Registry for JSON schema governance and artifact lifecycle.
 
 3. **Object storage**
-   - MinIO as S3-compatible storage for raw and derived media objects.
+   - SeaweedFS S3 as object storage for raw and derived media objects.
    - Bucket notifications that emit `media.object.events` to Kafka.
 
 4. **Stream and batch processing**
-   - Apache Flink for stateful stream processing with checkpointing and savepoints on MinIO.
+   - Apache Flink for stateful stream processing with checkpointing and savepoints on SeaweedFS S3.
    - Apache Beam job server and Python harness for portable pipelines.
    - Apache Airflow 3 for scheduled orchestration and replay/backfill workflows.
 
@@ -49,7 +49,7 @@ flowchart LR
   subgraph Backbone
     K[Kafka KRaft cluster]
     R[Apicurio Registry]
-    O[MinIO]
+    O[SeaweedFS S3]
   end
 
   subgraph Processing
@@ -110,7 +110,7 @@ secrets/                  Docker secrets (local dev only)
 This finalized version addresses the following problems found during the audit:
 
 - The Airflow DAG passed `--window-start` and `--window-end`, but `pipelines/media_backfill.py` only accepted `--since-minutes`.
-- The Airflow containers did not receive Kafka and S3/MinIO credentials, so the backfill workflow could not read objects or publish replayed events.
+- The Airflow containers did not receive Kafka and S3/SeaweedFS credentials, so the backfill workflow could not read objects or publish replayed events.
 - Kafka Connect internal topics (`__connect-configs`, `__connect-offsets`, `__connect-status`) were missing while Kafka auto-topic creation was disabled.
 - The `raw.gps` topic existed but no matching schema artifact was bootstrapped into Apicurio Registry.
 - The MQTT bridge emitted a generic record that did not match the intended telemetry contract.
@@ -121,7 +121,7 @@ This finalized version addresses the following problems found during the audit:
 
 The Airflow DAG now calls a backfill script that:
 
-1. Reads objects from MinIO in a bounded window.
+1. Reads objects from SeaweedFS S3 in a bounded window.
 2. Maps the bucket and media kind to one of:
    - `raw.image2d.meta`
    - `raw.image3d.meta`
@@ -167,7 +167,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 
 ## 6. Network zones
 
-- `ingest_net`: internal ingestion plane for MQTT and MinIO producers.
+- `ingest_net`: internal ingestion plane for MQTT and SeaweedFS producers.
 - `kafka_net`: internal event backbone.
 - `patroni_backend`: internal HA database control plane.
 - `patroni_frontend`: client-facing database access plane.
@@ -183,11 +183,11 @@ The stack uses **two complementary configuration channels**:
    - Non-file environment variables.
    - Public URLs.
    - Build pins.
-   - MinIO application credentials used by Flink/Airflow/Beam.
+   - SeaweedFS S3 credentials used by Flink/Airflow/Beam.
 
 2. **`./secrets/*.txt`**
    - Database passwords.
-   - MinIO root credentials.
+   - SeaweedFS S3 credentials.
    - PgAdmin password.
    - PgBouncer userlists.
 
@@ -206,8 +206,8 @@ Then set at least:
 - `AIRFLOW_ADMIN_PASSWORD`
 - `VERNEMQ_DISTRIBUTED_COOKIE`
 - `VERNEMQ_ADMIN_PASSWORD`
-- `MINIO_APP_ACCESS_KEY`
-- `MINIO_APP_SECRET_KEY`
+- `SEAWEEDFS_S3_ACCESS_KEY`
+- `SEAWEEDFS_S3_SECRET_KEY`
 - `APICURIO_PUBLIC_URL`
 - `GRAFANA_PUBLIC_URL`
 
@@ -216,8 +216,8 @@ Then set at least:
 ```text
 secrets/app_user_password.txt
 secrets/debezium_password.txt
-secrets/minio_root_password.txt
-secrets/minio_root_user.txt
+secrets/seaweedfs_s3_secret_key.txt
+secrets/seaweedfs_s3_access_key.txt
 secrets/patroni_repl_password.txt
 secrets/patroni_rewind_password.txt
 secrets/pgadmin_default_password.txt
@@ -240,8 +240,8 @@ target.mkdir(exist_ok=True)
 files = {
     "app_user_password.txt": secrets.token_urlsafe(24),
     "debezium_password.txt": secrets.token_urlsafe(24),
-    "minio_root_user.txt": "minioadmin",
-    "minio_root_password.txt": secrets.token_urlsafe(24),
+    "seaweedfs_s3_access_key.txt": "change-me",
+    "seaweedfs_s3_secret_key.txt": secrets.token_urlsafe(32),
     "patroni_repl_password.txt": secrets.token_urlsafe(24),
     "patroni_rewind_password.txt": secrets.token_urlsafe(24),
     "pgadmin_default_password.txt": secrets.token_urlsafe(24),
@@ -285,8 +285,8 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 | Kafka Connect | `http://localhost:8083` |
 | Apicurio Registry API | `http://localhost:8082/apis/registry/v3` |
 | Apicurio Registry UI | `http://localhost:8888` |
-| MinIO API | `http://localhost:9000` |
-| MinIO Console | `http://localhost:9001` |
+| SeaweedFS S3 API | `http://localhost:8333` |
+| SeaweedFS Filer UI | `http://localhost:8889` |
 | pgAdmin | `http://localhost:5050` |
 | Grafana | `http://localhost:3000` |
 | Prometheus | `http://localhost:9090` |
@@ -311,9 +311,9 @@ docker compose exec pg1 curl -s http://127.0.0.1:8008/patroni
 docker compose exec haproxy sh -lc "nc -zv 127.0.0.1 5432"
 ```
 
-### MinIO buckets
+### SeaweedFS buckets
 ```bash
-docker compose exec minio-init sh -lc 'echo "MinIO bootstrap completed"'
+docker compose exec seaweedfs-init sh -lc 'echo "SeaweedFS bootstrap completed"'
 ```
 
 ### Apicurio artifacts
@@ -335,7 +335,7 @@ The stack uses the Airflow 3 split model:
 This separation is intentional and aligns with the Airflow 3 deployment model.
 
 ### Flink state management
-Flink stores checkpoints and savepoints in MinIO:
+Flink stores checkpoints and savepoints in SeaweedFS S3:
 - `s3://flink-checkpoints/streaming`
 - `s3://flink-savepoints/streaming`
 
