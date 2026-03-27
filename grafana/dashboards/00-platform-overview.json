@@ -225,12 +225,12 @@
       },
       "targets": [
         {
-          "expr": "up{job=\"minio\"}",
+          "expr": "up{job=\"seaweedfs\"}",
           "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "MinIO Up",
+      "title": "SeaweedFS Up",
       "type": "stat"
     },
     {

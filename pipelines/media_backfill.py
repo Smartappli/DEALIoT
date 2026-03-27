@@ -90,16 +90,13 @@ def build_record(obj: dict, media_kind: str) -> dict:
         },
     }
 
-    if media_kind == "image2d":
-        record["camera_id"] = "unknown"
-    elif media_kind == "image3d":
-        record["sensor_id"] = "unknown"
-        record["capture_type"] = "unknown"
-    elif media_kind == "video2d":
-        record["camera_id"] = "unknown"
-    elif media_kind == "video3d":
-        record["rig_id"] = "unknown"
-        record["representation"] = "unknown"
+    media_defaults = {
+        "image2d": {"camera_id": "unknown"},
+        "image3d": {"sensor_id": "unknown", "capture_type": "unknown"},
+        "video2d": {"camera_id": "unknown"},
+        "video3d": {"rig_id": "unknown", "representation": "unknown"},
+    }
+    record.update(media_defaults.get(media_kind, {}))
 
     return record
 

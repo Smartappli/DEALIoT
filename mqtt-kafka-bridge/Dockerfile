@@ -5,9 +5,11 @@ WORKDIR /app
 RUN pip install --no-cache-dir \
     paho-mqtt \
     kafka-python \
-    orjson \
     lz4
 
+RUN useradd --create-home --shell /bin/bash appuser
 COPY bridge.py /app/bridge.py
+RUN chown appuser:appuser /app/bridge.py
 
+USER appuser
 CMD ["python", "-u", "/app/bridge.py"]

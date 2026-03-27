@@ -44,8 +44,8 @@ x-airflow-env: &airflow-env
   AIRFLOW__API_AUTH__JWT_SECRET: "${AIRFLOW_JWT_SECRET:?define AIRFLOW_JWT_SECRET in .env}"
   AIRFLOW__API_AUTH__JWT_ISSUER: "airflow"
   KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
-  AWS_ACCESS_KEY_ID: "${MINIO_APP_ACCESS_KEY:?define MINIO_APP_ACCESS_KEY in .env}"
-  AWS_SECRET_ACCESS_KEY: "${MINIO_APP_SECRET_KEY:?define MINIO_APP_SECRET_KEY in .env}"
+  AWS_ACCESS_KEY_ID: "${SEAWEEDFS_S3_ACCESS_KEY:?define SEAWEEDFS_S3_ACCESS_KEY in .env}"
+  AWS_SECRET_ACCESS_KEY: "${SEAWEEDFS_S3_SECRET_KEY:?define SEAWEEDFS_S3_SECRET_KEY in .env}"
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_REGION: "us-east-1"
   S3_ENDPOINT_URL: "http://seaweedfs-s3:8333"
@@ -93,8 +93,8 @@ x-beam-env: &beam-env
   APICURIO_REGISTRY_V3_URL: "http://apicurio-registry:8080/apis/registry/v3"
   APICURIO_REGISTRY_V2_URL: "http://apicurio-registry:8080/apis/registry/v2"
   APICURIO_REGISTRY_CCOMPAT_URL: "http://apicurio-registry:8080/apis/ccompat/v7"
-  AWS_ACCESS_KEY_ID: "${MINIO_APP_ACCESS_KEY:?define MINIO_APP_ACCESS_KEY in .env}"
-  AWS_SECRET_ACCESS_KEY: "${MINIO_APP_SECRET_KEY:?define MINIO_APP_SECRET_KEY in .env}"
+  AWS_ACCESS_KEY_ID: "${SEAWEEDFS_S3_ACCESS_KEY:?define SEAWEEDFS_S3_ACCESS_KEY in .env}"
+  AWS_SECRET_ACCESS_KEY: "${SEAWEEDFS_S3_SECRET_KEY:?define SEAWEEDFS_S3_SECRET_KEY in .env}"
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_REGION: "us-east-1"
   S3_ENDPOINT_URL: "http://seaweedfs-s3:8333"
@@ -995,6 +995,8 @@ services:
           -master=seaweedfs-master1:9333,seaweedfs-master2:9333,seaweedfs-master3:9333 \
           -defaultReplicaPlacement=020 \
           -metricsPort=9327
+    ports:
+      - "8889:8888"
     volumes:
       - seaweed_filer_offsets:/var/lib/seaweedfs
     networks:
@@ -1067,6 +1069,8 @@ services:
           -port.iceberg=0 \
           -metricsPort=9327 \
           -config=/etc/seaweedfs/s3.json
+    ports:
+      - "8333:8333"
     networks:
       - orchestration_net
       - ingest_net
@@ -1244,8 +1248,8 @@ services:
         web.submit.enable: true
         s3.endpoint: http://seaweedfs-s3:8333
         s3.path.style.access: true
-        s3.access-key: ${MINIO_APP_ACCESS_KEY:?define MINIO_APP_ACCESS_KEY in .env}
-        s3.secret-key: ${MINIO_APP_SECRET_KEY:?define MINIO_APP_SECRET_KEY in .env}
+        s3.access-key: ${SEAWEEDFS_S3_ACCESS_KEY:?define SEAWEEDFS_S3_ACCESS_KEY in .env}
+        s3.secret-key: ${SEAWEEDFS_S3_SECRET_KEY:?define SEAWEEDFS_S3_SECRET_KEY in .env}
         metrics.reporters: prom
         metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
         metrics.reporter.prom.port: 9250
@@ -1296,8 +1300,8 @@ services:
         execution.checkpointing.timeout: 5min
         s3.endpoint: http://seaweedfs-s3:8333
         s3.path.style.access: true
-        s3.access-key: ${MINIO_APP_ACCESS_KEY:?define MINIO_APP_ACCESS_KEY in .env}
-        s3.secret-key: ${MINIO_APP_SECRET_KEY:?define MINIO_APP_SECRET_KEY in .env}
+        s3.access-key: ${SEAWEEDFS_S3_ACCESS_KEY:?define SEAWEEDFS_S3_ACCESS_KEY in .env}
+        s3.secret-key: ${SEAWEEDFS_S3_SECRET_KEY:?define SEAWEEDFS_S3_SECRET_KEY in .env}
         metrics.reporters: prom
         metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
         metrics.reporter.prom.port: 9250
@@ -1339,8 +1343,8 @@ services:
         execution.checkpointing.timeout: 5min
         s3.endpoint: http://seaweedfs-s3:8333
         s3.path.style.access: true
-        s3.access-key: ${MINIO_APP_ACCESS_KEY:?define MINIO_APP_ACCESS_KEY in .env}
-        s3.secret-key: ${MINIO_APP_SECRET_KEY:?define MINIO_APP_SECRET_KEY in .env}
+        s3.access-key: ${SEAWEEDFS_S3_ACCESS_KEY:?define SEAWEEDFS_S3_ACCESS_KEY in .env}
+        s3.secret-key: ${SEAWEEDFS_S3_SECRET_KEY:?define SEAWEEDFS_S3_SECRET_KEY in .env}
         metrics.reporters: prom
         metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
         metrics.reporter.prom.port: 9250
