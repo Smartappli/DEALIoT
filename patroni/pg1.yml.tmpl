@@ -41,7 +41,7 @@ bootstrap:
   pg_hba:
     - host all all 0.0.0.0/0 scram-sha-256
     - host replication replicator 0.0.0.0/0 scram-sha-256
-  post_bootstrap: /scripts/post-bootstrap.sh
+  post_bootstrap: /bin/sh /scripts/post-bootstrap.sh
 
 postgresql:
   listen: 0.0.0.0:5432
