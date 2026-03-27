@@ -64,6 +64,15 @@ jobs:
       - name: Python syntax validation
         run: uv run python -m compileall -q airflow/dags mqtt-kafka-bridge pipelines flink/jobs
 
+      - name: Unit test suite
+        run: uv run python -m unittest -v tests/unit/test_repository_unit.py
+
+      - name: Integration test suite
+        run: uv run python -m unittest -v tests/integration/test_platform_integration.py
+
+      - name: Deployment test suite
+        run: uv run python -m unittest -v tests/deployment/test_deployment_readiness.py
+
       - name: Application smoke test suite
         run: uv run python -m unittest -v tests/test_application_smoke.py
 
