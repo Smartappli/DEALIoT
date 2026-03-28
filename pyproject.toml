@@ -51,6 +51,7 @@ check_untyped_defs = true
 no_implicit_optional = true
 show_error_codes = true
 pretty = true
+ignore_missing_imports = true
 explicit_package_bases = true
 exclude = [
   "(^|/)build/",
@@ -58,6 +59,7 @@ exclude = [
   "(^|/)grafana/",
   "(^|/)secrets/",
   "(^|/)mqtt-kafka-bridge/",
+  "(^|/)airflow/dags/",
 ]
 
 [[tool.mypy.overrides]]
@@ -66,6 +68,9 @@ module = [
   "kafka.*",
   "confluent_kafka.*",
   "apache_beam.*",
+  "pendulum",
+  "boto3",
+  "pyflink.*",
 ]
 ignore_missing_imports = true
 

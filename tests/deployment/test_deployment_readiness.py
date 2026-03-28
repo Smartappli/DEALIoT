@@ -3,7 +3,6 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -42,9 +41,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
 
     def test_ci_workflow_executes_test_layers(self) -> None:
-        workflow_text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(
-            encoding="utf-8"
-        )
+        workflow_text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("Unit test suite", workflow_text)
         self.assertIn("Integration test suite", workflow_text)
         self.assertIn("Deployment test suite", workflow_text)
