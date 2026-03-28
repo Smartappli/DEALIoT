@@ -4,8 +4,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "03:00"
-      timezone: "Etc/UTC"
     labels:
       - "dependencies"
       - "dependabot"
@@ -14,8 +12,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      time: "03:30"
-      timezone: "Etc/UTC"
     labels:
       - "dependencies"
       - "dependabot"
@@ -24,8 +20,6 @@ updates:
     directory: "/beam"
     schedule:
       interval: "daily"
-      time: "04:00"
-      timezone: "Etc/UTC"
     labels:
       - "dependencies"
       - "dependabot"
@@ -34,8 +28,6 @@ updates:
     directory: "/flink"
     schedule:
       interval: "daily"
-      time: "04:10"
-      timezone: "Etc/UTC"
     labels:
       - "dependencies"
       - "dependabot"
