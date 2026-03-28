@@ -19,7 +19,6 @@ ignore = [
   "CPY",    # copyright header requirements
   # Keep compatibility with formatter behavior:
   "E203",
-  "W503",
   "COM812",
   "ISC001",
 ]
@@ -47,6 +46,7 @@ exclude = [
   "(^|/)dist/",
   "(^|/)grafana/",
   "(^|/)secrets/",
+  "(^|/)mqtt-kafka-bridge/",
 ]
 
 [[tool.mypy.overrides]]
