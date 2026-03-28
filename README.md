@@ -2,6 +2,9 @@
 
 This repository implements a reproducible edge-to-cloud architecture for multimodal IoT ingestion, schema governance, stream/batch processing, high-availability transactional storage, and operational observability. The stack targets real-time livestock and precision-agriculture workloads, but the design is generic enough for other industrial IoT domains.
 
+[![CI](https://github.com/Smartappli/DEALIoT/actions/workflows/ci.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/ci.yml)
+
+
 ## 1. What the platform does
 
 The platform combines six logical planes:
