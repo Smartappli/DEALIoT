@@ -6,6 +6,7 @@ This repository implements a reproducible edge-to-cloud architecture for multimo
 [![CodeQL](https://github.com/Smartappli/DEALIoT/actions/workflows/codeql.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/codeql.yml)
 [![Dependabot Updates](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates)
 [![Renovate](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml)
+[![ShellCheck](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml)
 
 
 ## 1. What the platform does
