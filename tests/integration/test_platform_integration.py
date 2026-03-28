@@ -3,7 +3,6 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -22,9 +21,7 @@ class PlatformIntegrationTests(unittest.TestCase):
         ]
 
         for service in services:
-            self.assertIn(
-                f"  {service}:", compose_text, f"Missing SeaweedFS service: {service}"
-            )
+            self.assertIn(f"  {service}:", compose_text, f"Missing SeaweedFS service: {service}")
 
     def test_seaweed_s3_depends_on_filer(self) -> None:
         compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
@@ -45,9 +42,7 @@ class PlatformIntegrationTests(unittest.TestCase):
             "mqtt-kafka-bridge",
         ]
         for service in expected_services:
-            self.assertIn(
-                f"  {service}:", compose_text, f"Missing integration service: {service}"
-            )
+            self.assertIn(f"  {service}:", compose_text, f"Missing integration service: {service}")
 
 
 if __name__ == "__main__":
