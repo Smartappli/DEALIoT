@@ -53,20 +53,20 @@ template: |
     Thanks to $CONTRIBUTORS for making this release possible.
 
 autolabeler:
-- label: '📒 Documentation'
-  files:
-    - '*.md'
-  title:
-    - '/(docs|doc:|\[doc\]|typos|comment|documentation)/i'
-- label: '☢️ Bug'
-  title:
-    - '/(fix|bug|missing|correct)/i'
-- label: '🧹 Updates'
-  title:
-    - '/(improve|update|refactor|deprecated|remove|unused|test)/i'
-- label: '🤖 Dependencies'
-  title:
-    - '/(bump|dependencies)/i'
-- label: '✏️ Feature'
-  title:
-    - '/(feature|feat|create|implement)/i'
+  - label: '📒 Documentation'
+    files:
+      - '*.md'
+    title:
+      - '/(docs|doc:|\[doc\]|typos|comment|documentation)/i'
+  - label: '☢️ Bug'
+    title:
+      - '/(fix|bug|missing|correct)/i'
+  - label: '🧹 Updates'
+    title:
+      - '/(improve|update|refactor|deprecated|remove|unused|test)/i'
+  - label: '🤖 Dependencies'
+    title:
+      - '/(bump|dependencies)/i'
+  - label: '✏️ Feature'
+    title:
+      - '/(feature|feat|create|implement)/i'
