@@ -90,23 +90,11 @@ def infer_event_kind(source_topic: str, mqtt_topic: str) -> str:
         or "/volumetric-video/" in lowered_mqtt
     ):
         return "video3d"
-    if (
-        "video2d" in lowered_mqtt
-        or "/video/" in lowered_mqtt
-        or "/camera-stream/" in lowered_mqtt
-    ):
+    if "video2d" in lowered_mqtt or "/video/" in lowered_mqtt or "/camera-stream/" in lowered_mqtt:
         return "video2d"
-    if (
-        "image3d" in lowered_mqtt
-        or "/lidar/" in lowered_mqtt
-        or "/pointcloud/" in lowered_mqtt
-    ):
+    if "image3d" in lowered_mqtt or "/lidar/" in lowered_mqtt or "/pointcloud/" in lowered_mqtt:
         return "image3d"
-    if (
-        "image2d" in lowered_mqtt
-        or "/camera/" in lowered_mqtt
-        or "/image/" in lowered_mqtt
-    ):
+    if "image2d" in lowered_mqtt or "/camera/" in lowered_mqtt or "/image/" in lowered_mqtt:
         return "image2d"
 
     return "unknown"

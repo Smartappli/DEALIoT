@@ -47,11 +47,7 @@ def pick_kafka_topic(topic: str) -> str:
 
     if "gps" in lowered or "/gnss/" in lowered:
         kafka_topic = "raw.gps"
-    elif (
-        "video3d" in lowered
-        or "/stereo-video/" in lowered
-        or "/volumetric-video/" in lowered
-    ):
+    elif "video3d" in lowered or "/stereo-video/" in lowered or "/volumetric-video/" in lowered:
         kafka_topic = "raw.video3d.meta"
     elif "video2d" in lowered or "/video/" in lowered or "/camera-stream/" in lowered:
         kafka_topic = "raw.video2d.meta"
@@ -131,9 +127,7 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
     kafka_topic = pick_kafka_topic(msg.topic)
     device_id = derive_device_id(msg.topic)
     decoded = decode_payload(msg.payload)
-    timestamp = (
-        decoded.get("timestamp", now_iso()) if isinstance(decoded, dict) else now_iso()
-    )
+    timestamp = decoded.get("timestamp", now_iso()) if isinstance(decoded, dict) else now_iso()
 
     if kafka_topic == "raw.sensor":
         payload = decoded if isinstance(decoded, dict) else {"value": decoded}

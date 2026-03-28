@@ -120,9 +120,7 @@ def main() -> None:
     parser.add_argument("--since-minutes", type=int)
     parser.add_argument("--window-start")
     parser.add_argument("--window-end")
-    parser.add_argument(
-        "--media-kind", required=True, choices=sorted(TOPIC_BY_MEDIA_KIND)
-    )
+    parser.add_argument("--media-kind", required=True, choices=sorted(TOPIC_BY_MEDIA_KIND))
 
     args = parser.parse_args()
     window_start, window_end = resolve_window(args)

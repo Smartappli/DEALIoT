@@ -4,7 +4,6 @@ import json
 import unittest
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -29,9 +28,7 @@ class RepositoryUnitTests(unittest.TestCase):
         for file_path in bootstrap_files:
             payload = json.loads(file_path.read_text(encoding="utf-8"))
             content = payload["firstVersion"]["content"]["content"]
-            self.assertIsInstance(
-                content, str, f"Invalid embedded schema content in {file_path}"
-            )
+            self.assertIsInstance(content, str, f"Invalid embedded schema content in {file_path}")
             self.assertGreater(
                 len(content), 20, f"Embedded schema content too short in {file_path}"
             )
