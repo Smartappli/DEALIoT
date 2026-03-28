@@ -8,6 +8,7 @@ repos:
       - id: check-json
       - id: check-merge-conflict
       - id: detect-private-key
+      - id: check-added-large-files
 
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.38.0
@@ -19,5 +20,24 @@ repos:
     rev: v0.15.8
     hooks:
       - id: ruff
-        args: [--fix]
+        args: ["--fix", "--config", "pyproject.toml"]
       - id: ruff-format
+        args: ["--config", "pyproject.toml"]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.18.2
+    hooks:
+      - id: mypy
+        args: ["--config-file", "pyproject.toml"]
+        additional_dependencies:
+          - types-PyYAML==6.0.12.20250915
+
+  - repo: https://github.com/Riverside-Healthcare/djLint
+    rev: v1.36.4
+    hooks:
+      - id: djlint
+        args: ["--configuration", "pyproject.toml"]
+        files: "\\.(html|jinja|j2|tmpl)$"
+      - id: djlint-reformat
+        args: ["--configuration", "pyproject.toml"]
+        files: "\\.(html|jinja|j2|tmpl)$"
