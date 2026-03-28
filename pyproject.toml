@@ -22,7 +22,9 @@ select = [
   "S",   # bandit-like security checks
   "AIR", # airflow best-practices checks
   "SIM", # simplification suggestions
-  "RUF", # ruff-specific rules
+  "RUF",  # ruff-specific rules
+  "PERF", # perflint performance checks
+  "PL",   # pylint-derived rules
 ]
 ignore = [
   "E203", # black-compatible slicing spacing
