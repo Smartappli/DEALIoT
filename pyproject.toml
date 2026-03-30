@@ -82,6 +82,23 @@ format_js = true
 format_css = true
 ignore = "H006,H030"
 
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source = ["."]
+omit = [
+  "tests/*",
+  "**/__init__.py",
+]
+
+[tool.coverage.report]
+skip_empty = true
+show_missing = true
+
+[tool.coverage.xml]
+output = "coverage.xml"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
