@@ -192,7 +192,7 @@ This repository is configured for GitHub Actions-based SonarQube analysis:
 - Project scanner config: `sonar-project.properties`
 - Required repository secrets:
   - `SONAR_TOKEN`
-  - `SONAR_HOST_URL` (for example `https://sonarcloud.io` or your self-hosted SonarQube URL)
+  - `SONAR_HOST_URL` (optional; defaults to `https://sonarcloud.io` when unset, set it for self-hosted SonarQube)
 
 The workflow runs on pushes to `main`/`master`, on pull requests, and manually via `workflow_dispatch`.
 
