@@ -32,8 +32,8 @@ x-airflow-env: &airflow-env
   AIRFLOW__CORE__DEFAULT_TIMEZONE: "Europe/Brussels"
   AIRFLOW__CORE__FERNET_KEY: "${AIRFLOW_FERNET_KEY:?define AIRFLOW_FERNET_KEY in .env}"
   AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
-  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg://airflow:airflow@airflow-postgres:5432/airflow"
-  AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://airflow:airflow@airflow-postgres:5432/airflow"
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:-change-this-password}@airflow-postgres:5432/airflow"
+  AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://airflow:${AIRFLOW_DB_PASSWORD:-change-this-password}@airflow-postgres:5432/airflow"
   AIRFLOW__CELERY__BROKER_URL: "redis://airflow-redis:6379/0"
   AIRFLOW__CELERY__WORKER_ENABLE_REMOTE_CONTROL: "true"
   AIRFLOW__FAB__AUTH_BACKENDS: "airflow.providers.fab.auth_manager.api.auth.backend.session"
@@ -1462,7 +1462,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
+      POSTGRES_PASSWORD: "${AIRFLOW_DB_PASSWORD:-change-this-password}"
       POSTGRES_DB: airflow
     volumes:
       - airflow_postgres_data:/var/lib/postgresql/data
