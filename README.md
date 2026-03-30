@@ -22,6 +22,7 @@ This repository implements a reproducible edge-to-cloud architecture for multimo
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/26b7e888b6b54e299cb0ed23a112f2d4)](https://app.codacy.com/gh/Smartappli/DEALIoT/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 
 ## 1. What the platform does
