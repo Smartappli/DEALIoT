@@ -3,10 +3,10 @@ FROM apache/flink:2.0.0-scala_2.12-java17
 USER root
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-venv \
-    python3-pip \
     build-essential \
+    python3 \
+    python3-pip \
+    python3-venv \
  && rm -rf /var/lib/apt/lists/*
 
 COPY ./flink/requirements-pyflink.txt /tmp/requirements-pyflink.txt
@@ -15,9 +15,9 @@ RUN python3 --version \
  && python3 -m venv /opt/flink/venv \
  && /opt/flink/venv/bin/python -m pip install --upgrade pip \
  && /opt/flink/venv/bin/pip install --no-cache-dir \
+      "packaging" \
       "setuptools<81" \
       "wheel<0.46" \
-      "packaging" \
  && /opt/flink/venv/bin/pip install --no-cache-dir --no-build-isolation -r /tmp/requirements-pyflink.txt \
  && /opt/flink/venv/bin/python - <<'PY'
 import sys
