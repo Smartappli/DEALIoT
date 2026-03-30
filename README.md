@@ -7,6 +7,7 @@ This repository implements a reproducible edge-to-cloud architecture for multimo
 [![Dependabot Updates](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates)
 [![Renovate](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml)
 [![ShellCheck](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml)
+[![SonarQube](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
 
@@ -182,6 +183,18 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `orchestration_net`: Airflow, Grafana, Apicurio UI, and other control-plane services.
 
 This segmentation limits accidental coupling between components and makes troubleshooting easier.
+
+## SonarQube setup
+
+This repository is configured for GitHub Actions-based SonarQube analysis:
+
+- Workflow: `.github/workflows/sonarqube.yml`
+- Project scanner config: `sonar-project.properties`
+- Required repository secrets:
+  - `SONAR_TOKEN`
+  - `SONAR_HOST_URL` (for example `https://sonarcloud.io` or your self-hosted SonarQube URL)
+
+The workflow runs on pushes to `main`/`master`, on pull requests, and manually via `workflow_dispatch`.
 
 ## 7. Configuration model
 
