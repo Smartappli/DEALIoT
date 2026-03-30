@@ -7,8 +7,22 @@ This repository implements a reproducible edge-to-cloud architecture for multimo
 [![Dependabot Updates](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates)
 [![Renovate](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml)
 [![ShellCheck](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml)
+
+
 [![SonarQube](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/26b7e888b6b54e299cb0ed23a112f2d4)](https://app.codacy.com/gh/Smartappli/DEALIoT/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 
 ## 1. What the platform does
