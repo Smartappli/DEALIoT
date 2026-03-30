@@ -7,7 +7,14 @@ This repository implements a reproducible edge-to-cloud architecture for multimo
 [![Dependabot Updates](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates)
 [![Renovate](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml)
 [![ShellCheck](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml)
+
+
 [![SonarQube](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
 
