@@ -1,0 +1,75 @@
+name: Build & Push Docker Images
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: orchestration
+            context: ./orchestration
+            dockerfile: ./orchestration/Dockerfile
+          - image_name: mqtt-kafka-bridge
+            context: ./mqtt-kafka-bridge
+            dockerfile: ./mqtt-kafka-bridge/Dockerfile
+          - image_name: flink-pyflink
+            context: .
+            dockerfile: ./flink/Dockerfile.pyflink
+          - image_name: beam-python-runtime
+            context: ./beam
+            dockerfile: ./beam/Dockerfile.python-runtime
+          - image_name: beam-jobserver
+            context: ./beam
+            dockerfile: ./beam/Dockerfile.jobserver
+          - image_name: beam-python-harness
+            context: ./beam
+            dockerfile: ./beam/Dockerfile.python-harness
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/dealiot-${{ matrix.image_name }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+
+      - name: Build and push ${{ matrix.image_name }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
