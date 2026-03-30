@@ -2,6 +2,7 @@
 
 This repository implements a reproducible edge-to-cloud architecture for multimodal IoT ingestion, schema governance, stream/batch processing, high-availability transactional storage, and operational observability. The stack targets real-time livestock and precision-agriculture workloads, but the design is generic enough for other industrial IoT domains.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/58d5e9a3f18f4c21a1eda7c4806ad68e)](https://app.codacy.com/gh/Smartappli/DEALIoT?utm_source=github.com&utm_medium=referral&utm_content=Smartappli/DEALIoT&utm_campaign=Badge_Grade)
 [![CI](https://github.com/Smartappli/DEALIoT/actions/workflows/ci.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Smartappli/DEALIoT/actions/workflows/codeql.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/codeql.yml)
 [![Dependabot Updates](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates)
