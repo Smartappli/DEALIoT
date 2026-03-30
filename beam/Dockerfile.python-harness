@@ -5,13 +5,13 @@ FROM golang:1.24-bookworm AS boot-builder
 ARG BEAM_GIT_REF
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
+    bash \
     ca-certificates \
+    curl \
+    git \
+    openjdk-17-jdk-headless \
     unzip \
     zip \
-    openjdk-17-jdk-headless \
-    bash \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
@@ -30,12 +30,12 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    ca-certificates \
+    curl \
+    libgeos-dev \
     libsnappy-dev \
     libyaml-dev \
-    libgeos-dev \
-    curl \
-    ca-certificates \
-    bash \
   && rm -rf /var/lib/apt/lists/*
 
 RUN python -m pip install --upgrade pip setuptools wheel
@@ -48,11 +48,17 @@ COPY --from=boot-builder /src/beam/sdks/python/container/build/target/launcher/l
 
 RUN chmod +x /opt/apache/beam/boot
 
+RUN groupadd --system --gid 10001 beam \
+ && useradd --system --uid 10001 --gid 10001 --create-home --home-dir /home/beam --shell /usr/sbin/nologin beam \
+ && chown -R beam:beam /opt/apache/beam
+
 # Vérification minimale
 RUN python - <<'PY'
 import apache_beam
 print("Beam SDK version:", apache_beam.__version__)
 PY
+
+USER beam
 
 ENTRYPOINT ["/opt/apache/beam/boot"]
 CMD ["--worker_pool"]

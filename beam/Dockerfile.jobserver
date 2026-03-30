@@ -12,13 +12,13 @@ ARG FLINK_JOBSERVER_GRADLE_TASK
 ARG GRADLE_OPTS
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
     bash \
     ca-certificates \
     curl \
+    git \
+    libltdl7 \
     unzip \
     zip \
-    libltdl7 \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
@@ -27,7 +27,7 @@ WORKDIR /src/beam
 RUN git checkout "${BEAM_GIT_REF}"
 
 RUN test -n "${FLINK_JOBSERVER_GRADLE_TASK}" \
- && ./gradlew --no-daemon ${GRADLE_OPTS} "${FLINK_JOBSERVER_GRADLE_TASK}"
+ && ./gradlew --no-daemon "${GRADLE_OPTS}" "${FLINK_JOBSERVER_GRADLE_TASK}"
 
 RUN mkdir -p /out/jars /out/meta \
  && JAR_PATH="$(find /src/beam -type f \
@@ -52,9 +52,9 @@ RUN printf '%s\n' \
 FROM ${JAVA_RUN_IMAGE} AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libltdl7 \
     bash \
     ca-certificates \
+    libltdl7 \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/apache/beam
