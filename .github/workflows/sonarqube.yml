@@ -36,6 +36,14 @@ jobs:
           uv run --with coverage coverage run -m unittest discover -s tests -p 'test_*.py'
           uv run --with coverage coverage xml -o coverage.xml
 
+      - name: Upload coverage to Codacy
+        if: ${{ secrets.CODACY_PROJECT_TOKEN != '' || secrets.CODACY_API_TOKEN != '' }}
+        uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-reports: coverage.xml
+
       - name: SonarQube scan
         uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9
         env:
