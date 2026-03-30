@@ -14,6 +14,12 @@ This repository implements a reproducible edge-to-cloud architecture for multimo
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
