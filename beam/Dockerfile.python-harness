@@ -5,13 +5,13 @@ FROM golang:1.24-bookworm AS boot-builder
 ARG BEAM_GIT_REF
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
+    bash \
     ca-certificates \
+    curl \
+    git \
+    openjdk-17-jdk-headless \
     unzip \
     zip \
-    openjdk-17-jdk-headless \
-    bash \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
@@ -30,12 +30,12 @@ ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    ca-certificates \
+    curl \
+    libgeos-dev \
     libsnappy-dev \
     libyaml-dev \
-    libgeos-dev \
-    curl \
-    ca-certificates \
-    bash \
   && rm -rf /var/lib/apt/lists/*
 
 RUN python -m pip install --upgrade pip setuptools wheel
