@@ -3,9 +3,9 @@ FROM python:3.13-slim
 WORKDIR /app
 
 RUN pip install --no-cache-dir \
-    paho-mqtt \
     kafka-python \
-    lz4
+    lz4 \
+    paho-mqtt
 
 RUN useradd --create-home --shell /bin/bash appuser
 COPY bridge.py /app/bridge.py
