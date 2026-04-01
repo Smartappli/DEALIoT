@@ -1,3 +1,3 @@
 apache-flink==2.0.0
-boto3==1.42.79
+boto3==1.42.80
 requests==2.33.1
