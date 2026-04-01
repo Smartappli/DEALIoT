@@ -134,7 +134,7 @@ x-apicurio-env: &apicurio-env
 
 services:
   etcd1:
-    image: registry.k8s.io/etcd:v3.6.8
+    image: registry.k8s.io/etcd:v3.6.9
     container_name: etcd1
     hostname: etcd1
     restart: unless-stopped
@@ -158,7 +158,7 @@ services:
     <<: *etcd-health
 
   etcd2:
-    image: registry.k8s.io/etcd:v3.6.8
+    image: registry.k8s.io/etcd:v3.6.9
     container_name: etcd2
     hostname: etcd2
     restart: unless-stopped
@@ -182,7 +182,7 @@ services:
     <<: *etcd-health
 
   etcd3:
-    image: registry.k8s.io/etcd:v3.6.8
+    image: registry.k8s.io/etcd:v3.6.9
     container_name: etcd3
     hostname: etcd3
     restart: unless-stopped
