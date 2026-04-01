@@ -1178,7 +1178,7 @@ services:
         max-file: "3"
 
   seaweedfs-edge:
-    image: caddy:2.10
+    image: caddy:2.11
     container_name: seaweedfs-edge
     hostname: seaweedfs-edge
     restart: unless-stopped
