@@ -1736,7 +1736,7 @@ services:
       - patroni_frontend
 
   apicurio-registry:
-    image: apicurio/apicurio-registry:3.1.7
+    image: apicurio/apicurio-registry:3.2.1
     container_name: apicurio-registry
     hostname: apicurio-registry
     restart: unless-stopped
