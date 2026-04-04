@@ -657,7 +657,7 @@ services:
       - orchestration_net
 
   seaweedfs-master1:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-master1
     hostname: seaweedfs-master1
     restart: unless-stopped
@@ -685,7 +685,7 @@ services:
       start_period: 30s
 
   seaweedfs-master2:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-master2
     hostname: seaweedfs-master2
     restart: unless-stopped
@@ -713,7 +713,7 @@ services:
       start_period: 30s
 
   seaweedfs-master3:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-master3
     hostname: seaweedfs-master3
     restart: unless-stopped
@@ -741,7 +741,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume1:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-volume1
     hostname: seaweedfs-volume1
     restart: unless-stopped
@@ -778,7 +778,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume2:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-volume2
     hostname: seaweedfs-volume2
     restart: unless-stopped
@@ -815,7 +815,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume3:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-volume3
     hostname: seaweedfs-volume3
     restart: unless-stopped
@@ -913,7 +913,7 @@ services:
         max-file: "3"
 
   seaweedfs-filer:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-filer
     hostname: seaweedfs-filer
     restart: unless-stopped
@@ -1026,7 +1026,7 @@ services:
         max-file: "3"
 
   seaweedfs-s3:
-    image: chrislusf/seaweedfs:4.17
+    image: chrislusf/seaweedfs:4.18
     container_name: seaweedfs-s3
     hostname: seaweedfs-s3
     restart: unless-stopped
