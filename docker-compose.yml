@@ -608,7 +608,7 @@ services:
       start_period: 40s
 
   kafka-connect-init:
-    image: curlimages/curl:8.18.0
+    image: curlimages/curl:8.19.0
     container_name: kafka-connect-init
     restart: "no"
     depends_on:
@@ -1767,7 +1767,7 @@ services:
       - orchestration_net
 
   apicurio-init:
-    image: curlimages/curl:8.18.0
+    image: curlimages/curl:8.19.0
     container_name: apicurio-init
     restart: "no"
     depends_on:
