@@ -59,13 +59,13 @@ jobs:
         run: |
           jq '
             if (.runs | length) > 1 then
-              .runs |= to_entries | map(
+              .runs |= (to_entries | map(
                 .value + {
                   automationDetails: (
                     (.value.automationDetails // {}) + { id: ("codacy-security-scan-" + (.key | tostring)) }
                   )
                 }
-              )
+              ))
             else
               .
             end
