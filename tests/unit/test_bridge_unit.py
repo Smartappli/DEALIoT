@@ -118,6 +118,7 @@ class BridgeUnitTests(unittest.TestCase):
         )
         self.assertEqual(self.bridge.derive_device_id("/tenant/devices/cam-07/video"), "cam-07")
         self.assertEqual(self.bridge.derive_device_id("orphan-topic"), "orphan-topic")
+        self.assertEqual(self.bridge.derive_device_id("/"), "unknown")
         self.assertEqual(self.bridge.pick_key("/tenant/devices/cam-07/video"), b"cam-07")
 
     def test_build_event_sensor_and_gps_and_media(self):
@@ -167,7 +168,9 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(client.subscriptions, [])
 
     def test_on_message_sends_and_registers_callbacks(self):
-        fake_producer = _FakeKafkaProducer()
+        future = Mock()
+        fake_producer = Mock()
+        fake_producer.send.return_value = future
         msg = types.SimpleNamespace(
             topic="tenant/devices/sensor-1/sensor",
             payload=b'{"value": 5}',
@@ -178,9 +181,40 @@ class BridgeUnitTests(unittest.TestCase):
         with patch.object(self.bridge, "producer", fake_producer):
             self.bridge.on_message(None, None, msg)
 
-        self.assertEqual(len(fake_producer.sent), 1)
-        sent_topic, _key, _value = fake_producer.sent[0]
+        fake_producer.send.assert_called_once()
+        sent_topic = fake_producer.send.call_args.args[0]
         self.assertEqual(sent_topic, "raw.sensor")
+        future.add_callback.assert_called_once_with(self.bridge.on_send_success)
+        future.add_errback.assert_called_once_with(self.bridge.on_send_error)
+
+    def test_run_bridge_retries_after_oserror(self):
+        client = Mock()
+        client.connect.side_effect = [OSError("offline"), KeyboardInterrupt()]
+
+        with (
+            patch.object(self.bridge.time, "sleep") as mock_sleep,
+            self.assertRaises(KeyboardInterrupt),
+        ):
+            self.bridge.run_bridge(client)
+
+        mock_sleep.assert_called_once_with(5)
+        client.loop_forever.assert_not_called()
+
+    def test_main_sets_credentials_and_runs_bridge(self):
+        client = _FakeClient()
+        with (
+            patch.object(self.bridge, "MQTT_USERNAME", "user"),
+            patch.object(self.bridge, "MQTT_PASSWORD", "pass"),
+            patch.object(self.bridge.mqtt_client, "Client", return_value=client),
+            patch.object(self.bridge, "run_bridge") as mock_run,
+        ):
+            self.bridge.main()
+
+        self.assertEqual(client.username, "user")
+        self.assertEqual(client.password, "pass")
+        self.assertEqual(client.on_connect, self.bridge.on_connect)
+        self.assertEqual(client.on_message, self.bridge.on_message)
+        mock_run.assert_called_once_with(client)
 
     def test_main_raises_when_mqtt_credentials_are_partial(self):
         with (
