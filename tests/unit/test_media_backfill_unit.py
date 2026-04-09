@@ -154,9 +154,7 @@ class MediaBackfillUnitTests(unittest.TestCase):
             },
             clear=True,
         ):
-            with patch.object(
-                self.module.boto3, "client", return_value="s3-client"
-            ) as mock_client:
+            with patch.object(self.module.boto3, "client", return_value="s3-client") as mock_client:
                 with patch.object(
                     self.module, "KafkaProducer", return_value="producer"
                 ) as mock_prod:
@@ -189,14 +187,11 @@ class MediaBackfillUnitTests(unittest.TestCase):
             }
         ]
 
-        with patch.object(
-            self.module.argparse.ArgumentParser, "parse_args", return_value=args
-        ), patch.object(
-            self.module, "resolve_window", return_value=(start, end)
-        ), patch.object(
-            self.module, "get_kafka_producer", return_value=producer
-        ), patch.object(
-            self.module, "iter_objects_between", return_value=objects
+        with (
+            patch.object(self.module.argparse.ArgumentParser, "parse_args", return_value=args),
+            patch.object(self.module, "resolve_window", return_value=(start, end)),
+            patch.object(self.module, "get_kafka_producer", return_value=producer),
+            patch.object(self.module, "iter_objects_between", return_value=objects),
         ):
             output = io.StringIO()
             with redirect_stdout(output):
