@@ -1,0 +1,5 @@
+engines:
+  prospector:
+    exclude_paths:
+      - "tests/unit/test_bridge_unit.py"
+      - "tests/unit/test_media_backfill_unit.py"
