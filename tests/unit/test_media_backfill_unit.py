@@ -143,23 +143,23 @@ class MediaBackfillUnitTests(unittest.TestCase):
         self.assertEqual(rows, [])
 
     def test_get_s3_client_and_kafka_producer_use_environment(self):
-        aws_key_material = "-".join(["unit", "test", "key"])
-        with patch.dict(
-            os.environ,
-            {
-                "S3_ENDPOINT_URL": "http://s3.local",
-                "AWS_ACCESS_KEY_ID": "k",
-                "AWS_SECRET_ACCESS_KEY": aws_key_material,  # nosec B105
-                "KAFKA_BOOTSTRAP_SERVERS": "k1:9092,k2:9092",
-            },
-            clear=True,
+        aws_key_material = "unit-test-key"
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    "S3_ENDPOINT_URL": "http://s3.local",
+                    "AWS_ACCESS_KEY_ID": "k",
+                    "AWS_SECRET_ACCESS_KEY": aws_key_material,  # nosec B105
+                    "KAFKA_BOOTSTRAP_SERVERS": "k1:9092,k2:9092",
+                },
+                clear=True,
+            ),
+            patch.object(self.module.boto3, "client", return_value="s3-client") as mock_client,
+            patch.object(self.module, "KafkaProducer", return_value="producer") as mock_prod,
         ):
-            with patch.object(self.module.boto3, "client", return_value="s3-client") as mock_client:
-                with patch.object(
-                    self.module, "KafkaProducer", return_value="producer"
-                ) as mock_prod:
-                    self.assertEqual(self.module.get_s3_client(), "s3-client")
-                    self.assertEqual(self.module.get_kafka_producer(), "producer")
+            self.assertEqual(self.module.get_s3_client(), "s3-client")
+            self.assertEqual(self.module.get_kafka_producer(), "producer")
 
         mock_client.assert_called_once()
         mock_prod.assert_called_once()

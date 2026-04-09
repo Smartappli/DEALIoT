@@ -191,9 +191,11 @@ class BridgeUnitTests(unittest.TestCase):
         client = Mock()
         client.connect.side_effect = [OSError("offline"), KeyboardInterrupt()]
 
-        with patch.object(self.bridge.time, "sleep") as mock_sleep:
-            with pytest.raises(KeyboardInterrupt):
-                self.bridge.run_bridge(client)
+        with (
+            patch.object(self.bridge.time, "sleep") as mock_sleep,
+            pytest.raises(KeyboardInterrupt),
+        ):
+            self.bridge.run_bridge(client)
 
         mock_sleep.assert_called_once_with(5)
         client.loop_forever.assert_not_called()
