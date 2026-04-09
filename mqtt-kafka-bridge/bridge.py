@@ -17,8 +17,8 @@ LOGGER = logging.getLogger(__name__)
 
 MQTT_HOST = os.getenv("MQTT_HOST", "vernemq1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
-MQTT_USERNAME = os.getenv("MQTT_USERNAME", "admin")
-MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "change-this-password")
+MQTT_USERNAME = os.getenv("MQTT_USERNAME")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "$share/ingestors/devices/#")
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv(
@@ -196,7 +196,12 @@ def main() -> None:
         mqtt_client.CallbackAPIVersion.VERSION2,
         client_id=mqtt_client_id,
     )
-    client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    if MQTT_USERNAME and MQTT_PASSWORD:
+        client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
+    elif MQTT_USERNAME or MQTT_PASSWORD:
+        raise ValueError(
+            "MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled",
+        )
     client.on_connect = on_connect
     client.on_message = on_message
 

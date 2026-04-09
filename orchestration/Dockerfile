@@ -11,7 +11,6 @@ RUN pip install --no-cache-dir \
     "apache-airflow-providers-postgres" \
     "apache-airflow-providers-redis" \
     "apache-airflow[statsd]==${AIRFLOW_VERSION}" \
-    "apache-beam==2.72.0" \
     "boto3" \
     "cachetools>=6.0" \
     "kafka-python" \
