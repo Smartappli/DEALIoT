@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
-import importlib
+import importlib.util
 import io
 import json
 import os
@@ -10,10 +10,14 @@ import sys
 import types
 import unittest
 from contextlib import redirect_stdout
+from pathlib import Path
 from typing import Any, ClassVar, cast
 from unittest.mock import Mock, patch
 
 import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+MEDIA_BACKFILL_PATH = REPO_ROOT / "pipelines" / "media_backfill.py"
 
 
 class MediaBackfillUnitTests(unittest.TestCase):
@@ -24,7 +28,16 @@ class MediaBackfillUnitTests(unittest.TestCase):
         fake_kafka = types.ModuleType("kafka")
         cast("Any", fake_kafka).KafkaProducer = object
         with patch.dict(sys.modules, {"kafka": fake_kafka}):
-            cls.module = importlib.import_module("pipelines.media_backfill")
+            spec = importlib.util.spec_from_file_location(
+                "media_backfill_under_test",
+                MEDIA_BACKFILL_PATH,
+            )
+            if spec is None:
+                raise RuntimeError("Unable to load module spec for media_backfill.py")
+            if spec.loader is None:
+                raise RuntimeError("Unable to load media_backfill.py module loader")
+            cls.module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(cls.module)
 
     def test_parse_iso8601_and_guess_format(self):
         parsed = self.module.parse_iso8601("2026-02-01T10:11:12Z")
@@ -51,6 +64,10 @@ class MediaBackfillUnitTests(unittest.TestCase):
         self.assertEqual(record["format"], "png")
         self.assertEqual(record["content_type"], "image/png")
         self.assertEqual(record["tags"]["source"], "airflow-backfill")
+
+        unknown = self.module.build_record(obj, "unknown")
+        self.assertNotIn("camera_id", unknown)
+        self.assertEqual(unknown["content_type"], "image/png")
 
     def test_resolve_window_from_explicit_range_and_since_minutes(self):
         args = argparse.Namespace(
@@ -106,6 +123,24 @@ class MediaBackfillUnitTests(unittest.TestCase):
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["object_key"], "ok/a.jpg")
         self.assertEqual(rows[0]["object_uri"], "s3://bucket/ok/a.jpg")
+
+    def test_iter_objects_between_handles_missing_contents(self):
+        paginator = Mock()
+        paginator.paginate.return_value = [{}]
+        s3 = Mock()
+        s3.get_paginator.return_value = paginator
+
+        with patch.object(self.module, "get_s3_client", return_value=s3):
+            rows = list(
+                self.module.iter_objects_between(
+                    bucket="bucket",
+                    prefix="none/",
+                    window_start=dt.datetime(2026, 1, 1, 0, 0, tzinfo=dt.UTC),
+                    window_end=dt.datetime(2026, 1, 1, 1, 0, tzinfo=dt.UTC),
+                )
+            )
+
+        self.assertEqual(rows, [])
 
     def test_get_s3_client_and_kafka_producer_use_environment(self):
         with (
