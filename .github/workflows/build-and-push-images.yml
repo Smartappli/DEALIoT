@@ -58,7 +58,8 @@ jobs:
 
       - name: Build and push ${{ matrix.image_name }}
         run: |
-          IMAGE="ghcr.io/${{ github.repository_owner }}/dealiot-${{ matrix.image_name }}"
+          OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
+          IMAGE="ghcr.io/${OWNER_LC}/dealiot-${{ matrix.image_name }}"
           TAGS=("--tag" "${IMAGE}:sha-${GITHUB_SHA}")
           if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
             TAGS+=("--tag" "${IMAGE}:latest")
