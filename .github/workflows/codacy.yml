@@ -54,8 +54,25 @@ jobs:
           # This will handover control about PR rejection to the GitHub side
           max-allowed-issues: 2147483647
 
+      # Ensure each SARIF run has a distinct category so upload-sarif@v4 can ingest all runs.
+      - name: Normalize SARIF categories
+        run: |
+          jq '
+            if (.runs | length) > 1 then
+              .runs |= to_entries | map(
+                .value + {
+                  automationDetails: (
+                    (.value.automationDetails // {}) + { id: ("codacy-security-scan-" + (.key | tostring)) }
+                  )
+                }
+              )
+            else
+              .
+            end
+          ' results.sarif > results.normalized.sarif
+
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: results.sarif
+          sarif_file: results.normalized.sarif
