@@ -144,20 +144,20 @@ class MediaBackfillUnitTests(unittest.TestCase):
 
     def test_get_s3_client_and_kafka_producer_use_environment(self):
         aws_key_material = "unit-test-key"
-        with (
-            patch.dict(
-                os.environ,
-                {
-                    "S3_ENDPOINT_URL": "http://s3.local",
-                    "AWS_ACCESS_KEY_ID": "k",
-                    "AWS_SECRET_ACCESS_KEY": aws_key_material,  # nosec B105
-                    "KAFKA_BOOTSTRAP_SERVERS": "k1:9092,k2:9092",
-                },
-                clear=True,
-            ),
-            patch.object(self.module.boto3, "client", return_value="s3-client") as mock_client,
-            patch.object(self.module, "KafkaProducer", return_value="producer") as mock_prod,
-        ):
+        with patch.dict(
+            os.environ,
+            {
+                "S3_ENDPOINT_URL": "http://s3.local",
+                "AWS_ACCESS_KEY_ID": "k",
+                "AWS_SECRET_ACCESS_KEY": aws_key_material,  # nosec B105
+                "KAFKA_BOOTSTRAP_SERVERS": "k1:9092,k2:9092",
+            },
+            clear=True,
+        ), patch.object(
+            self.module.boto3, "client", return_value="s3-client"
+        ) as mock_client, patch.object(
+            self.module, "KafkaProducer", return_value="producer"
+        ) as mock_prod:
             self.assertEqual(self.module.get_s3_client(), "s3-client")
             self.assertEqual(self.module.get_kafka_producer(), "producer")
 
@@ -187,11 +187,14 @@ class MediaBackfillUnitTests(unittest.TestCase):
             }
         ]
 
-        with (
-            patch.object(self.module.argparse.ArgumentParser, "parse_args", return_value=args),
-            patch.object(self.module, "resolve_window", return_value=(start, end)),
-            patch.object(self.module, "get_kafka_producer", return_value=producer),
-            patch.object(self.module, "iter_objects_between", return_value=objects),
+        with patch.object(
+            self.module.argparse.ArgumentParser, "parse_args", return_value=args
+        ), patch.object(
+            self.module, "resolve_window", return_value=(start, end)
+        ), patch.object(
+            self.module, "get_kafka_producer", return_value=producer
+        ), patch.object(
+            self.module, "iter_objects_between", return_value=objects
         ):
             output = io.StringIO()
             with redirect_stdout(output):
