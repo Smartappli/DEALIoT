@@ -39,7 +39,7 @@ jobs:
 
       - name: Start SeaweedFS stack
         run: |
-          docker compose -f docker-compose.yml up -d --wait --wait-timeout 180 \
+          docker compose -f docker-compose.yml up -d --wait --wait-timeout 600 \
             seaweedfs-master1 seaweedfs-master2 seaweedfs-master3 \
             seaweedfs-volume1 seaweedfs-volume2 seaweedfs-volume3 \
             seaweedfs-filer seaweedfs-s3
