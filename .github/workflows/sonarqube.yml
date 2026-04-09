@@ -18,6 +18,7 @@ jobs:
       contents: read
     env:
       CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      PYTHONPATH: ${{ github.workspace }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
