@@ -32,7 +32,7 @@ jobs:
             context: .
             dockerfile: ./flink/Dockerfile.pyflink
           - image_name: beam-python-runtime
-            context: ./beam
+            context: .
             dockerfile: ./beam/Dockerfile.python-runtime
           - image_name: beam-jobserver
             context: ./beam
