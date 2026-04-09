@@ -193,7 +193,7 @@ class BridgeUnitTests(unittest.TestCase):
 
         with (
             patch.object(self.bridge.time, "sleep") as mock_sleep,
-            self.assertRaises(KeyboardInterrupt),
+            pytest.raises(KeyboardInterrupt),
         ):
             self.bridge.run_bridge(client)
 
