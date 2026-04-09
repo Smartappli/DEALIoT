@@ -13,13 +13,13 @@ name: OSV-Scanner
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   merge_group:
-    branches: [ "main" ]
+    branches: ["main"]
   schedule:
     - cron: '16 6 * * 4'
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   # Allow reusable workflow to read action metadata
