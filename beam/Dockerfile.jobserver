@@ -26,7 +26,20 @@ RUN git clone https://github.com/apache/beam.git beam
 WORKDIR /src/beam
 RUN git checkout "${BEAM_GIT_REF}"
 
-RUN test -n "${FLINK_JOBSERVER_GRADLE_TASK}" \
+RUN if [ -z "${FLINK_JOBSERVER_GRADLE_TASK}" ]; then \
+      if [ -d runners/flink/2.0/job-server ]; then \
+        FLINK_JOBSERVER_GRADLE_TASK=":runners:flink:2.0:job-server:shadowJar"; \
+      elif [ -d runners/flink/1.20/job-server ]; then \
+        FLINK_JOBSERVER_GRADLE_TASK=":runners:flink:1.20:job-server:shadowJar"; \
+      elif [ -d runners/flink/1.19/job-server ]; then \
+        FLINK_JOBSERVER_GRADLE_TASK=":runners:flink:1.19:job-server:shadowJar"; \
+      elif [ -d runners/flink/job-server ]; then \
+        FLINK_JOBSERVER_GRADLE_TASK=":runners:flink:job-server:shadowJar"; \
+      else \
+        echo "Unable to infer FLINK_JOBSERVER_GRADLE_TASK from Beam source tree" >&2; \
+        exit 1; \
+      fi; \
+    fi \
  && ./gradlew --no-daemon ${GRADLE_OPTS} "${FLINK_JOBSERVER_GRADLE_TASK}"
 
 RUN mkdir -p /out/jars /out/meta \
