@@ -2,59 +2,37 @@ name: OSV-Scanner
 
 on:
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
   merge_group:
-    branches: ["main"]
+    branches: [ "main" ]
   schedule:
-    - cron: '33 22 * * 3'
+    - cron: '16 6 * * 4'
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 permissions:
+  # Allow reusable workflow to read action metadata
+  actions: read
+  # Require writing security events to upload SARIF file to security tab
   security-events: write
   contents: read
 
 jobs:
   scan-scheduled:
     if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install OSV-Scanner
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/google/osv-scanner/main/scripts/install.sh \
-            | sh -s -- -b /usr/local/bin
-          osv-scanner --version
-
-      - name: Run OSV scan (SARIF)
-        run: |
-          osv-scanner scan -r --skip-git --format sarif --output results.sarif ./
-
-      - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: results.sarif
-
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@c51854704019a247608d928f370c98740469d4b5" # v2.3.5
+    with:
+      # Example of specifying custom arguments
+      scan-args: |-
+        -r
+        --skip-git
+        ./
   scan-pr:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install OSV-Scanner
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/google/osv-scanner/main/scripts/install.sh \
-            | sh -s -- -b /usr/local/bin
-          osv-scanner --version
-
-      - name: Run OSV scan (SARIF)
-        run: |
-          osv-scanner scan -r --skip-git --format sarif --output results.sarif ./
-
-      - name: Upload SARIF results
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: results.sarif
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@c51854704019a247608d928f370c98740469d4b5" # v2.3.5
+    with:
+      # Example of specifying custom arguments
+      scan-args: |-
+        -r
+        --skip-git
+        ./
