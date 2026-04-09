@@ -23,6 +23,8 @@ updates:
     labels:
       - "dependencies"
       - "dependabot"
+    ignore:
+      - dependency-name: "custom-flink-py"
 
   - package-ecosystem: "pip"
     directory: "/beam"
