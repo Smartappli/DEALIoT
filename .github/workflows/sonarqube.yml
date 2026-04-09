@@ -39,16 +39,31 @@ jobs:
           uv run --with pytest --with pytest-cov \
             pytest --cov=. --cov-report=xml --cov-report=term-missing
 
+      - name: Verify coverage report for SonarQube
+        run: |
+          test -s coverage.xml
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('coverage.xml').read_text(encoding='utf-8')
+          if '<coverage ' not in text:
+              raise SystemExit('coverage.xml does not look like a coverage report')
+          print('coverage.xml generated and valid for SonarQube import')
+          PY
+
       - name: Run codacy-coverage-reporter
+        if: ${{ secrets.CODACY_PROJECT_TOKEN != '' }}
         uses: codacy/codacy-coverage-reporter-action@89d6c85cfafaec52c72b6c5e8b2878d33104c699
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: 'coverage.xml'
+          coverage-reports: "coverage.xml"
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
       - name: SonarQube scan
         uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4
+        with:
+          args: >-
+            -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL || 'https://sonarcloud.io' }}
