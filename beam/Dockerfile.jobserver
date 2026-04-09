@@ -27,7 +27,7 @@ WORKDIR /src/beam
 RUN git checkout "${BEAM_GIT_REF}"
 
 RUN test -n "${FLINK_JOBSERVER_GRADLE_TASK}" \
- && ./gradlew --no-daemon "${GRADLE_OPTS}" "${FLINK_JOBSERVER_GRADLE_TASK}"
+ && ./gradlew --no-daemon ${GRADLE_OPTS} "${FLINK_JOBSERVER_GRADLE_TASK}"
 
 RUN mkdir -p /out/jars /out/meta \
  && JAR_PATH="$(find /src/beam -type f \
