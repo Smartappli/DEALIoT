@@ -10,9 +10,12 @@ read_secret() {
   tr -d '\r\n' < "$file"
 }
 
-export POSTGRES_SUPERUSER_PASSWORD="$(read_secret /run/secrets/postgres_superuser_password)"
-export PATRONI_REPL_PASSWORD="$(read_secret /run/secrets/patroni_repl_password)"
-export PATRONI_REWIND_PASSWORD="$(read_secret /run/secrets/patroni_rewind_password)"
+POSTGRES_SUPERUSER_PASSWORD="$(read_secret /run/secrets/postgres_superuser_password)"
+PATRONI_REPL_PASSWORD="$(read_secret /run/secrets/patroni_repl_password)"
+PATRONI_REWIND_PASSWORD="$(read_secret /run/secrets/patroni_rewind_password)"
+export POSTGRES_SUPERUSER_PASSWORD
+export PATRONI_REPL_PASSWORD
+export PATRONI_REWIND_PASSWORD
 
 python3 - <<'PY'
 import os
