@@ -200,13 +200,12 @@ class BridgeUnitTests(unittest.TestCase):
 
     def test_main_sets_credentials_and_runs_bridge(self):
         client = _FakeClient()
-        with patch.object(self.bridge, "MQTT_USERNAME", "user"), patch.object(
-            self.bridge, "MQTT_PASSWORD", "pass"
-        ), patch.object(
-            self.bridge.mqtt_client, "Client", return_value=client
-        ), patch.object(
-            self.bridge, "run_bridge"
-        ) as mock_run:
+        with (
+            patch.object(self.bridge, "MQTT_USERNAME", "user"),
+            patch.object(self.bridge, "MQTT_PASSWORD", "pass"),
+            patch.object(self.bridge.mqtt_client, "Client", return_value=client),
+            patch.object(self.bridge, "run_bridge") as mock_run,
+        ):
             self.bridge.main()
 
         self.assertEqual(client.username, "user")
@@ -216,11 +215,13 @@ class BridgeUnitTests(unittest.TestCase):
         mock_run.assert_called_once_with(client)
 
     def test_main_raises_when_mqtt_credentials_are_partial(self):
-        with patch.object(self.bridge, "MQTT_USERNAME", "user"), patch.object(
-            self.bridge, "MQTT_PASSWORD", None
-        ), pytest.raises(
-            ValueError,
-            match="MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled",
+        with (
+            patch.object(self.bridge, "MQTT_USERNAME", "user"),
+            patch.object(self.bridge, "MQTT_PASSWORD", None),
+            pytest.raises(
+                ValueError,
+                match="MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled",
+            ),
         ):
             self.bridge.main()
 
