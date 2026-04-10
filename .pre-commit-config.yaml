@@ -42,3 +42,9 @@ repos:
       - id: djlint-reformat
         args: ["--configuration", "pyproject.toml"]
         files: "\\.(html|jinja|j2|tmpl)$"
+
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.10.0
+    hooks:
+      -   id: pip-audit
+          args: ["-r", "requirements.txt"]
