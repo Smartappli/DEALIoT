@@ -17,12 +17,10 @@ jobs:
       issues: write
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.1.7
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - name: Run Renovate
-        run: |
-          npm install --global renovate
-          renovate --config-file renovate.json "${GITHUB_REPOSITORY}"
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v46.1.8
         env:
           LOG_LEVEL: info
           RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
