@@ -1097,7 +1097,7 @@ services:
         max-file: "3"
 
   seaweedfs-init:
-    image: amazon/aws-cli:2.34.35
+    image: amazon/aws-cli:2.34.36
     container_name: seaweedfs-init
     restart: "no"
     depends_on:
