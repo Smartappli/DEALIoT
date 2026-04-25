@@ -93,6 +93,29 @@ class MediaBackfillUnitTests(unittest.TestCase):
         with pytest.raises(ValueError, match="Use either"):
             self.module.resolve_window(args)
 
+    def test_resolve_window_rejects_partial_or_invalid_ranges(self):
+        partial = argparse.Namespace(
+            window_start="2026-01-01T00:00:00Z",
+            window_end=None,
+            since_minutes=None,
+        )
+        with pytest.raises(ValueError, match="must be set together"):
+            self.module.resolve_window(partial)
+
+        invalid_range = argparse.Namespace(
+            window_start="2026-01-01T01:00:00Z",
+            window_end="2026-01-01T01:00:00Z",
+            since_minutes=None,
+        )
+        with pytest.raises(ValueError, match="must be earlier"):
+            self.module.resolve_window(invalid_range)
+
+    def test_resolve_window_rejects_non_positive_since_minutes(self):
+        for value in (0, -1):
+            args = argparse.Namespace(window_start=None, window_end=None, since_minutes=value)
+            with pytest.raises(ValueError, match="positive integer"):
+                self.module.resolve_window(args)
+
     def test_iter_objects_between_filters_time_window(self):
         inside = dt.datetime(2026, 1, 1, 0, 10, tzinfo=dt.UTC)
         outside = dt.datetime(2026, 1, 1, 2, 0, tzinfo=dt.UTC)
