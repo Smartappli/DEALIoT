@@ -102,11 +102,21 @@ def build_record(obj: dict, media_kind: str) -> dict:
 
 
 def resolve_window(args: argparse.Namespace) -> tuple[datetime, datetime]:
-    if args.window_start and args.window_end:
-        return parse_iso8601(args.window_start), parse_iso8601(args.window_end)
+    if args.window_start or args.window_end:
+        if not (args.window_start and args.window_end):
+            raise ValueError(
+                "Both --window-start and --window-end must be set together.",
+            )
+        window_start = parse_iso8601(args.window_start)
+        window_end = parse_iso8601(args.window_end)
+        if window_start >= window_end:
+            raise ValueError("--window-start must be earlier than --window-end.")
+        return window_start, window_end
 
     if args.since_minutes is None:
         raise ValueError("Use either --window-start/--window-end or --since-minutes.")
+    if args.since_minutes <= 0:
+        raise ValueError("--since-minutes must be a positive integer.")
 
     window_end = datetime.now(UTC)
     window_start = window_end - timedelta(minutes=args.since_minutes)
