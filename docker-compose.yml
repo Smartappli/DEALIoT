@@ -1378,7 +1378,7 @@ services:
       - orchestration_net
 
   beam-jobserver:
-    image: apache/beam_flink_job_server:2.72.0-flink2.0
+    image: apache/beam_flink_job_server:2.73.0-flink2.0
     container_name: beam-jobserver
     hostname: beam-jobserver
     restart: unless-stopped
