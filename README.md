@@ -258,6 +258,18 @@ secrets/seaweedfs_s3_secret_key.txt
 secrets/seaweedfs_s3_access_key.txt
 secrets/patroni_repl_password.txt
 secrets/patroni_rewind_password.txt
+
+## 8. Quality checks and bug-fix workflow
+
+Before committing changes, run the local automated checks:
+
+```bash
+pytest -q
+```
+
+Recent reliability hardening:
+
+- The MQTT→Kafka bridge now logs asynchronous Kafka producer failures with the actual exception details, which makes transient broker/network issues diagnosable during operations.
 secrets/pgadmin_default_password.txt
 secrets/pgbouncer_ro_userlist.txt
 secrets/pgbouncer_rw_userlist.txt
