@@ -90,8 +90,8 @@ def on_send_success(record_metadata) -> None:
     )
 
 
-def on_send_error(_exc: KafkaError) -> None:
-    LOGGER.exception("Kafka send failed")
+def on_send_error(exc: KafkaError) -> None:
+    LOGGER.error("Kafka send failed: %s", exc)
 
 
 producer = KafkaProducer(
