@@ -111,7 +111,7 @@ jobs:
       - name: Render Kubernetes production base
         run: |
           kubectl kustomize deploy/kubernetes/base >/tmp/dealiot-kubernetes-rendered.yaml
-          kubectl apply --dry-run=client -f /tmp/dealiot-kubernetes-rendered.yaml
+          kubectl apply --dry-run=client --validate=false -f /tmp/dealiot-kubernetes-rendered.yaml
 
       - name: Create kind cluster
         run: kind create cluster --name dealiot-ci

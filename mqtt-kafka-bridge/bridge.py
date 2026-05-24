@@ -6,6 +6,7 @@ import os
 import time
 import uuid
 from json import JSONDecodeError
+from pathlib import Path
 from typing import Any
 
 from kafka import KafkaProducer
@@ -26,7 +27,7 @@ def env_or_secret_file(name: str) -> str | None:
     if not secret_file:
         return None
 
-    with open(secret_file, encoding="utf-8") as handle:
+    with Path(secret_file).open(encoding="utf-8") as handle:
         return handle.read().strip()
 
 
