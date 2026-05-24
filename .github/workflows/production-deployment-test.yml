@@ -111,6 +111,11 @@ jobs:
       - name: Create kind cluster
         run: kind create cluster --name dealiot-ci
 
+      - name: Prepare Kubernetes namespaces for server dry-runs
+        run: |
+          kubectl create namespace dealiot
+          kubectl create namespace dealiot-smoke
+
       - name: Render Kubernetes production base
         run: |
           kubectl kustomize deploy/kubernetes/base >/tmp/dealiot-kubernetes-rendered.yaml
