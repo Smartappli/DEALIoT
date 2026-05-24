@@ -153,6 +153,12 @@ class RepositoryUnitTests(unittest.TestCase):
         ]
         forbidden_fragments = [
             "change-me",
+            "replace-with",
+            "replace-me",
+            "ci-api-secret",
+            "ci-jwt-secret",
+            "ci-access-key",
+            "ci-fernet-key",
             "ci-mqtt-password",
             "ci-secret-key",
             "ci-airflow-admin-password",

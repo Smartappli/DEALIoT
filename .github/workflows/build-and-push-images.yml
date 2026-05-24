@@ -65,9 +65,6 @@ jobs:
           OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
           IMAGE="ghcr.io/${OWNER_LC}/dealiot-${{ matrix.image_name }}"
           TAGS=("--tag" "${IMAGE}:sha-${GITHUB_SHA}")
-          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
-            TAGS+=("--tag" "${IMAGE}:latest")
-          fi
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAGS+=("--tag" "${IMAGE}:${GITHUB_REF#refs/tags/}")
           fi

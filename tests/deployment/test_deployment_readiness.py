@@ -73,7 +73,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("kubectl kustomize deploy/kubernetes/overlays/production", workflow_text)
         self.assertIn("kubectl create namespace dealiot", workflow_text)
         self.assertIn("kubectl create namespace dealiot-smoke", workflow_text)
-        self.assertIn("Production overlay must not render mutable latest image tags", workflow_text)
+        self.assertIn(
+            "Production overlay must not render mutable or placeholder image tags",
+            workflow_text,
+        )
         self.assertIn("kind create cluster --name dealiot-ci", workflow_text)
         self.assertIn("kubectl apply -k deploy/kubernetes/overlays/ci-smoke", workflow_text)
 
@@ -338,7 +341,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         volumes = {volume["name"]: volume for volume in job["spec"]["template"]["spec"]["volumes"]}
 
         self.assertTrue(job["spec"]["suspend"])
-        self.assertEqual(container["image"], "ghcr.io/smartappli/dealiot-wildfi-decoder:latest")
+        self.assertEqual(
+            container["image"],
+            "ghcr.io/smartappli/dealiot-wildfi-decoder:local-placeholder",
+        )
         self.assertTrue(container["securityContext"]["readOnlyRootFilesystem"])
         self.assertIn("WILDFI_DECODER_MODE", env_names)
         self.assertIn("WILDFI_IMU_FREQUENCY", env_names)
@@ -358,6 +364,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("--provenance=true", workflow_text)
         self.assertIn("org.opencontainers.image.revision", workflow_text)
         self.assertIn("sha-${GITHUB_SHA}", workflow_text)
+        self.assertNotIn(':latest"', workflow_text)
         self.assertIn("image_name: wildfi-decoder", workflow_text)
         self.assertIn("WILDFI_DECODER_GIT_REF", workflow_text)
 
