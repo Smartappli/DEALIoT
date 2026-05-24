@@ -28,7 +28,7 @@ wait_for_topic_message() {
       --topic "$topic" \
       --from-beginning \
       --timeout-ms "$timeout_ms" \
-      --max-messages 20 | grep -F "$pattern"; then
+      --max-messages 200 | grep -F "$pattern"; then
     return 0
   fi
 
@@ -96,9 +96,9 @@ wait_for_topic_message "features.events" "e2e-sensor-001" 60000
 wait_for_topic_message "state.latest" "e2e-sensor-001" 60000
 
 echo "Checking Apicurio artifacts"
-compose exec -T apicurio-registry sh -lc \
-  'curl -fsS http://127.0.0.1:8080/apis/registry/v3/groups/platform/artifacts/dlq.events >/dev/null'
-compose exec -T apicurio-registry sh -lc \
-  'curl -fsS http://127.0.0.1:8080/apis/registry/v3/groups/telemetry/artifacts/raw.sensor >/dev/null'
+compose run --rm --entrypoint sh apicurio-init -lc \
+  'curl -fsS http://apicurio-registry:8080/apis/registry/v3/groups/platform/artifacts/dlq.events >/dev/null'
+compose run --rm --entrypoint sh apicurio-init -lc \
+  'curl -fsS http://apicurio-registry:8080/apis/registry/v3/groups/telemetry/artifacts/raw.sensor >/dev/null'
 
 echo "E2E smoke test passed"
