@@ -55,7 +55,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn("--topic state.latest", compose_text)
         self.assertIn(
-            "'topic' = '{env_or_default(\"STATE_TOPIC\", \"state.latest\")}'",
+            'env_or_default("STATE_TOPIC", "state.latest")',
             flink_text,
         )
         self.assertNotIn("state-latest", compose_text)
@@ -125,10 +125,16 @@ class RepositoryUnitTests(unittest.TestCase):
             "dlq.events",
             "features.events",
             "state.latest",
-            "compose run --rm flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh",
+            "smoke_run_id=",
+            "FLINK_CONSUMER_GROUP",
+            "wait_for_flink_job_running",
+            "dump_smoke_diagnostics",
+            "flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh",
             "apicurio-registry:8080",
         ]:
             self.assertIn(expected, script_text)
+        self.assertNotIn("e2e-sensor-001", script_text)
+        self.assertNotIn("e2e-camera-001", script_text)
 
     def test_wildfi_ingestion_is_configured(self) -> None:
         bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")

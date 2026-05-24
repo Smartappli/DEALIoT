@@ -13,6 +13,8 @@ from pyflink.datastream import (
 from pyflink.datastream.connectors.kafka import (
     KafkaOffsetResetStrategy,
     KafkaOffsetsInitializer,
+    KafkaRecordSerializationSchema,
+    KafkaSink,
     KafkaSource,
 )
 from pyflink.datastream.functions import (
@@ -21,20 +23,21 @@ from pyflink.datastream.functions import (
     RuntimeContext,
 )
 from pyflink.datastream.state import ValueStateDescriptor
-from pyflink.table import DataTypes, Schema, StreamTableEnvironment
+
+EVENT_FIELDS = (
+    "entity_id",
+    "event_ts",
+    "source_topic",
+    "mqtt_topic",
+    "event_kind",
+    "payload_b64",
+    "qos",
+    "retain",
+    "raw_json",
+)
 
 EVENT_TYPE = Types.ROW_NAMED(
-    [
-        "entity_id",
-        "event_ts",
-        "source_topic",
-        "mqtt_topic",
-        "event_kind",
-        "payload_b64",
-        "qos",
-        "retain",
-        "raw_json",
-    ],
+    list(EVENT_FIELDS),
     [
         Types.STRING(),
         Types.STRING(),
@@ -252,18 +255,32 @@ def build_topic_stream(
     )
 
 
-def build_table_schema() -> Schema:
+def event_to_json(row) -> str:
+    return json.dumps(
+        {field_name: row[index] for index, field_name in enumerate(EVENT_FIELDS)},
+        separators=(",", ":"),
+    )
+
+
+def build_kafka_sink(
+    bootstrap_servers: str,
+    topic_name: str,
+    *,
+    include_key: bool = False,
+):
+    serializer_builder = (
+        KafkaRecordSerializationSchema.builder()
+        .set_topic(topic_name)
+        .set_value_serialization_schema(SimpleStringSchema())
+    )
+    if include_key:
+        serializer_builder.set_key_serialization_schema(SimpleStringSchema())
+
     return (
-        Schema.new_builder()
-        .column("entity_id", DataTypes.STRING())
-        .column("event_ts", DataTypes.STRING())
-        .column("source_topic", DataTypes.STRING())
-        .column("mqtt_topic", DataTypes.STRING())
-        .column("event_kind", DataTypes.STRING())
-        .column("payload_b64", DataTypes.STRING())
-        .column("qos", DataTypes.INT())
-        .column("retain", DataTypes.BOOLEAN())
-        .column("raw_json", DataTypes.STRING())
+        KafkaSink.builder()
+        .set_bootstrap_servers(bootstrap_servers)
+        .set_record_serializer(serializer_builder.build())
+        .set_property("acks", "all")
         .build()
     )
 
@@ -294,8 +311,6 @@ def main():
         CheckpointingMode.EXACTLY_ONCE,
     )
 
-    t_env = StreamTableEnvironment.create(stream_execution_environment=env)
-
     topic_streams = [
         build_topic_stream(
             env=env,
@@ -323,99 +338,28 @@ def main():
         output_type=EVENT_TYPE,
     )
 
-    table_schema = build_table_schema()
-
-    features_table = t_env.from_data_stream(normalized, table_schema)
-    latest_table = t_env.from_data_stream(latest, table_schema)
-
-    t_env.create_temporary_view("features_view", features_table)
-    t_env.create_temporary_view("latest_view", latest_table)
-
-    t_env.execute_sql(
-        f"""
-        CREATE TABLE features_events_sink (
-          entity_id STRING,
-          event_ts STRING,
-          source_topic STRING,
-          mqtt_topic STRING,
-          event_kind STRING,
-          payload_b64 STRING,
-          qos INT,
-          retain BOOLEAN,
-          raw_json STRING
-        ) WITH (
-          'connector' = 'kafka',
-          'topic' = '{env_or_default("FEATURES_TOPIC", "features.events")}',
-          'properties.bootstrap.servers' = '{bootstrap_servers}',
-          'properties.acks' = 'all',
-          'format' = 'json',
-          'json.fail-on-missing-field' = 'false',
-          'json.ignore-parse-errors' = 'true'
+    normalized.map(
+        event_to_json,
+        output_type=Types.STRING(),
+    ).sink_to(
+        build_kafka_sink(
+            bootstrap_servers,
+            env_or_default("FEATURES_TOPIC", "features.events"),
         )
-        """
     )
 
-    t_env.execute_sql(
-        f"""
-        CREATE TABLE state_latest_sink (
-          entity_id STRING,
-          event_ts STRING,
-          source_topic STRING,
-          mqtt_topic STRING,
-          event_kind STRING,
-          payload_b64 STRING,
-          qos INT,
-          retain BOOLEAN,
-          raw_json STRING,
-          PRIMARY KEY (entity_id) NOT ENFORCED
-        ) WITH (
-          'connector' = 'upsert-kafka',
-          'topic' = '{env_or_default("STATE_TOPIC", "state.latest")}',
-          'properties.bootstrap.servers' = '{bootstrap_servers}',
-          'key.format' = 'json',
-          'value.format' = 'json',
-          'value.json.fail-on-missing-field' = 'false',
-          'value.json.ignore-parse-errors' = 'true'
+    latest.map(
+        event_to_json,
+        output_type=Types.STRING(),
+    ).sink_to(
+        build_kafka_sink(
+            bootstrap_servers,
+            env_or_default("STATE_TOPIC", "state.latest"),
+            include_key=True,
         )
-        """
     )
 
-    statement_set = t_env.create_statement_set()
-    statement_set.add_insert_sql(
-        """
-        INSERT INTO features_events_sink
-        SELECT
-          entity_id,
-          event_ts,
-          source_topic,
-          mqtt_topic,
-          event_kind,
-          payload_b64,
-          qos,
-          retain,
-          raw_json
-        FROM features_view
-        """
-    )
-
-    statement_set.add_insert_sql(
-        """
-        INSERT INTO state_latest_sink
-        SELECT
-          entity_id,
-          event_ts,
-          source_topic,
-          mqtt_topic,
-          event_kind,
-          payload_b64,
-          qos,
-          retain,
-          raw_json
-        FROM latest_view
-        """
-    )
-
-    statement_set.execute()
+    env.execute("DEALIoT streaming minimal")
 
 
 if __name__ == "__main__":

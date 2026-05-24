@@ -108,6 +108,64 @@ class _FakeKafkaSourceBuilder:
         return _FakeKafkaSource(dict(self.config))
 
 
+class _FakeKafkaRecordSerializationSchema:
+    def __init__(self, config):
+        self.config = config
+
+    @staticmethod
+    def builder():
+        return _FakeKafkaRecordSerializationSchemaBuilder()
+
+
+class _FakeKafkaRecordSerializationSchemaBuilder:
+    def __init__(self):
+        self.config: dict[str, Any] = {}
+
+    def set_topic(self, topic):
+        self.config["topic"] = topic
+        return self
+
+    def set_key_serialization_schema(self, schema):
+        self.config["key_schema"] = schema
+        return self
+
+    def set_value_serialization_schema(self, schema):
+        self.config["value_schema"] = schema
+        return self
+
+    def build(self):
+        return _FakeKafkaRecordSerializationSchema(dict(self.config))
+
+
+class _FakeKafkaSink:
+    def __init__(self, config):
+        self.config = config
+
+    @staticmethod
+    def builder():
+        return _FakeKafkaSinkBuilder()
+
+
+class _FakeKafkaSinkBuilder:
+    def __init__(self):
+        self.config: dict[str, Any] = {"properties": {}}
+
+    def set_bootstrap_servers(self, bootstrap_servers):
+        self.config["bootstrap_servers"] = bootstrap_servers
+        return self
+
+    def set_record_serializer(self, serializer):
+        self.config["serializer"] = serializer
+        return self
+
+    def set_property(self, key, value):
+        self.config["properties"][key] = value
+        return self
+
+    def build(self):
+        return _FakeKafkaSink(dict(self.config))
+
+
 class _FakeValueStateDescriptor:
     def __init__(self, name, type_info):
         self.name = name
@@ -142,6 +200,7 @@ class _FakeStream:
         self.name = name
         self.unions: list[Any] = []
         self.operations: list[Any] = []
+        self.sinks: list[Any] = []
 
     def map(self, mapper, output_type=None):
         self.operations.append(("map", mapper, output_type))
@@ -163,6 +222,11 @@ class _FakeStream:
         self.operations.append(("process", processor, output_type))
         return self
 
+    def sink_to(self, sink):
+        self.sinks.append(sink)
+        self.operations.append(("sink_to", sink))
+        return self
+
 
 class _FakeStreamExecutionEnvironment:
     latest: ClassVar[_FakeStreamExecutionEnvironment | None] = None
@@ -172,6 +236,7 @@ class _FakeStreamExecutionEnvironment:
         self.parallelism = None
         self.checkpointing = None
         self.sources: list[Any] = []
+        self.executions: list[str] = []
 
     @classmethod
     def get_execution_environment(cls):
@@ -192,6 +257,10 @@ class _FakeStreamExecutionEnvironment:
         self.sources.append((source, stream, watermark_strategy, source_name))
         return stream
 
+    def execute(self, job_name):
+        self.executions.append(job_name)
+        return "executed"
+
 
 class _FakeRuntimeExecutionMode:
     STREAMING = "STREAMING"
@@ -199,71 +268,6 @@ class _FakeRuntimeExecutionMode:
 
 class _FakeCheckpointingMode:
     EXACTLY_ONCE = "EXACTLY_ONCE"
-
-
-class _FakeSchemaBuilder:
-    def __init__(self):
-        self.columns: list[tuple[str, Any]] = []
-
-    def column(self, name, data_type):
-        self.columns.append((name, data_type))
-        return self
-
-    def build(self):
-        return tuple(self.columns)
-
-
-class _FakeSchema:
-    @staticmethod
-    def new_builder():
-        return _FakeSchemaBuilder()
-
-
-class _FakeDataTypes:
-    STRING = staticmethod(_type_string)
-    INT = staticmethod(_type_int)
-    BOOLEAN = staticmethod(_type_boolean)
-
-
-class _FakeStatementSet:
-    def __init__(self):
-        self.inserts: list[str] = []
-        self.executed = False
-
-    def add_insert_sql(self, sql):
-        self.inserts.append(sql)
-
-    def execute(self):
-        self.executed = True
-        return "executed"
-
-
-class _FakeTableEnvironment:
-    latest: ClassVar[_FakeTableEnvironment | None] = None
-
-    def __init__(self):
-        self.views: dict[str, Any] = {}
-        self.sql: list[str] = []
-        self.statement_set = _FakeStatementSet()
-        self.stream_execution_environment: Any | None = None
-
-    @classmethod
-    def create(cls, stream_execution_environment):
-        cls.latest = cls()
-        cls.latest.stream_execution_environment = stream_execution_environment
-        return cls.latest
-
-    def from_data_stream(self, stream, schema):
-        return {"stream": stream, "schema": schema}
-
-    def create_temporary_view(self, name, table):
-        self.views[name] = table
-
-    def execute_sql(self, sql):
-        self.sql.append(sql)
-
-    def create_statement_set(self):
-        return self.statement_set
 
 
 def _load_streaming_module():
@@ -276,7 +280,6 @@ def _load_streaming_module():
     fake_kafka = types.ModuleType("pyflink.datastream.connectors.kafka")
     fake_functions = types.ModuleType("pyflink.datastream.functions")
     fake_state = types.ModuleType("pyflink.datastream.state")
-    fake_table = types.ModuleType("pyflink.table")
 
     cast("Any", fake_common).Row = _fake_row
     cast("Any", fake_common).Types = _FakeTypes
@@ -287,14 +290,13 @@ def _load_streaming_module():
     cast("Any", fake_datastream).StreamExecutionEnvironment = _FakeStreamExecutionEnvironment
     cast("Any", fake_kafka).KafkaOffsetResetStrategy = _FakeKafkaOffsetResetStrategy
     cast("Any", fake_kafka).KafkaOffsetsInitializer = _FakeKafkaOffsetsInitializer
+    cast("Any", fake_kafka).KafkaRecordSerializationSchema = _FakeKafkaRecordSerializationSchema
+    cast("Any", fake_kafka).KafkaSink = _FakeKafkaSink
     cast("Any", fake_kafka).KafkaSource = _FakeKafkaSource
     cast("Any", fake_functions).FlatMapFunction = object
     cast("Any", fake_functions).KeyedProcessFunction = object
     cast("Any", fake_functions).RuntimeContext = object
     cast("Any", fake_state).ValueStateDescriptor = _FakeValueStateDescriptor
-    cast("Any", fake_table).DataTypes = _FakeDataTypes
-    cast("Any", fake_table).Schema = _FakeSchema
-    cast("Any", fake_table).StreamTableEnvironment = _FakeTableEnvironment
 
     with patch.dict(
         sys.modules,
@@ -308,7 +310,6 @@ def _load_streaming_module():
             "pyflink.datastream.connectors.kafka": fake_kafka,
             "pyflink.datastream.functions": fake_functions,
             "pyflink.datastream.state": fake_state,
-            "pyflink.table": fake_table,
         },
     ):
         spec = importlib.util.spec_from_file_location(
@@ -408,7 +409,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         assert runtime_context.descriptor is not None
         self.assertEqual(runtime_context.descriptor.name, "latest_event_ts")
 
-    def test_build_topic_stream_and_table_schema(self) -> None:
+    def test_build_topic_stream_and_kafka_sink(self) -> None:
         env = _FakeStreamExecutionEnvironment()
 
         stream = self.module.build_topic_stream(
@@ -429,21 +430,46 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         self.assertEqual(source_name, "Kafka Source raw.sensor")
         self.assertEqual(stream.operations[0][0], "map")
 
-        schema = self.module.build_table_schema()
-        column_names = [name for name, _data_type in schema]
+        sink = self.module.build_kafka_sink("kafka:9092", "features.events")
+        self.assertEqual(sink.config["bootstrap_servers"], "kafka:9092")
+        self.assertEqual(sink.config["properties"]["acks"], "all")
+        self.assertEqual(sink.config["serializer"].config["topic"], "features.events")
+        self.assertIn("value_schema", sink.config["serializer"].config)
+        self.assertNotIn("key_schema", sink.config["serializer"].config)
+
+        keyed_sink = self.module.build_kafka_sink(
+            "kafka:9092",
+            "state.latest",
+            include_key=True,
+        )
+        self.assertIn("key_schema", keyed_sink.config["serializer"].config)
+
+    def test_event_to_json_uses_contract_field_names(self) -> None:
+        row = (
+            "dev-1",
+            "2026-01-01T00:00:00+00:00",
+            "raw.sensor",
+            "devices/dev-1/sensor",
+            "sensor",
+            "",
+            1,
+            False,
+            '{"temperature_c":21.5}',
+        )
+
         self.assertEqual(
-            column_names,
-            [
-                "entity_id",
-                "event_ts",
-                "source_topic",
-                "mqtt_topic",
-                "event_kind",
-                "payload_b64",
-                "qos",
-                "retain",
-                "raw_json",
-            ],
+            json.loads(self.module.event_to_json(row)),
+            {
+                "entity_id": "dev-1",
+                "event_ts": "2026-01-01T00:00:00+00:00",
+                "source_topic": "raw.sensor",
+                "mqtt_topic": "devices/dev-1/sensor",
+                "event_kind": "sensor",
+                "payload_b64": "",
+                "qos": 1,
+                "retain": False,
+                "raw_json": '{"temperature_c":21.5}',
+            },
         )
 
     def test_main_configures_streaming_pipeline(self) -> None:
@@ -463,9 +489,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             self.module.main()
 
         env = _FakeStreamExecutionEnvironment.latest
-        table_env = _FakeTableEnvironment.latest
         assert env is not None
-        assert table_env is not None
 
         self.assertEqual(env.runtime_mode, "STREAMING")
         self.assertEqual(env.parallelism, 2)
@@ -474,12 +498,22 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             [source.config["topics"][0] for source, _stream, _watermark, _name in env.sources],
             ["raw.sensor", "raw.gps"],
         )
-        self.assertIn("features_view", table_env.views)
-        self.assertIn("latest_view", table_env.views)
-        self.assertTrue(any("features.custom" in sql for sql in table_env.sql))
-        self.assertTrue(any("state.custom" in sql for sql in table_env.sql))
-        self.assertEqual(len(table_env.statement_set.inserts), 2)
-        self.assertTrue(table_env.statement_set.executed)
+        raw_stream = env.sources[0][1]
+        self.assertTrue(
+            any(
+                operation[0] == "sink_to"
+                and operation[1].config["serializer"].config["topic"] == "features.custom"
+                for operation in raw_stream.operations
+            )
+        )
+        self.assertTrue(
+            any(
+                operation[0] == "sink_to"
+                and operation[1].config["serializer"].config["topic"] == "state.custom"
+                for operation in raw_stream.operations
+            )
+        )
+        self.assertEqual(env.executions, ["DEALIoT streaming minimal"])
 
 
 if __name__ == "__main__":
