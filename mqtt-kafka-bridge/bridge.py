@@ -16,10 +16,24 @@ from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_even
 
 LOGGER = logging.getLogger(__name__)
 
+
+def env_or_secret_file(name: str) -> str | None:
+    value = os.getenv(name)
+    if value:
+        return value
+
+    secret_file = os.getenv(f"{name}_FILE")
+    if not secret_file:
+        return None
+
+    with open(secret_file, encoding="utf-8") as handle:
+        return handle.read().strip()
+
+
 MQTT_HOST = os.getenv("MQTT_HOST", "vernemq1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME")
-MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
+MQTT_PASSWORD = env_or_secret_file("MQTT_PASSWORD")
 MQTT_TOPIC = os.getenv("MQTT_TOPIC", "$share/ingestors/devices/#")
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv(

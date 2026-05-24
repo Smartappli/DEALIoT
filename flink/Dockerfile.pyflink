@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 FROM apache/flink:2.0.0-scala_2.12-java17
 
 USER root
@@ -9,7 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
  && rm -rf /var/lib/apt/lists/*
 
-COPY ./flink/requirements-pyflink.txt /tmp/requirements-pyflink.txt
+COPY --chmod=0444 ./flink/requirements-pyflink.txt /tmp/requirements-pyflink.txt
+COPY --chown=flink:flink --chmod=0555 ./flink/jobs /opt/flink/usrlib
+COPY --chown=flink:flink --chmod=0555 ./pipelines /opt/pipelines
 
 RUN python3 --version \
  && python3 -m venv /opt/flink/venv \

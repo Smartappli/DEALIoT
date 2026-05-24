@@ -122,6 +122,31 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(self.bridge.derive_device_id("/"), "unknown")
         self.assertEqual(self.bridge.pick_key("/tenant/devices/cam-07/video"), b"cam-07")
 
+    def test_env_or_secret_file_prefers_environment_value(self):
+        with patch.dict(
+            self.bridge.os.environ,
+            {
+                "UNIT_SECRET": "from-env",
+                "UNIT_SECRET_FILE": "missing-file",
+            },
+            clear=False,
+        ):
+            self.assertEqual(self.bridge.env_or_secret_file("UNIT_SECRET"), "from-env")
+
+    def test_env_or_secret_file_reads_file_value(self):
+        secret_path = REPO_ROOT / "secrets" / "unit_bridge_secret.txt"
+        secret_path.parent.mkdir(exist_ok=True)
+        secret_path.write_text("from-file\n", encoding="utf-8")
+        try:
+            with patch.dict(
+                self.bridge.os.environ,
+                {"UNIT_SECRET_FILE": str(secret_path)},
+                clear=False,
+            ):
+                self.assertEqual(self.bridge.env_or_secret_file("UNIT_SECRET"), "from-file")
+        finally:
+            secret_path.unlink(missing_ok=True)
+
     def test_build_event_sensor_and_gps_and_media(self):
         sensor_msg = types.SimpleNamespace(
             topic="tenant/devices/sensor-1/sensor",
