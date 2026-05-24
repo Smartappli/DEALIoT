@@ -34,8 +34,14 @@ MQTT_TOPICS=$share/ingestors/devices/#,$share/ingestors/wildfi/#
 WILDFI_TOPIC_PREFIXES=wildfi,wild-fi
 ```
 
-`wildfi-decoder-config.yaml` documents the WildFi decoder conversion factors and expected MQTT
-topic mapping. Keep native WildFi binary logs in object storage or decode them before publication.
+`wildfi-decoder-config.yaml` documents the `wildlab/WildFiDecoder` conversion factors and expected
+MQTT topic mapping. `wildfi-decoder-job.yaml` defines a suspended offline decoding Job using
+`ghcr.io/smartappli/dealiot-wildfi-decoder`. Keep native WildFi binary logs in object storage or
+decode them before publication.
+
+Create a PVC named `wildfi-decoder-workdir` containing the `.bin` files before unsuspending a copied
+decoder Job. The default mode is `2`, which decodes WildFi hdLogger movement data; mode `1` targets
+proxLogger data and mode `3` decodes gateway metadata.
 
 ## Required Secret
 

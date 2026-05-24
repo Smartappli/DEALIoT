@@ -14,6 +14,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  WILDFI_DECODER_GIT_REF: b4002eb9a6111de140b95e5a35c3f3bd552d51be
 
 jobs:
   build-and-push:
@@ -43,6 +44,9 @@ jobs:
           - image_name: beam-python-harness
             context: ./beam
             dockerfile: ./beam/Dockerfile.python-harness
+          - image_name: wildfi-decoder
+            context: .
+            dockerfile: ./wildfi-decoder/Dockerfile
 
     steps:
       - name: Checkout
@@ -67,11 +71,16 @@ jobs:
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             TAGS+=("--tag" "${IMAGE}:${GITHUB_REF#refs/tags/}")
           fi
+          BUILD_ARGS=()
+          if [ "${{ matrix.image_name }}" = "wildfi-decoder" ]; then
+            BUILD_ARGS+=("--build-arg" "WILDFI_DECODER_GIT_REF=${WILDFI_DECODER_GIT_REF}")
+          fi
           docker buildx build \
             --push \
             --sbom=true \
             --provenance=true \
             "${TAGS[@]}" \
+            "${BUILD_ARGS[@]}" \
             --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
             --label "org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
             --file "${{ matrix.dockerfile }}" \

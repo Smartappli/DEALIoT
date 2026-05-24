@@ -32,13 +32,15 @@ target, but Kubernetes is where strict production controls are enforced first.
 
 ## WildFi Ingestion
 
-WildFi is integrated as an MQTT data source, using the upstream firmware/gateway/decoder project at
-`https://github.com/trichl/WildFiOpenSource`. DEALIoT subscribes to
-`$share/ingestors/wildfi/#`; decoded GPS messages are mapped to `raw.gps`, while decoded IMU,
-environment, proximity, movement, and metadata messages are mapped to `raw.sensor`.
+WildFi is integrated as an MQTT data source, using the upstream firmware/gateway project at
+`https://github.com/trichl/WildFiOpenSource` and the decoder project at
+`https://github.com/wildlab/WildFiDecoder`. DEALIoT subscribes to `$share/ingestors/wildfi/#`;
+decoded GPS messages are mapped to `raw.gps`, while decoded IMU, environment, proximity, movement,
+and metadata messages are mapped to `raw.sensor`.
 
-Native WildFi binary logs should be decoded before publication or stored as object artifacts with
-metadata. They should not become an implicit binary telemetry contract inside the bridge.
+Native WildFi binary logs should be decoded with the packaged `wildfi-decoder` image before
+publication or stored as object artifacts with metadata. They should not become an implicit binary
+telemetry contract inside the bridge.
 
 ## CI Gates
 

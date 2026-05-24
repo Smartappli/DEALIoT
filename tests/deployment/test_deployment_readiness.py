@@ -100,6 +100,12 @@ class DeploymentReadinessTests(unittest.TestCase):
             / "overlays"
             / "production"
             / "wildfi-decoder-config.yaml",
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "wildfi-decoder-job.yaml",
         ]
 
         for manifest_path in manifest_paths:
@@ -126,6 +132,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("network-policies.yaml", overlay["resources"])
         self.assertIn("external-dependency-contract.yaml", overlay["resources"])
         self.assertIn("wildfi-decoder-config.yaml", overlay["resources"])
+        self.assertIn("wildfi-decoder-job.yaml", overlay["resources"])
         self.assertEqual(
             overlay["configMapGenerator"],
             [
@@ -144,6 +151,7 @@ class DeploymentReadinessTests(unittest.TestCase):
                 "ghcr.io/smartappli/dealiot-mqtt-kafka-bridge": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-flink-pyflink": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-orchestration": "sha-REPLACE_WITH_RELEASE_SHA",
+                "ghcr.io/smartappli/dealiot-wildfi-decoder": "sha-REPLACE_WITH_RELEASE_SHA",
             },
         )
         self.assertNotIn("latest", set(image_tags.values()))
@@ -166,7 +174,11 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertEqual(runtime_config["MQTT_PORT"], "8883")
         self.assertIn("$share/ingestors/wildfi/#", runtime_config["MQTT_TOPICS"])
         self.assertEqual(
-            runtime_config["WILDFI_SOURCE_REPOSITORY"],
+            runtime_config["WILDFI_DECODER_REPOSITORY"],
+            "https://github.com/wildlab/WildFiDecoder",
+        )
+        self.assertEqual(
+            runtime_config["WILDFI_FIRMWARE_REPOSITORY"],
             "https://github.com/trichl/WildFiOpenSource",
         )
         self.assertEqual(runtime_config["WILDFI_TOPIC_PREFIXES"], "wildfi,wild-fi")
@@ -264,12 +276,44 @@ class DeploymentReadinessTests(unittest.TestCase):
         ingest_contract = contract["data"]["ingest-contract.yaml"]
         decoder_config = contract["data"]["WildFiDecoderConfig.txt"]
 
+        self.assertIn("https://github.com/wildlab/WildFiDecoder", ingest_contract)
         self.assertIn("https://github.com/trichl/WildFiOpenSource", ingest_contract)
+        self.assertIn("WildFiDecoderMultiThreaded", ingest_contract)
+        self.assertIn("b4002eb9a6111de140b95e5a35c3f3bd552d51be", ingest_contract)
         self.assertIn("$share/ingestors/wildfi/#", ingest_contract)
         self.assertIn("raw.gps", ingest_contract)
         self.assertIn("raw.sensor", ingest_contract)
         self.assertIn("native_binary_policy", ingest_contract)
+        self.assertIn("wildfi-decoder", ingest_contract)
         self.assertIn("0.00024414062", decoder_config)
+
+    def test_kubernetes_production_wildfi_decoder_job_is_manual_and_bounded(self) -> None:
+        job = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "overlays"
+                / "production"
+                / "wildfi-decoder-job.yaml"
+            ).read_text(encoding="utf-8")
+        )
+
+        container = job["spec"]["template"]["spec"]["containers"][0]
+        env_names = {item["name"] for item in container["env"]}
+        volumes = {volume["name"]: volume for volume in job["spec"]["template"]["spec"]["volumes"]}
+
+        self.assertTrue(job["spec"]["suspend"])
+        self.assertEqual(container["image"], "ghcr.io/smartappli/dealiot-wildfi-decoder:latest")
+        self.assertTrue(container["securityContext"]["readOnlyRootFilesystem"])
+        self.assertIn("WILDFI_DECODER_MODE", env_names)
+        self.assertIn("WILDFI_IMU_FREQUENCY", env_names)
+        self.assertIn("JAVA_TOOL_OPTIONS", env_names)
+        self.assertEqual(
+            volumes["workdir"]["persistentVolumeClaim"]["claimName"],
+            "wildfi-decoder-workdir",
+        )
+        self.assertEqual(volumes["tmp"]["emptyDir"], {})
 
     def test_image_build_workflow_publishes_supply_chain_metadata(self) -> None:
         workflow_text = (
@@ -280,6 +324,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("--provenance=true", workflow_text)
         self.assertIn("org.opencontainers.image.revision", workflow_text)
         self.assertIn("sha-${GITHUB_SHA}", workflow_text)
+        self.assertIn("image_name: wildfi-decoder", workflow_text)
+        self.assertIn("WILDFI_DECODER_GIT_REF", workflow_text)
 
     def test_production_images_package_runtime_code(self) -> None:
         orchestration_dockerfile = (REPO_ROOT / "orchestration" / "Dockerfile").read_text(

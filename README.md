@@ -204,6 +204,9 @@ Decoded WildFi GPS/GNSS/raw GPS payloads are routed to `raw.gps`. Decoded IMU, e
 proximity, movement, and metadata payloads are routed to `raw.sensor`. See
 `docs/runbooks/wildfi-ingestion.md` for the expected topic and payload contract.
 
+Native WildFi `.bin` logs are decoded with the packaged `wildfi-decoder` image, built from
+`https://github.com/wildlab/WildFiDecoder`, not inside the MQTT bridge.
+
 ## 6. Network zones
 
 - `ingest_net`: internal ingestion plane for MQTT and SeaweedFS producers.
