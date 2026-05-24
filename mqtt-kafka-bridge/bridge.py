@@ -40,6 +40,29 @@ WILDFI_SENSOR_MARKERS = {
     "sensor",
     "telemetry",
 }
+DEFAULT_SECRET_DIRECTORIES = (
+    Path("/run/secrets"),
+    Path("/var/run/dealiot-secrets"),
+    Path.cwd() / "secrets",
+)
+
+
+def _is_relative_to(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+    except ValueError:
+        return False
+    return True
+
+
+def allowed_secret_directories() -> tuple[Path, ...]:
+    configured = os.getenv("DEALIOT_SECRET_DIRECTORIES")
+    if not configured:
+        return tuple(path.resolve(strict=False) for path in DEFAULT_SECRET_DIRECTORIES)
+
+    return tuple(
+        Path(item).resolve(strict=False) for item in configured.split(os.pathsep) if item.strip()
+    )
 
 
 def env_or_secret_file(name: str) -> str | None:
@@ -51,7 +74,15 @@ def env_or_secret_file(name: str) -> str | None:
     if not secret_file:
         return None
 
-    with Path(secret_file).open(encoding="utf-8") as handle:
+    secret_path = Path(secret_file).resolve(strict=True)
+    is_allowed = any(
+        _is_relative_to(secret_path, directory) for directory in allowed_secret_directories()
+    )
+    if not is_allowed:
+        message = f"{name}_FILE must point to an allowed secret directory"
+        raise ValueError(message)
+
+    with secret_path.open(encoding="utf-8") as handle:
         return handle.read().strip()
 
 

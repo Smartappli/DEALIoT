@@ -162,6 +162,25 @@ class BridgeUnitTests(unittest.TestCase):
         finally:
             secret_path.unlink(missing_ok=True)
 
+    def test_env_or_secret_file_rejects_untrusted_file_path(self):
+        untrusted_secret = REPO_ROOT / "unit_bridge_untrusted_secret.txt"
+        untrusted_secret.write_text("from-file\n", encoding="utf-8")
+        try:
+            with (
+                patch.dict(
+                    self.bridge.os.environ,
+                    {"UNIT_SECRET_FILE": str(untrusted_secret)},
+                    clear=False,
+                ),
+                self.assertRaisesRegex(
+                    ValueError,
+                    "UNIT_SECRET_FILE must point to an allowed secret directory",
+                ),
+            ):
+                self.bridge.env_or_secret_file("UNIT_SECRET")
+        finally:
+            untrusted_secret.unlink(missing_ok=True)
+
     def test_build_event_sensor_and_gps_and_media(self):
         sensor_msg = types.SimpleNamespace(
             topic="tenant/devices/sensor-1/sensor",
