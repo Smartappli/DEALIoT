@@ -106,9 +106,7 @@ def kafka_offset_reset_strategy(value: str):
     if reset_strategy == "none":
         return KafkaOffsetResetStrategy.NONE
 
-    raise ValueError(
-        "KAFKA_AUTO_OFFSET_RESET must be one of: earliest, latest, none"
-    )
+    raise ValueError("KAFKA_AUTO_OFFSET_RESET must be one of: earliest, latest, none")
 
 
 def _parts(topic: str) -> tuple[list[str], list[str]]:
@@ -235,9 +233,7 @@ def build_topic_stream(
         .set_group_id(group_id)
         .set_starting_offsets(
             KafkaOffsetsInitializer.committed_offsets(
-                kafka_offset_reset_strategy(
-                    env_or_default("KAFKA_AUTO_OFFSET_RESET", "earliest")
-                )
+                kafka_offset_reset_strategy(env_or_default("KAFKA_AUTO_OFFSET_RESET", "earliest"))
             )
         )
         .set_value_only_deserializer(SimpleStringSchema())
