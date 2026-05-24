@@ -41,7 +41,9 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
 
     def test_ci_workflow_executes_test_layers(self) -> None:
-        workflow_text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        workflow_text = (REPO_ROOT / ".github" / "workflows" / "ci.yml").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("Unit test suite", workflow_text)
         self.assertIn("Integration test suite", workflow_text)
         self.assertIn("Deployment test suite", workflow_text)
@@ -53,7 +55,10 @@ class DeploymentReadinessTests(unittest.TestCase):
 
         self.assertIn("bash scripts/smoke-e2e.sh", workflow_text)
         self.assertIn("Dump compose logs on failure", workflow_text)
-        self.assertIn("docker compose -f docker-compose.yml -f docker-compose.dev.yml down", workflow_text)
+        self.assertIn(
+            "docker compose -f docker-compose.yml -f docker-compose.dev.yml down",
+            workflow_text,
+        )
 
 
 if __name__ == "__main__":
