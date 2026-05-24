@@ -4,12 +4,17 @@ from collections.abc import Iterable
 
 from pyflink.common import Row, Types
 from pyflink.common.serialization import SimpleStringSchema
+from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.datastream import (
     CheckpointingMode,
     RuntimeExecutionMode,
     StreamExecutionEnvironment,
 )
-from pyflink.datastream.connectors.kafka import FlinkKafkaConsumer
+from pyflink.datastream.connectors.kafka import (
+    KafkaOffsetResetStrategy,
+    KafkaOffsetsInitializer,
+    KafkaSource,
+)
 from pyflink.datastream.functions import (
     FlatMapFunction,
     KeyedProcessFunction,
@@ -90,6 +95,20 @@ def env_or_default(name: str, default: str) -> str:
     if value is None or not value.strip():
         return default
     return value.strip()
+
+
+def kafka_offset_reset_strategy(value: str):
+    reset_strategy = value.strip().lower()
+    if reset_strategy == "earliest":
+        return KafkaOffsetResetStrategy.EARLIEST
+    if reset_strategy == "latest":
+        return KafkaOffsetResetStrategy.LATEST
+    if reset_strategy == "none":
+        return KafkaOffsetResetStrategy.NONE
+
+    raise ValueError(
+        "KAFKA_AUTO_OFFSET_RESET must be one of: earliest, latest, none"
+    )
 
 
 def _parts(topic: str) -> tuple[list[str], list[str]]:
@@ -209,18 +228,29 @@ def build_topic_stream(
     group_id: str,
     topic_name: str,
 ):
-    consumer = FlinkKafkaConsumer(
-        topics=topic_name,
-        deserialization_schema=SimpleStringSchema(),
-        properties={
-            "bootstrap.servers": bootstrap_servers,
-            "group.id": group_id,
-            "auto.offset.reset": env_or_default("KAFKA_AUTO_OFFSET_RESET", "earliest"),
-            "enable.auto.commit": "false",
-        },
+    source = (
+        KafkaSource.builder()
+        .set_bootstrap_servers(bootstrap_servers)
+        .set_topics(topic_name)
+        .set_group_id(group_id)
+        .set_starting_offsets(
+            KafkaOffsetsInitializer.committed_offsets(
+                kafka_offset_reset_strategy(
+                    env_or_default("KAFKA_AUTO_OFFSET_RESET", "earliest")
+                )
+            )
+        )
+        .set_value_only_deserializer(SimpleStringSchema())
+        .set_property("enable.auto.commit", "false")
+        .set_property("commit.offsets.on.checkpoint", "true")
+        .build()
     )
 
-    return env.add_source(consumer).map(
+    return env.from_source(
+        source,
+        WatermarkStrategy.no_watermarks(),
+        f"Kafka Source {topic_name}",
+    ).map(
         lambda raw: (topic_name, raw),
         output_type=Types.TUPLE([Types.STRING(), Types.STRING()]),
     )
