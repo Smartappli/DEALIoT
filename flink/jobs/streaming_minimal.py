@@ -325,8 +325,8 @@ def main():
 
     table_schema = build_table_schema()
 
-    features_table = t_env.from_data_stream(normalized, schema=table_schema)
-    latest_table = t_env.from_data_stream(latest, schema=table_schema)
+    features_table = t_env.from_data_stream(normalized, table_schema)
+    latest_table = t_env.from_data_stream(latest, table_schema)
 
     t_env.create_temporary_view("features_view", features_table)
     t_env.create_temporary_view("latest_view", latest_table)
