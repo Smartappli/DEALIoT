@@ -44,8 +44,7 @@ EVENT_TYPE = Types.ROW_NAMED(
 )
 
 DEFAULT_SOURCE_TOPICS = (
-    "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,"
-    "raw.video2d.meta,raw.video3d.meta"
+    "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,raw.video2d.meta,raw.video3d.meta"
 )
 
 

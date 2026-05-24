@@ -8,10 +8,11 @@ import uuid
 from json import JSONDecodeError
 from typing import Any
 
-from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 from paho.mqtt import client as mqtt_client
+
+from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
 
 LOGGER = logging.getLogger(__name__)
 
