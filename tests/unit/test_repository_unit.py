@@ -24,6 +24,8 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
+            REPO_ROOT / "wildfi-decoder" / "Dockerfile",
+            REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
         ]
 
         for file_path in required_files:
@@ -125,9 +127,22 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn("$share/ingestors/wildfi/#", compose_text)
         self.assertIn("WILDFI_TOPIC_PREFIXES", bridge_source)
+        self.assertIn("WildFiDecoder", runbook_text)
         self.assertIn("WildFiOpenSource", runbook_text)
         self.assertIn("raw.gps", runbook_text)
         self.assertIn("raw.sensor", runbook_text)
+
+    def test_wildfi_decoder_image_is_pinned_and_wrapped_for_batch_decoding(self) -> None:
+        dockerfile = (REPO_ROOT / "wildfi-decoder" / "Dockerfile").read_text(encoding="utf-8")
+        wrapper = (REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("https://github.com/wildlab/WildFiDecoder.git", dockerfile)
+        self.assertIn("b4002eb9a6111de140b95e5a35c3f3bd552d51be", dockerfile)
+        self.assertIn("WildFiDecoderStandalone.jar", dockerfile)
+        self.assertIn("WILDFI_DECODER_RAW_INPUT", wrapper)
+        self.assertIn("WILDFI_DECODER_MODE", wrapper)
 
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [

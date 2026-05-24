@@ -8,6 +8,7 @@ resources:
   - network-policies.yaml
   - external-dependency-contract.yaml
   - wildfi-decoder-config.yaml
+  - wildfi-decoder-job.yaml
 
 configMapGenerator:
   - name: dealiot-runtime-config
@@ -24,6 +25,8 @@ images:
   - name: ghcr.io/smartappli/dealiot-flink-pyflink
     newTag: sha-REPLACE_WITH_RELEASE_SHA
   - name: ghcr.io/smartappli/dealiot-orchestration
+    newTag: sha-REPLACE_WITH_RELEASE_SHA
+  - name: ghcr.io/smartappli/dealiot-wildfi-decoder
     newTag: sha-REPLACE_WITH_RELEASE_SHA
 
 replicas:
