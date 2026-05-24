@@ -864,21 +864,27 @@ services:
         echo "Testing postgres login..."
         psql -h haproxy -p 5432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "SELECT current_user;"
 
-        if ! psql -h haproxy -p 5432 -U postgres -d postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='seaweedfs_filer'" | grep -q 1; then
-          psql -h haproxy -p 5432 -U postgres -d postgres -v ON_ERROR_STOP=1 \
-            -c "CREATE ROLE seaweedfs_filer LOGIN PASSWORD '$$SEAWEEDFS_PG_PASSWORD';"
-        else
-          echo "Role seaweedfs_filer already exists."
-        fi
+        psql -h haproxy -p 5432 -U postgres -d postgres \
+          -v ON_ERROR_STOP=1 \
+          -v seaweedfs_pg_password="$$SEAWEEDFS_PG_PASSWORD" <<'SQL'
+        SELECT format(
+          'CREATE ROLE seaweedfs_filer WITH LOGIN PASSWORD %L',
+          :'seaweedfs_pg_password'
+        )
+        WHERE NOT EXISTS (
+          SELECT 1 FROM pg_roles WHERE rolname = 'seaweedfs_filer'
+        ) \gexec
 
-        if ! psql -h haproxy -p 5432 -U postgres -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='seaweedfs'" | grep -q 1; then
-          psql -h haproxy -p 5432 -U postgres -d postgres -v ON_ERROR_STOP=1 \
-            -c "CREATE DATABASE seaweedfs OWNER seaweedfs_filer;"
-        else
-          echo "Database seaweedfs already exists."
-        fi
+        SELECT format(
+          'ALTER ROLE seaweedfs_filer WITH LOGIN PASSWORD %L',
+          :'seaweedfs_pg_password'
+        ) \gexec
 
-        psql -h haproxy -p 5432 -U postgres -d seaweedfs -v ON_ERROR_STOP=1 <<'SQL'
+        SELECT 'CREATE DATABASE seaweedfs OWNER seaweedfs_filer'
+        WHERE NOT EXISTS (
+          SELECT 1 FROM pg_database WHERE datname = 'seaweedfs'
+        ) \gexec
+
         ALTER DATABASE seaweedfs OWNER TO seaweedfs_filer;
         GRANT ALL PRIVILEGES ON DATABASE seaweedfs TO seaweedfs_filer;
         SQL
