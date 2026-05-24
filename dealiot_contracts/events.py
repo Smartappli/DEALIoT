@@ -5,6 +5,12 @@ from typing import Any
 
 DLQ_TOPIC = "dlq.events"
 STATE_LATEST_TOPIC = "state.latest"
+RAW_SENSOR_TOPIC = "raw.sensor"
+RAW_GPS_TOPIC = "raw.gps"
+RAW_IMAGE2D_META_TOPIC = "raw.image2d.meta"
+RAW_IMAGE3D_META_TOPIC = "raw.image3d.meta"
+RAW_VIDEO2D_META_TOPIC = "raw.video2d.meta"
+RAW_VIDEO3D_META_TOPIC = "raw.video3d.meta"
 LATITUDE_MIN = -90
 LATITUDE_MAX = 90
 LONGITUDE_MIN = -180
@@ -13,23 +19,51 @@ HEADING_MIN = 0
 HEADING_MAX = 360
 
 MEDIA_TOPICS = {
-    "raw.image2d.meta",
-    "raw.image3d.meta",
-    "raw.video2d.meta",
-    "raw.video3d.meta",
+    RAW_IMAGE2D_META_TOPIC,
+    RAW_IMAGE3D_META_TOPIC,
+    RAW_VIDEO2D_META_TOPIC,
+    RAW_VIDEO3D_META_TOPIC,
 }
 
 REQUIRED_FIELDS: dict[str, set[str]] = {
-    "raw.sensor": {"device_id", "timestamp", "payload"},
-    "raw.gps": {"device_id", "timestamp", "latitude", "longitude"},
-    "raw.image2d.meta": {"device_id", "timestamp", "bucket", "object_key", "object_uri", "format"},
-    "raw.image3d.meta": {"device_id", "timestamp", "bucket", "object_key", "object_uri", "format"},
-    "raw.video2d.meta": {"device_id", "timestamp", "bucket", "object_key", "object_uri", "format"},
-    "raw.video3d.meta": {"device_id", "timestamp", "bucket", "object_key", "object_uri", "format"},
+    RAW_SENSOR_TOPIC: {"device_id", "timestamp", "payload"},
+    RAW_GPS_TOPIC: {"device_id", "timestamp", "latitude", "longitude"},
+    RAW_IMAGE2D_META_TOPIC: {
+        "device_id",
+        "timestamp",
+        "bucket",
+        "object_key",
+        "object_uri",
+        "format",
+    },
+    RAW_IMAGE3D_META_TOPIC: {
+        "device_id",
+        "timestamp",
+        "bucket",
+        "object_key",
+        "object_uri",
+        "format",
+    },
+    RAW_VIDEO2D_META_TOPIC: {
+        "device_id",
+        "timestamp",
+        "bucket",
+        "object_key",
+        "object_uri",
+        "format",
+    },
+    RAW_VIDEO3D_META_TOPIC: {
+        "device_id",
+        "timestamp",
+        "bucket",
+        "object_key",
+        "object_uri",
+        "format",
+    },
 }
 
 MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
-    "raw.image2d.meta": {
+    RAW_IMAGE2D_META_TOPIC: {
         "bucket",
         "camera_id",
         "checksum",
@@ -49,7 +83,7 @@ MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
         "timestamp",
         "width",
     },
-    "raw.image3d.meta": {
+    RAW_IMAGE3D_META_TOPIC: {
         "bucket",
         "capture_type",
         "checksum",
@@ -70,7 +104,7 @@ MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
         "tags",
         "timestamp",
     },
-    "raw.video2d.meta": {
+    RAW_VIDEO2D_META_TOPIC: {
         "bucket",
         "camera_id",
         "checksum",
@@ -94,7 +128,7 @@ MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
         "timestamp",
         "width",
     },
-    "raw.video3d.meta": {
+    RAW_VIDEO3D_META_TOPIC: {
         "bucket",
         "checksum",
         "codec",

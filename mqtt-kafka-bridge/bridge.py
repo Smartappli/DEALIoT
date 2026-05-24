@@ -14,11 +14,20 @@ from kafka import KafkaProducer
 from kafka.errors import KafkaError
 from paho.mqtt import client as mqtt_client
 
-from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
+from dealiot_contracts import (
+    DLQ_TOPIC,
+    RAW_GPS_TOPIC,
+    RAW_IMAGE2D_META_TOPIC,
+    RAW_IMAGE3D_META_TOPIC,
+    RAW_SENSOR_TOPIC,
+    RAW_VIDEO2D_META_TOPIC,
+    RAW_VIDEO3D_META_TOPIC,
+    build_dlq_event,
+    now_iso,
+    validate_event,
+)
 
 LOGGER = logging.getLogger(__name__)
-RAW_SENSOR_TOPIC = "raw.sensor"
-RAW_GPS_TOPIC = "raw.gps"
 DEFAULT_MQTT_TOPICS = "$share/ingestors/devices/#,$share/ingestors/wildfi/#"
 UNIX_MILLISECONDS_THRESHOLD = 10_000_000_000
 WILDFI_TOPIC_MARKERS = {"wildfi", "wild-fi"}
@@ -40,6 +49,13 @@ WILDFI_SENSOR_MARKERS = {
     "sensor",
     "telemetry",
 }
+TOPIC_PATTERNS = (
+    (RAW_GPS_TOPIC, ("gps", "/gnss/", "rawgps")),
+    (RAW_VIDEO3D_META_TOPIC, ("video3d", "/stereo-video/", "/volumetric-video/")),
+    (RAW_VIDEO2D_META_TOPIC, ("video2d", "/video/", "/camera-stream/")),
+    (RAW_IMAGE2D_META_TOPIC, ("image2d", "/camera/", "/image/")),
+    (RAW_IMAGE3D_META_TOPIC, ("image3d", "/lidar/", "/pointcloud/")),
+)
 DEFAULT_SECRET_DIRECTORIES = (
     Path("/run/secrets"),
     Path("/var/run/dealiot-secrets"),
@@ -152,24 +168,16 @@ def pick_event_timestamp(decoded: Any, fallback: str) -> str:
 def pick_kafka_topic(topic: str) -> str:
     lowered = topic.lower()
 
-    if "gps" in lowered or "/gnss/" in lowered or "rawgps" in lowered:
-        kafka_topic = RAW_GPS_TOPIC
-    elif "video3d" in lowered or "/stereo-video/" in lowered or "/volumetric-video/" in lowered:
-        kafka_topic = "raw.video3d.meta"
-    elif "video2d" in lowered or "/video/" in lowered or "/camera-stream/" in lowered:
-        kafka_topic = "raw.video2d.meta"
-    elif "image2d" in lowered or "/camera/" in lowered or "/image/" in lowered:
-        kafka_topic = "raw.image2d.meta"
-    elif "image3d" in lowered or "/lidar/" in lowered or "/pointcloud/" in lowered:
-        kafka_topic = "raw.image3d.meta"
-    elif "sensor" in lowered or (
+    for kafka_topic, patterns in TOPIC_PATTERNS:
+        if any(pattern in lowered for pattern in patterns):
+            return kafka_topic
+
+    if "sensor" in lowered or (
         is_wildfi_topic(topic) and any(marker in lowered for marker in WILDFI_SENSOR_MARKERS)
     ):
-        kafka_topic = RAW_SENSOR_TOPIC
-    else:
-        kafka_topic = DEFAULT_KAFKA_TOPIC
+        return RAW_SENSOR_TOPIC
 
-    return kafka_topic
+    return DEFAULT_KAFKA_TOPIC
 
 
 def derive_device_id(topic: str) -> str:
