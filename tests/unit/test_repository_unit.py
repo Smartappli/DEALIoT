@@ -131,6 +131,13 @@ class RepositoryUnitTests(unittest.TestCase):
             "dump_smoke_diagnostics",
             "flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh",
             "apicurio-registry:8080",
+            "require_command timeout",
+            "compose_with_timeout",
+            "SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS",
+            "SMOKE_MQTT_PUBLISH_TIMEOUT_SECONDS",
+            "wait_for_publish(timeout=publish_timeout)",
+            "grep -F -m 1",
+            "cancel --jobmanager flink-jobmanager:8081",
         ]:
             self.assertIn(expected, script_text)
         self.assertNotIn("e2e-sensor-001", script_text)
