@@ -21,6 +21,7 @@ bash scripts/smoke-e2e.sh
 The E2E smoke test must prove:
 
 - MQTT valid telemetry reaches `raw.sensor`
+- WildFi decoded telemetry reaches `raw.sensor` or `raw.gps`
 - invalid media metadata reaches `dlq.events`
 - Flink emits `features.events`
 - Flink updates `state.latest`

@@ -279,6 +279,8 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             self.assertEqual(self.module.env_or_default("SOME_VALUE", "fallback"), "fallback")
 
         self.assertEqual(self.module.infer_entity_id("/tenant/devices/device-1/sensor"), "device-1")
+        self.assertEqual(self.module.infer_entity_id("wildfi/tags/WF-001/gps"), "WF-001")
+        self.assertEqual(self.module.infer_entity_id("wildfi/WF-002/environment"), "WF-002")
         self.assertEqual(self.module.infer_entity_id("orphan-topic"), "orphan-topic")
         self.assertEqual(self.module.infer_entity_id("/"), "unknown")
 
@@ -303,8 +305,9 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         normalizer = self.module.NormalizeEvent()
         raw = json.dumps(
             {
+                "device_id": "dev-1",
                 "timestamp": "2026-01-01T00:00:00+00:00",
-                "mqtt_topic": "tenant/devices/dev-1/gnss/fix",
+                "mqtt_topic": "wildfi/tags/ignored/gnss/fix",
                 "payload_b64": "abc",
                 "qos": "1",
                 "retain": True,
@@ -320,7 +323,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
                     "dev-1",
                     "2026-01-01T00:00:00+00:00",
                     "raw.gps",
-                    "tenant/devices/dev-1/gnss/fix",
+                    "wildfi/tags/ignored/gnss/fix",
                     "gps",
                     "abc",
                     1,

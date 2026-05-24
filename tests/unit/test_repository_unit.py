@@ -20,6 +20,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "operations.md",
             REPO_ROOT / "docs" / "runbooks" / "backup-restore.md",
             REPO_ROOT / "docs" / "runbooks" / "security-hardening.md",
+            REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
@@ -114,6 +115,19 @@ class RepositoryUnitTests(unittest.TestCase):
             "apicurio-registry:8080",
         ]:
             self.assertIn(expected, script_text)
+
+    def test_wildfi_ingestion_is_configured(self) -> None:
+        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+        runbook_text = (REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("$share/ingestors/wildfi/#", compose_text)
+        self.assertIn("WILDFI_TOPIC_PREFIXES", bridge_source)
+        self.assertIn("WildFiOpenSource", runbook_text)
+        self.assertIn("raw.gps", runbook_text)
+        self.assertIn("raw.sensor", runbook_text)
 
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [

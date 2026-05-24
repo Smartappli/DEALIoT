@@ -64,6 +64,26 @@ MQTT_EVENT_KIND_PATTERNS = (
     ("image2d", ("image2d", "/camera/", "/image/")),
 )
 
+WILDFI_TOPIC_MARKERS = {"wildfi", "wild-fi"}
+WILDFI_TAG_MARKERS = {"devices", "tag", "tags"}
+WILDFI_SENSOR_MARKERS = {
+    "acc",
+    "accelerometer",
+    "bme",
+    "decoded",
+    "environment",
+    "gateway",
+    "imu",
+    "mag",
+    "metadata",
+    "move",
+    "movement",
+    "prox",
+    "proximity",
+    "sensor",
+    "telemetry",
+}
+
 
 def env_or_default(name: str, default: str) -> str:
     value = os.getenv(name)
@@ -74,11 +94,22 @@ def env_or_default(name: str, default: str) -> str:
 
 def infer_entity_id(mqtt_topic: str) -> str:
     parts = [part for part in mqtt_topic.split("/") if part]
+    lowered_parts = [part.lower() for part in parts]
 
-    if "devices" in parts:
-        idx = parts.index("devices")
-        if idx + 1 < len(parts):
-            return parts[idx + 1]
+    for marker in WILDFI_TAG_MARKERS:
+        if marker in lowered_parts:
+            idx = lowered_parts.index(marker)
+            if idx + 1 < len(parts):
+                return parts[idx + 1]
+
+    for marker in WILDFI_TOPIC_MARKERS:
+        if marker in lowered_parts:
+            idx = lowered_parts.index(marker)
+            next_idx = idx + 1
+            if next_idx < len(parts) and lowered_parts[next_idx] not in WILDFI_SENSOR_MARKERS:
+                return parts[next_idx]
+            if next_idx + 1 < len(parts):
+                return parts[next_idx + 1]
 
     if parts:
         return parts[-1]
@@ -110,7 +141,7 @@ class NormalizeEvent(FlatMapFunction):
             return []
 
         mqtt_topic = str(record.get("mqtt_topic", ""))
-        entity_id = infer_entity_id(mqtt_topic)
+        entity_id = str(record.get("device_id") or infer_entity_id(mqtt_topic))
         event_ts = str(record.get("timestamp") or record.get("ingested_at") or "")
         event_kind = infer_event_kind(source_topic, mqtt_topic)
 

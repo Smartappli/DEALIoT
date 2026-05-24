@@ -94,6 +94,12 @@ class DeploymentReadinessTests(unittest.TestCase):
             / "overlays"
             / "production"
             / "external-dependency-contract.yaml",
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "wildfi-decoder-config.yaml",
         ]
 
         for manifest_path in manifest_paths:
@@ -119,6 +125,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertEqual(overlay["namespace"], "dealiot")
         self.assertIn("network-policies.yaml", overlay["resources"])
         self.assertIn("external-dependency-contract.yaml", overlay["resources"])
+        self.assertIn("wildfi-decoder-config.yaml", overlay["resources"])
         self.assertEqual(
             overlay["configMapGenerator"],
             [
@@ -157,6 +164,12 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
 
         self.assertEqual(runtime_config["MQTT_PORT"], "8883")
+        self.assertIn("$share/ingestors/wildfi/#", runtime_config["MQTT_TOPICS"])
+        self.assertEqual(
+            runtime_config["WILDFI_SOURCE_REPOSITORY"],
+            "https://github.com/trichl/WildFiOpenSource",
+        )
+        self.assertEqual(runtime_config["WILDFI_TOPIC_PREFIXES"], "wildfi,wild-fi")
         self.assertEqual(runtime_config["MQTT_USERNAME"], "dealiot_ingestor")
         self.assertGreaterEqual(len(runtime_config["KAFKA_BOOTSTRAP_SERVERS"].split(",")), 3)
         self.assertNotIn("mqtt-broker.ingest.svc.cluster.local", config_text)
@@ -236,6 +249,27 @@ class DeploymentReadinessTests(unittest.TestCase):
             "AIRFLOW__API__SECRET_KEY",
         ):
             self.assertIn(required_secret, contract_text)
+
+    def test_kubernetes_production_wildfi_contract_is_explicit(self) -> None:
+        contract = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "overlays"
+                / "production"
+                / "wildfi-decoder-config.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        ingest_contract = contract["data"]["ingest-contract.yaml"]
+        decoder_config = contract["data"]["WildFiDecoderConfig.txt"]
+
+        self.assertIn("https://github.com/trichl/WildFiOpenSource", ingest_contract)
+        self.assertIn("$share/ingestors/wildfi/#", ingest_contract)
+        self.assertIn("raw.gps", ingest_contract)
+        self.assertIn("raw.sensor", ingest_contract)
+        self.assertIn("native_binary_policy", ingest_contract)
+        self.assertIn("0.00024414062", decoder_config)
 
     def test_image_build_workflow_publishes_supply_chain_metadata(self) -> None:
         workflow_text = (

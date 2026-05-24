@@ -27,6 +27,16 @@ This overlay replaces the base `dealiot-runtime-config` ConfigMap with
 Before deployment, copy or patch that file through a site-specific overlay or GitOps tooling with
 your private Kafka, MQTT, S3, PostgreSQL, and Redis endpoints.
 
+The production runtime config subscribes to both generic device telemetry and WildFi telemetry:
+
+```text
+MQTT_TOPICS=$share/ingestors/devices/#,$share/ingestors/wildfi/#
+WILDFI_TOPIC_PREFIXES=wildfi,wild-fi
+```
+
+`wildfi-decoder-config.yaml` documents the WildFi decoder conversion factors and expected MQTT
+topic mapping. Keep native WildFi binary logs in object storage or decode them before publication.
+
 ## Required Secret
 
 Create `dealiot-secrets` with all keys listed in

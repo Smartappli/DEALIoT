@@ -5,6 +5,7 @@ import logging
 import os
 import time
 import uuid
+from datetime import UTC, datetime
 from json import JSONDecodeError
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,28 @@ from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_even
 
 LOGGER = logging.getLogger(__name__)
 RAW_SENSOR_TOPIC = "raw.sensor"
+RAW_GPS_TOPIC = "raw.gps"
+DEFAULT_MQTT_TOPICS = "$share/ingestors/devices/#,$share/ingestors/wildfi/#"
+UNIX_MILLISECONDS_THRESHOLD = 10_000_000_000
+WILDFI_TOPIC_MARKERS = {"wildfi", "wild-fi"}
+WILDFI_TAG_MARKERS = {"tags", "tag", "devices"}
+WILDFI_SENSOR_MARKERS = {
+    "acc",
+    "accelerometer",
+    "bme",
+    "decoded",
+    "environment",
+    "gateway",
+    "imu",
+    "mag",
+    "metadata",
+    "move",
+    "movement",
+    "prox",
+    "proximity",
+    "sensor",
+    "telemetry",
+}
 
 
 def env_or_secret_file(name: str) -> str | None:
@@ -32,11 +55,25 @@ def env_or_secret_file(name: str) -> str | None:
         return handle.read().strip()
 
 
+def csv_env_or_default(name: str, default: str) -> tuple[str, ...]:
+    value = os.getenv(name, default)
+    topics = tuple(item.strip() for item in value.split(",") if item.strip())
+    if not topics:
+        return tuple(item.strip() for item in default.split(",") if item.strip())
+    return topics
+
+
 MQTT_HOST = os.getenv("MQTT_HOST", "vernemq1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME")
 MQTT_PASSWORD = env_or_secret_file("MQTT_PASSWORD")
-MQTT_TOPIC = os.getenv("MQTT_TOPIC", "$share/ingestors/devices/#")
+legacy_mqtt_topic = os.getenv("MQTT_TOPIC")
+MQTT_TOPICS_DEFAULT = (
+    legacy_mqtt_topic if legacy_mqtt_topic and legacy_mqtt_topic.strip() else DEFAULT_MQTT_TOPICS
+)
+MQTT_TOPICS = csv_env_or_default("MQTT_TOPICS", MQTT_TOPICS_DEFAULT)
+MQTT_TOPIC = MQTT_TOPICS[0]
+WILDFI_TOPIC_PREFIXES = csv_env_or_default("WILDFI_TOPIC_PREFIXES", "wildfi,wild-fi")
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv(
     "KAFKA_BOOTSTRAP_SERVERS",
@@ -55,11 +92,37 @@ def decode_payload(payload: bytes) -> Any:
         }
 
 
+def is_wildfi_topic(topic: str) -> bool:
+    parts = {part.lower() for part in topic.split("/") if part}
+    prefixes = {prefix.lower() for prefix in WILDFI_TOPIC_PREFIXES}
+    return bool(parts & (WILDFI_TOPIC_MARKERS | prefixes))
+
+
+def normalized_timestamp(value: Any, fallback: str) -> str:
+    if value in (None, ""):
+        return fallback
+    if isinstance(value, int | float):
+        seconds = value / 1000 if value > UNIX_MILLISECONDS_THRESHOLD else value
+        return datetime.fromtimestamp(seconds, UTC).isoformat()
+    return str(value)
+
+
+def pick_event_timestamp(decoded: Any, fallback: str) -> str:
+    if not isinstance(decoded, dict):
+        return fallback
+
+    for field in ("timestamp", "utcTimestamp", "utc_timestamp", "time"):
+        if field in decoded:
+            return normalized_timestamp(decoded[field], fallback)
+
+    return fallback
+
+
 def pick_kafka_topic(topic: str) -> str:
     lowered = topic.lower()
 
-    if "gps" in lowered or "/gnss/" in lowered:
-        kafka_topic = "raw.gps"
+    if "gps" in lowered or "/gnss/" in lowered or "rawgps" in lowered:
+        kafka_topic = RAW_GPS_TOPIC
     elif "video3d" in lowered or "/stereo-video/" in lowered or "/volumetric-video/" in lowered:
         kafka_topic = "raw.video3d.meta"
     elif "video2d" in lowered or "/video/" in lowered or "/camera-stream/" in lowered:
@@ -68,7 +131,9 @@ def pick_kafka_topic(topic: str) -> str:
         kafka_topic = "raw.image2d.meta"
     elif "image3d" in lowered or "/lidar/" in lowered or "/pointcloud/" in lowered:
         kafka_topic = "raw.image3d.meta"
-    elif "sensor" in lowered:
+    elif "sensor" in lowered or (
+        is_wildfi_topic(topic) and any(marker in lowered for marker in WILDFI_SENSOR_MARKERS)
+    ):
         kafka_topic = RAW_SENSOR_TOPIC
     else:
         kafka_topic = DEFAULT_KAFKA_TOPIC
@@ -78,11 +143,22 @@ def pick_kafka_topic(topic: str) -> str:
 
 def derive_device_id(topic: str) -> str:
     parts = [part for part in topic.split("/") if part]
+    lowered_parts = [part.lower() for part in parts]
 
-    if "devices" in parts:
-        idx = parts.index("devices")
-        if idx + 1 < len(parts):
-            return parts[idx + 1]
+    for marker in WILDFI_TAG_MARKERS:
+        if marker in lowered_parts:
+            idx = lowered_parts.index(marker)
+            if idx + 1 < len(parts):
+                return parts[idx + 1]
+
+    for marker in WILDFI_TOPIC_MARKERS | {prefix.lower() for prefix in WILDFI_TOPIC_PREFIXES}:
+        if marker in lowered_parts:
+            idx = lowered_parts.index(marker)
+            next_idx = idx + 1
+            if next_idx < len(parts) and lowered_parts[next_idx] not in WILDFI_SENSOR_MARKERS:
+                return parts[next_idx]
+            if next_idx + 1 < len(parts):
+                return parts[next_idx + 1]
 
     if parts:
         return parts[-1]
@@ -129,11 +205,18 @@ def on_connect(client, _userdata, _flags, rc, properties=None) -> None:
 
     if rc == 0:
         LOGGER.info("Connected to MQTT broker")
-        client.subscribe(MQTT_TOPIC, qos=1)
-        LOGGER.info("Subscribed to %s", MQTT_TOPIC)
+        for topic in MQTT_TOPICS:
+            client.subscribe(topic, qos=1)
+            LOGGER.info("Subscribed to %s", topic)
         return
 
     LOGGER.error("Failed to connect to MQTT broker, rc=%s", rc)
+
+
+def event_source_for_topic(topic: str) -> str:
+    if is_wildfi_topic(topic):
+        return "wildfi-mqtt"
+    return "mqtt-bridge"
 
 
 def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
@@ -141,7 +224,8 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
     device_id = derive_device_id(msg.topic)
     decoded = decode_payload(msg.payload)
     ingested_at = now_iso()
-    timestamp = decoded.get("timestamp", ingested_at) if isinstance(decoded, dict) else ingested_at
+    timestamp = pick_event_timestamp(decoded, ingested_at)
+    source = event_source_for_topic(msg.topic)
 
     if kafka_topic == RAW_SENSOR_TOPIC:
         payload = decoded if isinstance(decoded, dict) else {"value": decoded}
@@ -153,16 +237,21 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
             "mqtt_topic": msg.topic,
             "qos": msg.qos,
             "retain": msg.retain,
-            "source": "mqtt-bridge",
+            "source": source,
         }
-    elif kafka_topic == "raw.gps":
+    elif kafka_topic == RAW_GPS_TOPIC:
         payload = decoded if isinstance(decoded, dict) else {}
         event = {
             "device_id": device_id,
-            "timestamp": payload.get("timestamp", timestamp),
+            "timestamp": pick_event_timestamp(payload, timestamp),
             "ingested_at": ingested_at,
-            "latitude": payload.get("latitude", payload.get("lat", 0.0)),
-            "longitude": payload.get("longitude", payload.get("lon", 0.0)),
+            "latitude": payload.get(
+                "latitude", payload.get("latitude_deg", payload.get("lat", 0.0))
+            ),
+            "longitude": payload.get(
+                "longitude",
+                payload.get("longitude_deg", payload.get("lon", 0.0)),
+            ),
             "altitude_m": payload.get("altitude_m", payload.get("altitude")),
             "speed_m_s": payload.get("speed_m_s", payload.get("speed")),
             "heading_deg": payload.get("heading_deg", payload.get("heading")),
@@ -170,7 +259,7 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
             "qos": msg.qos,
             "retain": msg.retain,
             "payload": payload,
-            "source": "mqtt-bridge",
+            "source": source,
         }
     else:
         payload = decoded if isinstance(decoded, dict) else {}
@@ -182,7 +271,7 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
             "mqtt_topic": msg.topic,
             "qos": msg.qos,
             "retain": msg.retain,
-            "source": "mqtt-bridge",
+            "source": source,
         }
 
     return kafka_topic, pick_key(msg.topic), event
