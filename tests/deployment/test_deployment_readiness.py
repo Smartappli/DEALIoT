@@ -46,6 +46,15 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("Integration test suite", workflow_text)
         self.assertIn("Deployment test suite", workflow_text)
 
+    def test_e2e_workflow_runs_smoke_script_and_cleans_up(self) -> None:
+        workflow_text = (
+            REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("bash scripts/smoke-e2e.sh", workflow_text)
+        self.assertIn("Dump compose logs on failure", workflow_text)
+        self.assertIn("docker compose -f docker-compose.yml -f docker-compose.dev.yml down", workflow_text)
+
 
 if __name__ == "__main__":
     unittest.main()

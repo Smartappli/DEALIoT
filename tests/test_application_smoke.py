@@ -47,6 +47,7 @@ class ApplicationSmokeTests(unittest.TestCase):
             "ci.yml",
             "shellcheck.yml",
             "compose-deployment-test.yml",
+            "e2e-smoke.yml",
             "codeql.yml",
             "renovate.yml",
         ]
