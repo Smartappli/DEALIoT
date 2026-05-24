@@ -1,10 +1,18 @@
+# syntax=docker/dockerfile:1.7
+
 FROM apache/beam_python3.13_sdk:2.73.0
+
+USER root
+RUN useradd --create-home --shell /bin/bash appuser
 
 WORKDIR /opt/pipelines
 
-COPY beam/requirements.txt /tmp/requirements.txt
+COPY --chmod=0444 beam/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
-COPY dealiot_contracts /opt/pipelines/dealiot_contracts
-COPY pipelines /opt/pipelines
-ENV PYTHONPATH="/opt/pipelines"
+COPY --chown=appuser:appuser --chmod=0555 dealiot_contracts /opt/pipelines/dealiot_contracts
+COPY --chown=appuser:appuser --chmod=0555 pipelines /opt/pipelines
+
+USER appuser
+ENV PYTHONDONTWRITEBYTECODE="1" \
+    PYTHONPATH="/opt/pipelines"
