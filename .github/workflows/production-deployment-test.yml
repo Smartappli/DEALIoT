@@ -1,0 +1,139 @@
+name: Production Deployment Test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "deploy/**"
+      - "mqtt-kafka-bridge/**"
+      - "dealiot_contracts/**"
+      - "flink/**"
+      - "orchestration/**"
+      - ".github/workflows/production-deployment-test.yml"
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: dealiot-mqtt-kafka-bridge:ci
+  DEALIOT_FLINK_PYFLINK_IMAGE: ghcr.io/smartappli/dealiot-flink-pyflink:latest
+  DEALIOT_ORCHESTRATION_IMAGE: ghcr.io/smartappli/dealiot-orchestration:latest
+  KAFKA_BOOTSTRAP_SERVERS: kafka1.example.net:9092,kafka2.example.net:9092
+  MQTT_HOST: mqtt.example.net
+  MQTT_USERNAME: admin
+  S3_ENDPOINT_URL: https://s3.example.net
+  AWS_ACCESS_KEY_ID: ci-access-key
+  AWS_SECRET_ACCESS_KEY: ci-secret-key
+  AIRFLOW__CORE__FERNET_KEY: ci-fernet-key-32-bytes-minimum-value
+  AIRFLOW__API__SECRET_KEY: ci-airflow-api-secret
+  AIRFLOW__API_AUTH__JWT_SECRET: ci-airflow-jwt-secret
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg://airflow:ci@postgres.example.net:5432/airflow
+  AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:ci@postgres.example.net:5432/airflow
+  AIRFLOW__CELERY__BROKER_URL: redis://redis.example.net:6379/0
+  AIRFLOW_ADMIN_PASSWORD: ci-airflow-admin-password
+
+jobs:
+  swarm-deployment:
+    name: Docker Swarm Render & Smoke Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Build bridge image for smoke deployment
+        run: docker build -t "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}" -f mqtt-kafka-bridge/Dockerfile .
+
+      - name: Render production Swarm stack
+        run: docker stack config -c deploy/swarm/dealiot-stack.yml >/tmp/dealiot-swarm-rendered.yml
+
+      - name: Initialize Swarm
+        run: docker swarm init
+
+      - name: Create CI Swarm secrets
+        run: printf '%s\n' 'ci-mqtt-password' | docker secret create mqtt_password -
+
+      - name: Deploy Swarm smoke stack
+        run: docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml dealiot-smoke
+
+      - name: Wait for Swarm smoke service
+        run: |
+          set -euo pipefail
+          service_name="dealiot-smoke_mqtt-kafka-bridge"
+          for _ in {1..60}; do
+            replicas="$(docker service ls --filter "name=${service_name}" --format '{{.Replicas}}' || true)"
+            docker service ps "${service_name}" || true
+            if [ "${replicas}" = "1/1" ]; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker service logs "${service_name}" || true
+          exit 1
+
+      - name: Dump Swarm diagnostics on failure
+        if: failure()
+        run: |
+          docker stack services dealiot-smoke || true
+          docker service logs dealiot-smoke_mqtt-kafka-bridge || true
+
+      - name: Tear down Swarm smoke stack
+        if: always()
+        run: |
+          docker stack rm dealiot-smoke || true
+          sleep 10
+          docker secret rm mqtt_password || true
+          docker swarm leave --force || true
+
+  kubernetes-deployment:
+    name: Kubernetes Render & kind Smoke Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Install kind
+        run: |
+          curl -fsSLo kind https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64
+          chmod +x kind
+          sudo mv kind /usr/local/bin/kind
+          kind version
+
+      - name: Render Kubernetes production base
+        run: |
+          kubectl kustomize deploy/kubernetes/base >/tmp/dealiot-kubernetes-rendered.yaml
+          kubectl apply --dry-run=client -f /tmp/dealiot-kubernetes-rendered.yaml
+
+      - name: Create kind cluster
+        run: kind create cluster --name dealiot-ci
+
+      - name: Build and load bridge image
+        run: |
+          docker build -t "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}" -f mqtt-kafka-bridge/Dockerfile .
+          kind load docker-image "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}" --name dealiot-ci
+
+      - name: Deploy Kubernetes smoke overlay
+        run: kubectl apply -k deploy/kubernetes/overlays/ci-smoke
+
+      - name: Wait for Kubernetes smoke rollout
+        run: kubectl -n dealiot-smoke rollout status deployment/mqtt-kafka-bridge --timeout=180s
+
+      - name: Dump Kubernetes diagnostics on failure
+        if: failure()
+        run: |
+          kubectl -n dealiot-smoke get all || true
+          kubectl -n dealiot-smoke describe deployment mqtt-kafka-bridge || true
+          kubectl -n dealiot-smoke logs deploy/mqtt-kafka-bridge || true
+
+      - name: Tear down kind cluster
+        if: always()
+        run: kind delete cluster --name dealiot-ci || true
