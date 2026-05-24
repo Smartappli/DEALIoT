@@ -119,6 +119,16 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertEqual(overlay["namespace"], "dealiot")
         self.assertIn("network-policies.yaml", overlay["resources"])
         self.assertIn("external-dependency-contract.yaml", overlay["resources"])
+        self.assertEqual(
+            overlay["configMapGenerator"],
+            [
+                {
+                    "name": "dealiot-runtime-config",
+                    "behavior": "replace",
+                    "envs": ["runtime-config.production.example.env"],
+                }
+            ],
+        )
 
         image_tags = {image["name"]: image["newTag"] for image in overlay["images"]}
         self.assertEqual(
@@ -130,6 +140,27 @@ class DeploymentReadinessTests(unittest.TestCase):
             },
         )
         self.assertNotIn("latest", set(image_tags.values()))
+
+    def test_kubernetes_production_runtime_config_uses_secure_external_defaults(self) -> None:
+        config_text = (
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "runtime-config.production.example.env"
+        ).read_text(encoding="utf-8")
+        runtime_config = dict(
+            line.split("=", maxsplit=1)
+            for line in config_text.splitlines()
+            if line and not line.startswith("#")
+        )
+
+        self.assertEqual(runtime_config["MQTT_PORT"], "8883")
+        self.assertEqual(runtime_config["MQTT_USERNAME"], "dealiot_ingestor")
+        self.assertGreaterEqual(len(runtime_config["KAFKA_BOOTSTRAP_SERVERS"].split(",")), 3)
+        self.assertNotIn("mqtt-broker.ingest.svc.cluster.local", config_text)
+        self.assertNotIn("MQTT_PORT=1883", config_text)
 
     def test_kubernetes_production_overlay_sets_replica_floor(self) -> None:
         overlay = yaml.safe_load(

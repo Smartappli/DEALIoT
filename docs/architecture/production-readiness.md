@@ -15,9 +15,10 @@ target, but Kubernetes is where strict production controls are enforced first.
    dedicated operator.
 4. Require TLS or private connectivity for all external dependencies.
 5. Apply default-deny NetworkPolicies in Kubernetes production.
-6. Provide secrets through a secret manager or External Secrets Operator, not literal manifests.
-7. Validate production manifests in CI before merge.
-8. Generate image SBOM and provenance attestations for pushed images.
+6. Replace base runtime defaults with production-specific external endpoints.
+7. Provide secrets through a secret manager or External Secrets Operator, not literal manifests.
+8. Validate production manifests in CI before merge.
+9. Generate image SBOM and provenance attestations for pushed images.
 
 ## Stateful Dependency Strategy
 
