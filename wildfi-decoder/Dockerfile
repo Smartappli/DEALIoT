@@ -13,7 +13,8 @@ RUN git init WildFiDecoder \
     && cd WildFiDecoder \
     && git remote add origin https://github.com/wildlab/WildFiDecoder.git \
     && git fetch --depth=1 origin "${WILDFI_DECODER_GIT_REF}" \
-    && git checkout --detach FETCH_HEAD
+    && git checkout --detach FETCH_HEAD \
+    && test "$(git rev-parse HEAD)" = "${WILDFI_DECODER_GIT_REF}"
 
 FROM eclipse-temurin:21-jre-jammy
 

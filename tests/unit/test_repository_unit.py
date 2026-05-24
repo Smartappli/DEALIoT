@@ -140,9 +140,31 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn("https://github.com/wildlab/WildFiDecoder.git", dockerfile)
         self.assertIn("b4002eb9a6111de140b95e5a35c3f3bd552d51be", dockerfile)
+        self.assertIn('test "$(git rev-parse HEAD)" = "${WILDFI_DECODER_GIT_REF}"', dockerfile)
         self.assertIn("WildFiDecoderStandalone.jar", dockerfile)
         self.assertIn("WILDFI_DECODER_RAW_INPUT", wrapper)
         self.assertIn("WILDFI_DECODER_MODE", wrapper)
+
+    def test_ci_assets_do_not_contain_static_placeholder_secrets(self) -> None:
+        scanned_paths = [
+            *sorted((REPO_ROOT / ".github" / "workflows").glob("*.yml")),
+            REPO_ROOT / ".env.example",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "kustomization.yaml",
+        ]
+        forbidden_fragments = [
+            "change-me",
+            "ci-mqtt-password",
+            "ci-secret-key",
+            "ci-airflow-admin-password",
+            "ci-airflow-db-password",
+            "ci-vernemq-admin-password",
+            "ci-grafana-admin-password",
+        ]
+
+        for path in scanned_paths:
+            text = path.read_text(encoding="utf-8")
+            for fragment in forbidden_fragments:
+                self.assertNotIn(fragment, text, f"{path} contains {fragment}")
 
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [
