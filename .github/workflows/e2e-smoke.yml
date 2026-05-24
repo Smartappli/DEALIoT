@@ -2,7 +2,7 @@ name: E2E Smoke
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     paths:
       - "docker-compose*.yml"
       - "scripts/smoke-e2e.sh"
