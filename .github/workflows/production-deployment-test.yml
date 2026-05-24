@@ -108,13 +108,13 @@ jobs:
           sudo mv kind /usr/local/bin/kind
           kind version
 
+      - name: Create kind cluster
+        run: kind create cluster --name dealiot-ci
+
       - name: Render Kubernetes production base
         run: |
           kubectl kustomize deploy/kubernetes/base >/tmp/dealiot-kubernetes-rendered.yaml
-          kubectl apply --dry-run=client --validate=false -f /tmp/dealiot-kubernetes-rendered.yaml
-
-      - name: Create kind cluster
-        run: kind create cluster --name dealiot-ci
+          kubectl apply --dry-run=server -f /tmp/dealiot-kubernetes-rendered.yaml
 
       - name: Build and load bridge image
         run: |
