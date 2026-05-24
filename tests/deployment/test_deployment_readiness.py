@@ -68,6 +68,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("docker stack config -c deploy/swarm/dealiot-stack.yml", workflow_text)
         self.assertIn("docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml", workflow_text)
         self.assertIn("kubectl kustomize deploy/kubernetes/base", workflow_text)
+        self.assertIn("kubectl kustomize deploy/kubernetes/overlays/production", workflow_text)
+        self.assertIn("Production overlay must not render mutable latest image tags", workflow_text)
         self.assertIn("kind create cluster --name dealiot-ci", workflow_text)
         self.assertIn("kubectl apply -k deploy/kubernetes/overlays/ci-smoke", workflow_text)
 
@@ -79,6 +81,19 @@ class DeploymentReadinessTests(unittest.TestCase):
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "airflow.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "kustomization.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "production" / "kustomization.yaml",
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "network-policies.yaml",
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "external-dependency-contract.yaml",
         ]
 
         for manifest_path in manifest_paths:
@@ -88,6 +103,118 @@ class DeploymentReadinessTests(unittest.TestCase):
                 any(document is not None for document in documents),
                 f"Empty manifest: {manifest_path}",
             )
+
+    def test_kubernetes_production_overlay_uses_immutable_images(self) -> None:
+        overlay = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "overlays"
+                / "production"
+                / "kustomization.yaml"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(overlay["namespace"], "dealiot")
+        self.assertIn("network-policies.yaml", overlay["resources"])
+        self.assertIn("external-dependency-contract.yaml", overlay["resources"])
+
+        image_tags = {image["name"]: image["newTag"] for image in overlay["images"]}
+        self.assertEqual(
+            image_tags,
+            {
+                "ghcr.io/smartappli/dealiot-mqtt-kafka-bridge": "sha-REPLACE_WITH_RELEASE_SHA",
+                "ghcr.io/smartappli/dealiot-flink-pyflink": "sha-REPLACE_WITH_RELEASE_SHA",
+                "ghcr.io/smartappli/dealiot-orchestration": "sha-REPLACE_WITH_RELEASE_SHA",
+            },
+        )
+        self.assertNotIn("latest", set(image_tags.values()))
+
+    def test_kubernetes_production_overlay_sets_replica_floor(self) -> None:
+        overlay = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "overlays"
+                / "production"
+                / "kustomization.yaml"
+            ).read_text(encoding="utf-8")
+        )
+
+        replicas = {replica["name"]: replica["count"] for replica in overlay["replicas"]}
+        for workload_name in (
+            "mqtt-kafka-bridge",
+            "apicurio-registry",
+            "flink-taskmanager",
+            "airflow-worker",
+        ):
+            self.assertGreaterEqual(replicas[workload_name], 3)
+        self.assertGreaterEqual(replicas["airflow-apiserver"], 2)
+
+    def test_kubernetes_production_network_policies_default_deny_and_scope_egress(self) -> None:
+        policy_path = (
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "network-policies.yaml"
+        )
+        policy_text = policy_path.read_text(encoding="utf-8")
+        policies = [policy for policy in yaml.safe_load_all(policy_text) if policy]
+        policy_names = {policy["metadata"]["name"] for policy in policies}
+
+        self.assertIn("default-deny-all", policy_names)
+        self.assertIn("allow-dns-egress", policy_names)
+        self.assertIn("allow-runtime-egress-to-external-dependencies", policy_names)
+        self.assertNotIn("0.0.0.0/0", policy_text)
+
+        default_deny = next(
+            policy for policy in policies if policy["metadata"]["name"] == "default-deny-all"
+        )
+        self.assertEqual(default_deny["spec"]["podSelector"], {})
+        self.assertEqual(set(default_deny["spec"]["policyTypes"]), {"Ingress", "Egress"})
+
+    def test_kubernetes_production_external_dependency_contract_is_explicit(self) -> None:
+        contract = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "overlays"
+                / "production"
+                / "external-dependency-contract.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        contract_text = contract["data"]["contract.yaml"]
+
+        for required_dependency in (
+            "kafka",
+            "mqtt",
+            "object_storage",
+            "airflow_metadata_db",
+            "airflow_broker",
+        ):
+            self.assertIn(f"{required_dependency}:", contract_text)
+        for required_secret in (
+            "MQTT_PASSWORD",
+            "AWS_SECRET_ACCESS_KEY",
+            "AIRFLOW__CORE__FERNET_KEY",
+            "AIRFLOW__API__SECRET_KEY",
+        ):
+            self.assertIn(required_secret, contract_text)
+
+    def test_image_build_workflow_publishes_supply_chain_metadata(self) -> None:
+        workflow_text = (
+            REPO_ROOT / ".github" / "workflows" / "build-and-push-images.yml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("--sbom=true", workflow_text)
+        self.assertIn("--provenance=true", workflow_text)
+        self.assertIn("org.opencontainers.image.revision", workflow_text)
+        self.assertIn("sha-${GITHUB_SHA}", workflow_text)
 
     def test_production_images_package_runtime_code(self) -> None:
         orchestration_dockerfile = (REPO_ROOT / "orchestration" / "Dockerfile").read_text(
