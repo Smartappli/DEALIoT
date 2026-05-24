@@ -251,7 +251,9 @@ def _load_streaming_module():
             "pyflink.table": fake_table,
         },
     ):
-        spec = importlib.util.spec_from_file_location("streaming_minimal_under_test", FLINK_JOB_PATH)
+        spec = importlib.util.spec_from_file_location(
+            "streaming_minimal_under_test", FLINK_JOB_PATH
+        )
         if spec is None:
             raise RuntimeError("Unable to load module spec for streaming_minimal.py")
         if spec.loader is None:
@@ -310,7 +312,22 @@ class StreamingMinimalUnitTests(unittest.TestCase):
 
         rows = list(normalizer.flat_map(("raw.gps", raw)))
 
-        self.assertEqual(rows, [("dev-1", "2026-01-01T00:00:00+00:00", "raw.gps", "tenant/devices/dev-1/gnss/fix", "gps", "abc", 1, True, raw)])
+        self.assertEqual(
+            rows,
+            [
+                (
+                    "dev-1",
+                    "2026-01-01T00:00:00+00:00",
+                    "raw.gps",
+                    "tenant/devices/dev-1/gnss/fix",
+                    "gps",
+                    "abc",
+                    1,
+                    True,
+                    raw,
+                )
+            ],
+        )
         self.assertEqual(normalizer.flat_map(("raw.sensor", "{bad json")), [])
 
     def test_latest_by_entity_keeps_newer_records_only(self) -> None:
@@ -381,7 +398,10 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         self.assertEqual(env.runtime_mode, "STREAMING")
         self.assertEqual(env.parallelism, 2)
         self.assertEqual(env.checkpointing, (5000, "EXACTLY_ONCE"))
-        self.assertEqual([consumer.kwargs["topics"] for consumer, _stream in env.sources], ["raw.sensor", "raw.gps"])
+        self.assertEqual(
+            [consumer.kwargs["topics"] for consumer, _stream in env.sources],
+            ["raw.sensor", "raw.gps"],
+        )
         self.assertIn("features_view", table_env.views)
         self.assertIn("latest_view", table_env.views)
         self.assertTrue(any("features.custom" in sql for sql in table_env.sql))
