@@ -30,13 +30,13 @@ jobs:
       AIRFLOW_FERNET_KEY: "ci-fernet-key-32-bytes-minimum-value"
       AIRFLOW_API_SECRET_KEY: "ci-api-secret"
       AIRFLOW_JWT_SECRET: "ci-jwt-secret"
-      AIRFLOW_ADMIN_PASSWORD: "ci-airflow-admin-password"
-      AIRFLOW_DB_PASSWORD: "ci-airflow-db-password"
-      VERNEMQ_ADMIN_PASSWORD: "ci-vernemq-admin-password"
+      AIRFLOW_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-airflow-admin
+      AIRFLOW_DB_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-airflow-db
+      VERNEMQ_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-vernemq-admin
       VERNEMQ_DISTRIBUTED_COOKIE: "ci-vernemq-distributed-cookie"
       SEAWEEDFS_S3_ACCESS_KEY: "ci-access-key"
-      SEAWEEDFS_S3_SECRET_KEY: "ci-secret-key"
-      GRAFANA_ADMIN_PASSWORD: "ci-grafana-admin-password"
+      SEAWEEDFS_S3_SECRET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-seaweedfs-s3
+      GRAFANA_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-grafana-admin
       ACME_EMAIL: "ci@example.com"
       STORAGE_BASE_DOMAIN: "local.test"
 
@@ -47,18 +47,19 @@ jobs:
       - name: Prepare local secret files
         run: |
           mkdir -p secrets
-          printf '%s\n' 'ci-postgres-superuser-password' > secrets/postgres_superuser_password.txt
-          printf '%s\n' 'ci-patroni-repl-password' > secrets/patroni_repl_password.txt
-          printf '%s\n' 'ci-patroni-rewind-password' > secrets/patroni_rewind_password.txt
-          printf '%s\n' 'ci-app-user-password' > secrets/app_user_password.txt
-          printf '%s\n' 'ci-pgadmin-password' > secrets/pgadmin_default_password.txt
-          printf '%s\n' '"app_user" "ci-app-user-password"' > secrets/pgbouncer_rw_userlist.txt
-          printf '%s\n' '"app_user" "ci-app-user-password"' > secrets/pgbouncer_ro_userlist.txt
-          printf '%s\n' 'ci-postgres-exporter-password' > secrets/postgres_exporter_password.txt
-          printf '%s\n' 'ci-debezium-password' > secrets/debezium_password.txt
-          printf '%s\n' 'ci-seaweedfs-pg-password' > secrets/seaweedfs_pg_password.txt
+          app_password="$(openssl rand -hex 24)"
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/postgres_superuser_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/patroni_repl_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/patroni_rewind_password.txt
+          printf '%s\n' "$app_password" > secrets/app_user_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/pgadmin_default_password.txt
+          printf '%s\n' "\"app_user\" \"$app_password\"" > secrets/pgbouncer_rw_userlist.txt
+          printf '%s\n' "\"app_user\" \"$app_password\"" > secrets/pgbouncer_ro_userlist.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/postgres_exporter_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/debezium_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/seaweedfs_pg_password.txt
           printf '%s\n' 'ci-access-key' > secrets/seaweedfs_s3_access_key.txt
-          printf '%s\n' 'ci-secret-key' > secrets/seaweedfs_s3_secret_key.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/seaweedfs_s3_secret_key.txt
 
       - name: Run E2E smoke
         run: bash scripts/smoke-e2e.sh

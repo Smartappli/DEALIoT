@@ -308,7 +308,7 @@ target.mkdir(exist_ok=True)
 files = {
     "app_user_password.txt": secrets.token_urlsafe(24),
     "debezium_password.txt": secrets.token_urlsafe(24),
-    "seaweedfs_s3_access_key.txt": "change-me",
+    "seaweedfs_s3_access_key.txt": secrets.token_urlsafe(24),
     "seaweedfs_s3_secret_key.txt": secrets.token_urlsafe(32),
     "patroni_repl_password.txt": secrets.token_urlsafe(24),
     "patroni_rewind_password.txt": secrets.token_urlsafe(24),
