@@ -116,6 +116,15 @@ jobs:
           kubectl kustomize deploy/kubernetes/base >/tmp/dealiot-kubernetes-rendered.yaml
           kubectl apply --dry-run=server -f /tmp/dealiot-kubernetes-rendered.yaml
 
+      - name: Render Kubernetes production overlay
+        run: |
+          kubectl kustomize deploy/kubernetes/overlays/production >/tmp/dealiot-kubernetes-production.yaml
+          if grep -R "ghcr.io/smartappli/.*:latest" /tmp/dealiot-kubernetes-production.yaml; then
+            echo "Production overlay must not render mutable latest image tags." >&2
+            exit 1
+          fi
+          kubectl apply --dry-run=server -f /tmp/dealiot-kubernetes-production.yaml
+
       - name: Build and load bridge image
         run: |
           docker build -t "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}" -f mqtt-kafka-bridge/Dockerfile .

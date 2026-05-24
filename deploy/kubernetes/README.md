@@ -28,11 +28,18 @@ kubectl -n dealiot create secret generic dealiot-secrets \
   --from-literal=AIRFLOW__CELERY__BROKER_URL="$AIRFLOW__CELERY__BROKER_URL"
 ```
 
-Deploy:
+Deploy the base:
 
 ```bash
 kubectl apply -k deploy/kubernetes/base
 ```
 
-For environment-specific production values, create an overlay that patches
-`dealiot-runtime-config` and image tags.
+Deploy the production overlay after replacing image tags and external endpoints:
+
+```bash
+kubectl apply -k deploy/kubernetes/overlays/production
+```
+
+Use `deploy/kubernetes/overlays/production/dealiot-secrets.example.env` and
+`deploy/kubernetes/overlays/production/runtime-config.production.example.env` as operator-facing
+templates. Do not commit real production values.
