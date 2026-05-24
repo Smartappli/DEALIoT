@@ -88,7 +88,7 @@ compose up -d --build --wait --wait-timeout 900 \
   flink-jobmanager flink-taskmanager-1 flink-taskmanager-2
 
 echo "Submitting Flink streaming job"
-compose run --rm flink-cli /opt/flink/usrlib/run-streaming-minimal.sh
+compose run --rm flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh
 
 publish_mqtt_fixtures
 
