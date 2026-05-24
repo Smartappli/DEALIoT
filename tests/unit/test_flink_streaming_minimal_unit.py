@@ -76,7 +76,7 @@ class _FakeState:
 class _FakeRuntimeContext:
     def __init__(self, state):
         self.state = state
-        self.descriptor = None
+        self.descriptor: _FakeValueStateDescriptor | None = None
 
     def get_state(self, descriptor):
         self.descriptor = descriptor
@@ -111,7 +111,7 @@ class _FakeStream:
 
 
 class _FakeStreamExecutionEnvironment:
-    latest = None
+    latest: ClassVar[_FakeStreamExecutionEnvironment | None] = None
 
     def __init__(self):
         self.runtime_mode = None
@@ -185,12 +185,13 @@ class _FakeStatementSet:
 
 
 class _FakeTableEnvironment:
-    latest = None
+    latest: ClassVar[_FakeTableEnvironment | None] = None
 
     def __init__(self):
         self.views: dict[str, Any] = {}
         self.sql: list[str] = []
         self.statement_set = _FakeStatementSet()
+        self.stream_execution_environment: Any | None = None
 
     @classmethod
     def create(cls, stream_execution_environment):
@@ -342,6 +343,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         self.assertEqual(list(processor.process_element(old_record, None)), [])
         self.assertEqual(list(processor.process_element(new_record, None)), [new_record])
         self.assertEqual(state.updates, ["2026-01-01T00:00:01+00:00"])
+        assert runtime_context.descriptor is not None
         self.assertEqual(runtime_context.descriptor.name, "latest_event_ts")
 
     def test_build_topic_stream_and_table_schema(self) -> None:
@@ -394,6 +396,8 @@ class StreamingMinimalUnitTests(unittest.TestCase):
 
         env = _FakeStreamExecutionEnvironment.latest
         table_env = _FakeTableEnvironment.latest
+        assert env is not None
+        assert table_env is not None
 
         self.assertEqual(env.runtime_mode, "STREAMING")
         self.assertEqual(env.parallelism, 2)

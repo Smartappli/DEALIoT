@@ -16,6 +16,7 @@ from paho.mqtt import client as mqtt_client
 from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
 
 LOGGER = logging.getLogger(__name__)
+RAW_SENSOR_TOPIC = "raw.sensor"
 
 
 def env_or_secret_file(name: str) -> str | None:
@@ -42,7 +43,7 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv(
     "kafka1:9092,kafka2:9092,kafka3:9092",
 ).split(",")
 
-DEFAULT_KAFKA_TOPIC = os.getenv("DEFAULT_KAFKA_TOPIC", "raw.sensor")
+DEFAULT_KAFKA_TOPIC = os.getenv("DEFAULT_KAFKA_TOPIC", RAW_SENSOR_TOPIC)
 
 
 def decode_payload(payload: bytes) -> Any:
@@ -68,7 +69,7 @@ def pick_kafka_topic(topic: str) -> str:
     elif "image3d" in lowered or "/lidar/" in lowered or "/pointcloud/" in lowered:
         kafka_topic = "raw.image3d.meta"
     elif "sensor" in lowered:
-        kafka_topic = "raw.sensor"
+        kafka_topic = RAW_SENSOR_TOPIC
     else:
         kafka_topic = DEFAULT_KAFKA_TOPIC
 
@@ -142,7 +143,7 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
     ingested_at = now_iso()
     timestamp = decoded.get("timestamp", ingested_at) if isinstance(decoded, dict) else ingested_at
 
-    if kafka_topic == "raw.sensor":
+    if kafka_topic == RAW_SENSOR_TOPIC:
         payload = decoded if isinstance(decoded, dict) else {"value": decoded}
         event = {
             "device_id": device_id,

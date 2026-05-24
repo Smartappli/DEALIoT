@@ -64,11 +64,7 @@ exclude = [
 
 [[tool.mypy.overrides]]
 module = [
-  "airflow.*",
   "kafka.*",
-  "confluent_kafka.*",
-  "apache_beam.*",
-  "pendulum",
   "boto3",
   "pyflink.*",
 ]

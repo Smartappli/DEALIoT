@@ -10,7 +10,7 @@ POSTGRES_EXPORTER_PASSWORD="$(< /run/secrets/postgres_exporter_password)"
 DEBEZIUM_PASSWORD="$(< /run/secrets/debezium_password)"
 
 APPDB_CONNSTR="$(printf '%s' "$CONNSTR" | sed -E 's/(^|[[:space:]])dbname=[^[:space:]]+/\1dbname=appdb/')"
-if [ "$APPDB_CONNSTR" = "$CONNSTR" ]; then
+if [[ "$APPDB_CONNSTR" == "$CONNSTR" ]]; then
   APPDB_CONNSTR="$CONNSTR dbname=appdb"
 fi
 
