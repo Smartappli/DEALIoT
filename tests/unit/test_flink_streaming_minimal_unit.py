@@ -13,26 +13,32 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 FLINK_JOB_PATH = REPO_ROOT / "flink" / "jobs" / "streaming_minimal.py"
 
 
+def _type_string():
+    return "STRING"
+
+
+def _type_int():
+    return "INT"
+
+
+def _type_boolean():
+    return "BOOLEAN"
+
+
+def _row_named(names, types_):
+    return ("ROW_NAMED", tuple(names), tuple(types_))
+
+
+def _tuple_type(types_):
+    return ("TUPLE", tuple(types_))
+
+
 class _FakeTypes:
-    @staticmethod
-    def STRING():
-        return "STRING"
-
-    @staticmethod
-    def INT():
-        return "INT"
-
-    @staticmethod
-    def BOOLEAN():
-        return "BOOLEAN"
-
-    @staticmethod
-    def ROW_NAMED(names, types_):
-        return ("ROW_NAMED", tuple(names), tuple(types_))
-
-    @staticmethod
-    def TUPLE(types_):
-        return ("TUPLE", tuple(types_))
+    STRING = staticmethod(_type_string)
+    INT = staticmethod(_type_int)
+    BOOLEAN = staticmethod(_type_boolean)
+    ROW_NAMED = staticmethod(_row_named)
+    TUPLE = staticmethod(_tuple_type)
 
 
 def _fake_row(*values):
@@ -160,17 +166,9 @@ class _FakeSchema:
 
 
 class _FakeDataTypes:
-    @staticmethod
-    def STRING():
-        return "STRING"
-
-    @staticmethod
-    def INT():
-        return "INT"
-
-    @staticmethod
-    def BOOLEAN():
-        return "BOOLEAN"
+    STRING = staticmethod(_type_string)
+    INT = staticmethod(_type_int)
+    BOOLEAN = staticmethod(_type_boolean)
 
 
 class _FakeStatementSet:
