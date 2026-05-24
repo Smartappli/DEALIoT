@@ -308,7 +308,7 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
     return kafka_topic, pick_key(msg.topic), event
 
 
-def route_event(msg, kafka_topic: str, event: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+def route_event(_msg, kafka_topic: str, event: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     errors = validate_event(kafka_topic, event)
     if not errors:
         return kafka_topic, event
