@@ -449,6 +449,17 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("flink-connector-base", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
 
+    def test_seaweedfs_postgres_bootstrap_quotes_secret_with_psql(self) -> None:
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+        self.assertIn('-v seaweedfs_pg_password="$$SEAWEEDFS_PG_PASSWORD"', compose_text)
+        self.assertIn(":'seaweedfs_pg_password'", compose_text)
+        self.assertIn("CREATE DATABASE seaweedfs OWNER seaweedfs_filer", compose_text)
+        self.assertNotIn(
+            "CREATE ROLE seaweedfs_filer LOGIN PASSWORD '$$SEAWEEDFS_PG_PASSWORD'",
+            compose_text,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
