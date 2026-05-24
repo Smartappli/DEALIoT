@@ -259,13 +259,15 @@ def _validate_ranges(event: dict[str, Any], errors: list[str]) -> None:
         "size_bytes",
         "speed_m_s",
     ]
-    for field in non_negative:
-        value = event.get(field)
-        if isinstance(value, int | float) and value < 0:
-            errors.append(f"{field} must be non-negative")
+    errors.extend(
+        f"{field} must be non-negative"
+        for field in non_negative
+        if isinstance(event.get(field), int | float) and event[field] < 0
+    )
 
     positive = ["frame_rate", "height", "views", "width"]
-    for field in positive:
-        value = event.get(field)
-        if isinstance(value, int | float) and value <= 0:
-            errors.append(f"{field} must be positive")
+    errors.extend(
+        f"{field} must be positive"
+        for field in positive
+        if isinstance(event.get(field), int | float) and event[field] <= 0
+    )
