@@ -20,7 +20,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: airflow-migrate
-          image: ghcr.io/smartappli/dealiot-orchestration:latest
+          image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
           imagePullPolicy: IfNotPresent
           command:
             - bash
@@ -66,7 +66,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: airflow
-          image: ghcr.io/smartappli/dealiot-orchestration:latest
+          image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["api-server"]
           ports:
@@ -152,7 +152,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: airflow
-          image: ghcr.io/smartappli/dealiot-orchestration:latest
+          image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["scheduler"]
           envFrom:
@@ -194,7 +194,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: airflow
-          image: ghcr.io/smartappli/dealiot-orchestration:latest
+          image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["celery", "worker"]
           envFrom:
@@ -239,7 +239,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: airflow
-          image: ghcr.io/smartappli/dealiot-orchestration:latest
+          image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["triggerer"]
           envFrom:
@@ -281,7 +281,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: airflow
-          image: ghcr.io/smartappli/dealiot-orchestration:latest
+          image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["dag-processor"]
           envFrom:

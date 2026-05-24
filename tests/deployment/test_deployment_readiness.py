@@ -85,6 +85,14 @@ class DeploymentReadinessTests(unittest.TestCase):
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "airflow.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "kustomization.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "serviceaccount.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "configmap.yaml",
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "ci-smoke"
+            / "mqtt-kafka-bridge.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "production" / "kustomization.yaml",
             REPO_ROOT
             / "deploy"
@@ -119,6 +127,28 @@ class DeploymentReadinessTests(unittest.TestCase):
                 any(document is not None for document in documents),
                 f"Empty manifest: {manifest_path}",
             )
+
+    def test_kubernetes_ci_smoke_overlay_is_self_contained(self) -> None:
+        overlay = yaml.safe_load(
+            (
+                REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "kustomization.yaml"
+            ).read_text(encoding="utf-8")
+        )
+
+        self.assertEqual(overlay["namespace"], "dealiot-smoke")
+        self.assertEqual(
+            overlay["resources"],
+            [
+                "namespace.yaml",
+                "serviceaccount.yaml",
+                "configmap.yaml",
+                "mqtt-kafka-bridge.yaml",
+            ],
+        )
+        self.assertFalse(
+            any(resource.startswith("../../base/") for resource in overlay["resources"]),
+            "kubectl apply -k rejects individual files loaded from outside the overlay root",
+        )
 
     def test_kubernetes_production_overlay_uses_immutable_images(self) -> None:
         overlay = yaml.safe_load(

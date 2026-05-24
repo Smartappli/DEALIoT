@@ -5,9 +5,9 @@ namespace: dealiot-smoke
 
 resources:
   - namespace.yaml
-  - ../../base/serviceaccount.yaml
-  - ../../base/configmap.yaml
-  - ../../base/mqtt-kafka-bridge.yaml
+  - serviceaccount.yaml
+  - configmap.yaml
+  - mqtt-kafka-bridge.yaml
 
 images:
   - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge
@@ -18,33 +18,3 @@ secretGenerator:
   - name: dealiot-secrets
     literals:
       - MQTT_PASSWORD=not-used-by-smoke-container
-
-patches:
-  - target:
-      kind: Deployment
-      name: mqtt-kafka-bridge
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: mqtt-kafka-bridge
-      spec:
-        replicas: 1
-        template:
-          spec:
-            containers:
-              - name: bridge
-                command:
-                  - python
-                  - -c
-                  - >-
-                    import dealiot_contracts, time;
-                    print("dealiot bridge image ready", flush=True);
-                    time.sleep(3600)
-                resources:
-                  requests:
-                    cpu: 50m
-                    memory: 128Mi
-                  limits:
-                    cpu: 250m
-                    memory: 256Mi

@@ -21,7 +21,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: jobmanager
-          image: ghcr.io/smartappli/dealiot-flink-pyflink:latest
+          image: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["jobmanager"]
           ports:
@@ -119,7 +119,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: taskmanager
-          image: ghcr.io/smartappli/dealiot-flink-pyflink:latest
+          image: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["taskmanager"]
           envFrom:
