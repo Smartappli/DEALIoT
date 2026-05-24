@@ -1,6 +1,10 @@
 # Python cache
 __pycache__/
 *.py[cod]
+.coverage
+.coverage.*
+.pytest_cache/
+coverage.xml
 
 # Local configuration and secrets
 .env
