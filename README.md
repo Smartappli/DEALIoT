@@ -188,6 +188,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `raw.video2d.meta`
 - `raw.video3d.meta`
 - `media.object.events`
+- `dlq.events`
 
 ## 6. Network zones
 
@@ -294,24 +295,32 @@ PY
 
 ## 8. Startup sequence
 
-Use the base compose file plus an environment-specific overlay.
+Use the base compose file plus an environment-specific overlay. The base file describes the
+local topology; the overlays tune it for development, staging checks, or production-like local
+validation.
 
 ### Development
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# or
+./install_dealiot.sh dev up -d --build
 ```
 
 ### Staging
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --build
+# or
+./install_dealiot.sh staging up -d --build
 ```
 
 ### Production-like local validation
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# or
+./install_dealiot.sh prod up -d --build
 ```
 
 ## 9. Service endpoints
@@ -362,6 +371,16 @@ Open the Airflow UI and verify that `media_backfill` is visible and import-error
 
 ## 11. Operational notes
 
+### Event contract enforcement
+Python producers validate critical event contracts before publishing to Kafka:
+
+- valid records go to their intended `raw.*` topic
+- invalid records go to `dlq.events`
+- `timestamp` is the event time; `ingested_at` is when the platform received or replayed it
+
+This local validation is a guardrail. Apicurio remains the source of schema documentation and
+consumer compatibility governance.
+
 ### Airflow 3
 The stack uses the Airflow 3 split model:
 - API/UI server (`airflow-apiserver`)
@@ -390,15 +409,14 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 
 ## 12. Recommended next steps
 
-1. Add one or more concrete Flink jobs under `flink/jobs/`.
-2. Add downstream consumers for `features.events`, `alerts.events`, and `state.latest`.
-3. Add reverse proxy/TLS for non-local deployments.
-4. Add CI validation with:
-   - YAML validation
-   - Python linting
-   - Docker build checks
-   - smoke tests for bootstrap topics and schemas
-5. Add retention, compaction, and backup policies per environment.
+1. Add TLS and authentication for Kafka, MQTT, object storage, and public UIs before any
+   non-local deployment.
+2. Add backup and restore runbooks for Kafka metadata, TimescaleDB, SeaweedFS, Grafana, and
+   Airflow metadata.
+3. Move production deployment to an orchestrator with real failure domains. The Compose topology
+   is suitable for local and CI validation, not multi-host resilience.
+4. Add downstream consumers for `features.events`, `alerts.events`, and `state.latest`.
+5. Add one or more domain-specific Flink jobs under `flink/jobs/`.
 
 ## 13. Included artifacts in this finalized package
 
@@ -406,6 +424,8 @@ This finalized package contains:
 
 - a patched `docker-compose.yml`
 - functional environment overlays for dev/staging/prod
+- a shared lightweight event contract module used by Python producers
+- a `dlq.events` schema and DLQ routing for invalid producer events
 - a new `README.md`
 - a new `.env.example`
 - a corrected MQTT bridge
