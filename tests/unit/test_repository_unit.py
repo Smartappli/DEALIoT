@@ -16,8 +16,13 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docker-compose.prod.yml",
             REPO_ROOT / ".dockerignore",
             REPO_ROOT / "README.md",
+            REPO_ROOT / "scripts" / "smoke-e2e.sh",
+            REPO_ROOT / "docs" / "runbooks" / "operations.md",
+            REPO_ROOT / "docs" / "runbooks" / "backup-restore.md",
+            REPO_ROOT / "docs" / "runbooks" / "security-hardening.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
+            REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
         ]
 
         for file_path in required_files:
@@ -80,12 +85,43 @@ class RepositoryUnitTests(unittest.TestCase):
         for fragment in forbidden_fragments:
             self.assertNotIn(fragment, compose_text)
 
+    def test_base_compose_does_not_publish_host_ports(self) -> None:
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+        self.assertNotIn("\n    ports:\n", compose_text)
+
+    def test_dev_overlay_contains_local_ports_and_prod_exposes_only_edge(self) -> None:
+        dev_text = (REPO_ROOT / "docker-compose.dev.yml").read_text(encoding="utf-8")
+        prod_text = (REPO_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8")
+
+        for port in ['"8088:8080"', '"19092:19092"', '"3000:3000"', '"1883:1883"']:
+            self.assertIn(port, dev_text)
+
+        self.assertIn('"80:80"', prod_text)
+        self.assertIn('"443:443"', prod_text)
+        self.assertNotIn('"8088:8080"', prod_text)
+        self.assertNotIn('"19092:19092"', prod_text)
+
+    def test_e2e_smoke_script_checks_runtime_contracts(self) -> None:
+        script_text = (REPO_ROOT / "scripts" / "smoke-e2e.sh").read_text(encoding="utf-8")
+
+        for expected in [
+            "raw.sensor",
+            "dlq.events",
+            "features.events",
+            "state.latest",
+            "run-streaming-minimal.sh",
+            "apicurio-registry:8080",
+        ]:
+            self.assertIn(expected, script_text)
+
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [
             REPO_ROOT / "scripts" / "post-bootstrap.sh",
             REPO_ROOT / "scripts" / "start-patroni.sh",
             REPO_ROOT / "scripts" / "start-pgbouncer-rw.sh",
             REPO_ROOT / "scripts" / "start-pgbouncer-ro.sh",
+            REPO_ROOT / "scripts" / "smoke-e2e.sh",
         ]
 
         for script in script_files:
