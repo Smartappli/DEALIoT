@@ -41,13 +41,11 @@ class EventContractsUnitTests(unittest.TestCase):
             source="unit-test",
             intended_topic="raw.sensor",
             errors=["bad payload"],
-            raw_event={"device_id": "dev-1"},
-            source_topic="mqtt/topic",
-            timestamp="2026-01-01T00:00:00+00:00",
+            raw_event={"device_id": "dev-1", "source_topic": "mqtt/topic"},
         )
 
         self.assertEqual(DLQ_TOPIC, "dlq.events")
-        self.assertEqual(dlq["timestamp"], "2026-01-01T00:00:00+00:00")
+        self.assertIsInstance(dlq["timestamp"], str)
         self.assertEqual(dlq["source_topic"], "mqtt/topic")
         self.assertEqual(dlq["errors"], ["bad payload"])
 
