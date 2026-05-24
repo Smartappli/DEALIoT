@@ -11,16 +11,18 @@ compose() {
 }
 
 require_command() {
-  if ! command -v "$1" >/dev/null 2>&1; then
-    echo "Missing required command: $1" >&2
+  local command_name="$1"
+
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    echo "Missing required command: $command_name" >&2
     exit 127
   fi
 }
 
 wait_for_topic_message() {
-  topic="$1"
-  pattern="$2"
-  timeout_ms="${3:-30000}"
+  local topic="$1"
+  local pattern="$2"
+  local timeout_ms="${3:-30000}"
 
   echo "Waiting for Kafka topic=$topic pattern=$pattern"
   if compose exec -T kafka1 /opt/kafka/bin/kafka-console-consumer.sh \
@@ -96,7 +98,9 @@ wait_for_topic_message "features.events" "e2e-sensor-001" 60000
 wait_for_topic_message "state.latest" "e2e-sensor-001" 60000
 
 echo "Checking Apicurio artifacts"
-registry_base="http://apicurio-registry:8080/apis/registry/v3"
+registry_scheme="${APICURIO_REGISTRY_SCHEME:-http}"
+registry_host="${APICURIO_REGISTRY_HOST:-apicurio-registry:8080}"
+registry_base="${registry_scheme}://${registry_host}/apis/registry/v3"
 compose run --rm --entrypoint sh apicurio-init -lc \
   "curl -fsS ${registry_base}/groups/platform/artifacts/dlq.events >/dev/null"
 compose run --rm --entrypoint sh apicurio-init -lc \
