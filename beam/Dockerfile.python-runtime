@@ -8,7 +8,7 @@ RUN useradd --create-home --shell /bin/bash appuser
 WORKDIR /opt/pipelines
 
 COPY --chmod=0444 beam/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+RUN pip install --no-cache-dir --only-binary :all: --require-hashes -r /tmp/requirements.txt
 
 COPY --chown=appuser:appuser --chmod=0555 dealiot_contracts /opt/pipelines/dealiot_contracts
 COPY --chown=appuser:appuser --chmod=0555 pipelines /opt/pipelines

@@ -47,6 +47,23 @@ DEFAULT_SOURCE_TOPICS = (
     "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,raw.video2d.meta,raw.video3d.meta"
 )
 
+SOURCE_TOPIC_EVENT_KINDS = {
+    "raw.sensor": "sensor",
+    "raw.gps": "gps",
+    "raw.image2d.meta": "image2d",
+    "raw.image3d.meta": "image3d",
+    "raw.video2d.meta": "video2d",
+    "raw.video3d.meta": "video3d",
+}
+
+MQTT_EVENT_KIND_PATTERNS = (
+    ("gps", ("gps", "/gnss/")),
+    ("video3d", ("video3d", "/stereo-video/", "/volumetric-video/")),
+    ("video2d", ("video2d", "/video/", "/camera-stream/")),
+    ("image3d", ("image3d", "/lidar/", "/pointcloud/")),
+    ("image2d", ("image2d", "/camera/", "/image/")),
+)
+
 
 def env_or_default(name: str, default: str) -> str:
     value = os.getenv(name)
@@ -70,36 +87,15 @@ def infer_entity_id(mqtt_topic: str) -> str:
 
 
 def infer_event_kind(source_topic: str, mqtt_topic: str) -> str:
-    lowered_source = source_topic.lower()
+    source_event_kind = SOURCE_TOPIC_EVENT_KINDS.get(source_topic.lower())
+    if source_event_kind is not None:
+        return source_event_kind
+
     lowered_mqtt = mqtt_topic.lower()
 
-    if lowered_source == "raw.sensor":
-        return "sensor"
-    if lowered_source == "raw.gps":
-        return "gps"
-    if lowered_source == "raw.image2d.meta":
-        return "image2d"
-    if lowered_source == "raw.image3d.meta":
-        return "image3d"
-    if lowered_source == "raw.video2d.meta":
-        return "video2d"
-    if lowered_source == "raw.video3d.meta":
-        return "video3d"
-
-    if "gps" in lowered_mqtt or "/gnss/" in lowered_mqtt:
-        return "gps"
-    if (
-        "video3d" in lowered_mqtt
-        or "/stereo-video/" in lowered_mqtt
-        or "/volumetric-video/" in lowered_mqtt
-    ):
-        return "video3d"
-    if "video2d" in lowered_mqtt or "/video/" in lowered_mqtt or "/camera-stream/" in lowered_mqtt:
-        return "video2d"
-    if "image3d" in lowered_mqtt or "/lidar/" in lowered_mqtt or "/pointcloud/" in lowered_mqtt:
-        return "image3d"
-    if "image2d" in lowered_mqtt or "/camera/" in lowered_mqtt or "/image/" in lowered_mqtt:
-        return "image2d"
+    for event_kind, patterns in MQTT_EVENT_KIND_PATTERNS:
+        if any(pattern in lowered_mqtt for pattern in patterns):
+            return event_kind
 
     return "unknown"
 
