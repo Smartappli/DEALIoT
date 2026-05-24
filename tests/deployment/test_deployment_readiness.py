@@ -71,6 +71,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml", workflow_text)
         self.assertIn("kubectl kustomize deploy/kubernetes/base", workflow_text)
         self.assertIn("kubectl kustomize deploy/kubernetes/overlays/production", workflow_text)
+        self.assertIn("kubectl create namespace dealiot", workflow_text)
+        self.assertIn("kubectl create namespace dealiot-smoke", workflow_text)
         self.assertIn("Production overlay must not render mutable latest image tags", workflow_text)
         self.assertIn("kind create cluster --name dealiot-ci", workflow_text)
         self.assertIn("kubectl apply -k deploy/kubernetes/overlays/ci-smoke", workflow_text)
