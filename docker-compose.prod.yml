@@ -22,6 +22,12 @@ x-prod-resources-medium: &prod-resources-medium
         memory: 3g
 
 services:
+  seaweedfs-edge:
+    logging: *prod-logging
+    ports:
+      - "80:80"
+      - "443:443"
+
   mqtt-kafka-bridge:
     <<: *prod-resources-small
     logging: *prod-logging
