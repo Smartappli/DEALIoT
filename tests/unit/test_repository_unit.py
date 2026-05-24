@@ -94,6 +94,17 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertNotIn("\n    ports:\n", compose_text)
 
+    def test_compose_and_patroni_avoid_broad_privilege_hotspots(self) -> None:
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+        patroni_templates = sorted((REPO_ROOT / "patroni").glob("pg*.yml.tmpl"))
+
+        self.assertNotIn("privileged: true", compose_text)
+        self.assertIn("no-new-privileges:true", compose_text)
+        for template_path in patroni_templates:
+            template_text = template_path.read_text(encoding="utf-8")
+            self.assertNotIn("0.0.0.0/0", template_text)
+            self.assertIn("samenet scram-sha-256", template_text)
+
     def test_dev_overlay_contains_local_ports_and_prod_exposes_only_edge(self) -> None:
         dev_text = (REPO_ROOT / "docker-compose.dev.yml").read_text(encoding="utf-8")
         prod_text = (REPO_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8")
