@@ -22,8 +22,10 @@ Do not deploy `latest` in production.
 
 ## Runtime Config
 
-Use `runtime-config.production.example.env` as the source of expected runtime keys. Patch
-`dealiot-runtime-config` through a site-specific overlay or through your GitOps tooling.
+This overlay replaces the base `dealiot-runtime-config` ConfigMap with
+`runtime-config.production.example.env` so production does not inherit local development endpoints.
+Before deployment, copy or patch that file through a site-specific overlay or GitOps tooling with
+your private Kafka, MQTT, S3, PostgreSQL, and Redis endpoints.
 
 ## Required Secret
 

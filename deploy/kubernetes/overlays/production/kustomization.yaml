@@ -8,6 +8,12 @@ resources:
   - network-policies.yaml
   - external-dependency-contract.yaml
 
+configMapGenerator:
+  - name: dealiot-runtime-config
+    behavior: replace
+    envs:
+      - runtime-config.production.example.env
+
 commonLabels:
   dealiot.io/environment: production
 
