@@ -24,6 +24,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
+            REPO_ROOT / "bandit.yaml",
             REPO_ROOT / "wildfi-decoder" / "Dockerfile",
             REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
         ]
