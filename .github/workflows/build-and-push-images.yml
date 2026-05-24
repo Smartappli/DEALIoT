@@ -26,10 +26,10 @@ jobs:
       matrix:
         include:
           - image_name: orchestration
-            context: ./orchestration
+            context: .
             dockerfile: ./orchestration/Dockerfile
           - image_name: mqtt-kafka-bridge
-            context: ./mqtt-kafka-bridge
+            context: .
             dockerfile: ./mqtt-kafka-bridge/Dockerfile
           - image_name: flink-pyflink
             context: .

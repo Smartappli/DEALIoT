@@ -4,8 +4,8 @@ x-vernemq-env: &vernemq-env
   DOCKER_VERNEMQ_LISTENER__TCP__DEFAULT: "0.0.0.0:1883"
   DOCKER_VERNEMQ_LISTENER__WS__DEFAULT: "0.0.0.0:8080"
   DOCKER_VERNEMQ_LISTENER__VMQ__CLUSTERING: "0.0.0.0:44053"
-  DOCKER_VERNEMQ_DISTRIBUTED_COOKIE: "${VERNEMQ_DISTRIBUTED_COOKIE:-change-this-cookie}"
-  DOCKER_VERNEMQ_USER_admin: "${VERNEMQ_ADMIN_PASSWORD:-change-this-password}"
+  DOCKER_VERNEMQ_DISTRIBUTED_COOKIE: "${VERNEMQ_DISTRIBUTED_COOKIE:?define VERNEMQ_DISTRIBUTED_COOKIE in .env}"
+  DOCKER_VERNEMQ_USER_admin: "${VERNEMQ_ADMIN_PASSWORD:?define VERNEMQ_ADMIN_PASSWORD in .env}"
   DOCKER_VERNEMQ_SHARED_SUBSCRIPTION_POLICY: "prefer_local"
   DOCKER_VERNEMQ_COMPOSE: "1"
   DOCKER_VERNEMQ_LOG__CONSOLE: "both"
@@ -32,8 +32,8 @@ x-airflow-env: &airflow-env
   AIRFLOW__CORE__DEFAULT_TIMEZONE: "Europe/Brussels"
   AIRFLOW__CORE__FERNET_KEY: "${AIRFLOW_FERNET_KEY:?define AIRFLOW_FERNET_KEY in .env}"
   AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
-  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:-change-this-password}@airflow-postgres:5432/airflow"
-  AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://airflow:${AIRFLOW_DB_PASSWORD:-change-this-password}@airflow-postgres:5432/airflow"
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:?define AIRFLOW_DB_PASSWORD in .env}@airflow-postgres:5432/airflow"
+  AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://airflow:${AIRFLOW_DB_PASSWORD:?define AIRFLOW_DB_PASSWORD in .env}@airflow-postgres:5432/airflow"
   AIRFLOW__CELERY__BROKER_URL: "redis://airflow-redis:6379/0"
   AIRFLOW__CELERY__WORKER_ENABLE_REMOTE_CONTROL: "true"
   AIRFLOW__FAB__AUTH_BACKENDS: "airflow.providers.fab.auth_manager.api.auth.backend.session"
@@ -59,8 +59,8 @@ x-airflow-env: &airflow-env
 
 x-airflow-common: &airflow-common
   build:
-    context: ./orchestration
-    dockerfile: Dockerfile
+    context: .
+    dockerfile: orchestration/Dockerfile
   environment:
     <<: *airflow-env
   user: "${AIRFLOW_UID:-50000}:0"
@@ -68,6 +68,7 @@ x-airflow-common: &airflow-common
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/plugins:/opt/airflow/plugins
+    - ./dealiot_contracts:/opt/airflow/dealiot_contracts:ro
     - ./pipelines:/opt/pipelines
   depends_on:
     airflow-postgres:
@@ -98,7 +99,7 @@ x-beam-env: &beam-env
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_REGION: "us-east-1"
   S3_ENDPOINT_URL: "http://seaweedfs-s3:8333"
-  PYTHONPATH: "/opt/pipelines"
+  PYTHONPATH: "/opt/pipelines:/opt/dealiot_contracts"
 
 x-flink-py-build: &flink-py-build
   context: .
@@ -566,8 +567,8 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __connect-offsets --partitions 12 --replication-factor 3 --config cleanup.policy=compact;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __connect-status --partitions 6 --replication-factor 3 --config cleanup.policy=compact;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __debezium-heartbeat.appdb --partitions 1 --replication-factor 3 --config min.insync.replicas=2;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic state-latest --partitions 12 --replication-factor 3 --config cleanup.policy=compact --config min.cleanable.dirty.ratio=0.1 --config delete.retention.ms=86400000 --config min.insync.replicas=2;
-        /opt/kafka/bin/kafka-configs.sh --bootstrap-server kafka1:9092 --alter --entity-type topics --entity-name state-latest --add-config cleanup.policy=compact,min.cleanable.dirty.ratio=0.1,delete.retention.ms=86400000,min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic state.latest --partitions 12 --replication-factor 3 --config cleanup.policy=compact --config min.cleanable.dirty.ratio=0.1 --config delete.retention.ms=86400000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-configs.sh --bootstrap-server kafka1:9092 --alter --entity-type topics --entity-name state.latest --add-config cleanup.policy=compact,min.cleanable.dirty.ratio=0.1,delete.retention.ms=86400000,min.insync.replicas=2;
         echo "Kafka topics created."
     networks:
       - kafka_net
@@ -1201,8 +1202,8 @@ services:
 
   mqtt-kafka-bridge:
     build:
-      context: ./mqtt-kafka-bridge
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: mqtt-kafka-bridge/Dockerfile
     restart: unless-stopped
     depends_on:
       kafka-init:
@@ -1213,7 +1214,7 @@ services:
       MQTT_HOST: "vernemq1"
       MQTT_PORT: "1883"
       MQTT_USERNAME: "admin"
-      MQTT_PASSWORD: "${VERNEMQ_ADMIN_PASSWORD:-change-this-password}"
+      MQTT_PASSWORD: "${VERNEMQ_ADMIN_PASSWORD:?define VERNEMQ_ADMIN_PASSWORD in .env}"
       MQTT_TOPIC: "$$share/ingestors/devices/#"
       KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
       DEFAULT_KAFKA_TOPIC: "raw.sensor"
@@ -1415,10 +1416,11 @@ services:
     command: ["--worker_pool"]
     environment:
       <<: *beam-env
-      PYTHONPATH: "/opt/pipelines"
+      PYTHONPATH: "/opt/pipelines:/opt/dealiot_contracts"
     expose:
       - "50000"
     volumes:
+      - ./dealiot_contracts:/opt/dealiot_contracts/dealiot_contracts:ro
       - ./pipelines:/opt/pipelines:ro
     networks:
       - orchestration_net
@@ -1449,6 +1451,7 @@ services:
     environment:
       <<: *beam-env
     volumes:
+      - ./dealiot_contracts:/opt/dealiot_contracts/dealiot_contracts:ro
       - ./pipelines:/opt/pipelines
     networks:
       - orchestration_net
@@ -1462,7 +1465,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: "${AIRFLOW_DB_PASSWORD:-change-this-password}"
+      POSTGRES_PASSWORD: "${AIRFLOW_DB_PASSWORD:?define AIRFLOW_DB_PASSWORD in .env}"
       POSTGRES_DB: airflow
     volumes:
       - airflow_postgres_data:/var/lib/postgresql/data
@@ -1498,7 +1501,7 @@ services:
       _AIRFLOW_DB_MIGRATE: "true"
       _AIRFLOW_WWW_USER_CREATE: "true"
       _AIRFLOW_WWW_USER_USERNAME: "${AIRFLOW_ADMIN_USER:-admin}"
-      _AIRFLOW_WWW_USER_PASSWORD: "${AIRFLOW_ADMIN_PASSWORD:-admin}"
+      _AIRFLOW_WWW_USER_PASSWORD: "${AIRFLOW_ADMIN_PASSWORD:?define AIRFLOW_ADMIN_PASSWORD in .env}"
       _AIRFLOW_WWW_USER_FIRSTNAME: "Air"
       _AIRFLOW_WWW_USER_LASTNAME: "Flow"
       _AIRFLOW_WWW_USER_ROLE: "Admin"
@@ -1669,7 +1672,7 @@ services:
         restart: true
     environment:
       GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
-      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-change-this-password}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?define GRAFANA_ADMIN_PASSWORD in .env}"
       GF_USERS_ALLOW_SIGN_UP: "false"
     ports:
       - "3000:3000"
@@ -1791,8 +1794,7 @@ services:
         post_artifact() {
           group="$$1"
           artifact="$$2"
-          artifact_type="$$3"
-          file="$$4"
+          file="$$3"
 
           if [ ! -f "$$file" ]; then
             echo "Missing schema file: $$file"
@@ -1805,35 +1807,21 @@ services:
             return 0
           fi
 
-          content_escaped="$$(sed 's/\\/\\\\/g; s/"/\\"/g' "$$file" | awk '{printf "%s\\n", $$0}')"
-
-          cat >/tmp/payload.json <<EOF
-        {
-          "artifactId": "$$artifact",
-          "artifactType": "$$artifact_type",
-          "firstVersion": {
-            "content": {
-              "content": "$$content_escaped",
-              "contentType": "application/json"
-            }
-          }
-        }
-        EOF
-
           curl -fsS -X POST "$$base/groups/$$group/artifacts" \
             -H "Content-Type: application/json" \
-            --data @/tmp/payload.json
+            --data @"$$file"
 
           echo "Artifact created: $$group/$$artifact"
         }
 
-        post_artifact telemetry raw.sensor JSON /bootstrap/raw.sensor.json
-        post_artifact telemetry raw.gps JSON /bootstrap/raw.gps.json
-        post_artifact media raw.image2d.meta JSON /bootstrap/raw.image2d.meta.json
-        post_artifact media raw.image3d.meta JSON /bootstrap/raw.image3d.meta.json
-        post_artifact media raw.video2d.meta JSON /bootstrap/raw.video2d.meta.json
-        post_artifact media raw.video3d.meta JSON /bootstrap/raw.video3d.meta.json
-        post_artifact media media.object.events JSON /bootstrap/media.object.events.json
+        post_artifact telemetry raw.sensor /bootstrap/raw.sensor.json
+        post_artifact telemetry raw.gps /bootstrap/raw.gps.json
+        post_artifact media raw.image2d.meta /bootstrap/raw.image2d.meta.json
+        post_artifact media raw.image3d.meta /bootstrap/raw.image3d.meta.json
+        post_artifact media raw.video2d.meta /bootstrap/raw.video2d.meta.json
+        post_artifact media raw.video3d.meta /bootstrap/raw.video3d.meta.json
+        post_artifact media media.object.events /bootstrap/media.object.events.json
+        post_artifact platform dlq.events /bootstrap/dlq.events.json
 
         echo "Apicurio bootstrap done."
     networks:

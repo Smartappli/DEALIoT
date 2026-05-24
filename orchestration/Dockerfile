@@ -2,18 +2,12 @@ FROM apache/airflow:3.2.1
 
 USER airflow
 
+COPY --chown=airflow:0 orchestration/requirements.txt /tmp/requirements-airflow.txt
+COPY --chown=airflow:0 dealiot_contracts /opt/airflow/dealiot_contracts
+
 RUN pip install --no-cache-dir \
-    "apache-airflow-providers-amazon" \
-    "apache-airflow-providers-apache-beam[common.compat]" \
-    "apache-airflow-providers-apache-flink" \
-    "apache-airflow-providers-apache-kafka" \
-    "apache-airflow-providers-fab" \
-    "apache-airflow-providers-postgres" \
-    "apache-airflow-providers-redis" \
     "apache-airflow[statsd]==${AIRFLOW_VERSION}" \
-    "boto3" \
-    "cachetools>=6.0" \
-    "kafka-python" \
-    "psycopg[binary]" \
-    "requests" \
+    --requirement /tmp/requirements-airflow.txt \
     --constraint "${HOME}/constraints.txt"
+
+ENV PYTHONPATH="/opt/airflow:${PYTHONPATH}"

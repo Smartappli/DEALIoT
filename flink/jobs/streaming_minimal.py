@@ -111,7 +111,7 @@ class NormalizeEvent(FlatMapFunction):
 
         mqtt_topic = str(record.get("mqtt_topic", ""))
         entity_id = infer_entity_id(mqtt_topic)
-        event_ts = str(record.get("ingested_at", ""))
+        event_ts = str(record.get("timestamp") or record.get("ingested_at") or "")
         event_kind = infer_event_kind(source_topic, mqtt_topic)
 
         payload_b64 = str(record.get("payload_b64", ""))
@@ -200,7 +200,16 @@ def main():
         topic.strip()
         for topic in env_or_default(
             "FLINK_SOURCE_TOPICS",
-            "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,raw.video2d.meta,raw.video3d.meta",
+            ",".join(
+                [
+                    "raw.sensor",
+                    "raw.gps",
+                    "raw.image2d.meta",
+                    "raw.image3d.meta",
+                    "raw.video2d.meta",
+                    "raw.video3d.meta",
+                ]
+            ),
         ).split(",")
         if topic.strip()
     ]

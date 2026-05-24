@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import boto3
+from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
 from kafka import KafkaProducer
 
 TOPIC_BY_MEDIA_KIND = {
@@ -78,6 +79,7 @@ def build_record(obj: dict, media_kind: str) -> dict:
     record = {
         "device_id": "backfill",
         "timestamp": obj["timestamp"],
+        "ingested_at": now_iso(),
         "bucket": obj["bucket"],
         "object_key": obj["object_key"],
         "object_uri": obj["object_uri"],
@@ -138,6 +140,7 @@ def main() -> None:
     producer = get_kafka_producer()
 
     sent = 0
+    invalid = 0
     for obj in iter_objects_between(
         bucket=args.bucket,
         prefix=args.prefix,
@@ -146,8 +149,23 @@ def main() -> None:
     ):
         record = build_record(obj, args.media_kind)
         key = obj["object_key"].encode("utf-8")
-        producer.send(kafka_topic, key=key, value=record)
-        sent += 1
+        errors = validate_event(kafka_topic, record)
+        if errors:
+            producer.send(
+                DLQ_TOPIC,
+                key=key,
+                value=build_dlq_event(
+                    source="airflow-backfill",
+                    intended_topic=kafka_topic,
+                    errors=errors,
+                    raw_event=record,
+                    source_topic=f"s3://{obj['bucket']}/{obj['object_key']}",
+                ),
+            )
+            invalid += 1
+        else:
+            producer.send(kafka_topic, key=key, value=record)
+            sent += 1
 
     producer.flush(timeout=30)
     print(
@@ -159,6 +177,7 @@ def main() -> None:
                 "window_end": window_end.isoformat(),
                 "topic": kafka_topic,
                 "records_sent": sent,
+                "records_invalid": invalid,
             }
         )
     )
