@@ -69,6 +69,8 @@ jobs:
           fi
           docker buildx build \
             --push \
+            --sbom=true \
+            --provenance=true \
             "${TAGS[@]}" \
             --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
             --label "org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \

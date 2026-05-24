@@ -21,6 +21,7 @@ production architecture.
 | Docker Swarm | `deploy/swarm/dealiot-stack.yml` | Production Swarm stack for the application plane |
 | Swarm smoke | `deploy/swarm/dealiot-smoke-stack.yml` | CI-only stack that verifies image/startup wiring |
 | Kubernetes | `deploy/kubernetes/base` | Kustomize base for the application plane |
+| Kubernetes production | `deploy/kubernetes/overlays/production` | Strict production overlay with immutable image tags and NetworkPolicies |
 | Kubernetes smoke | `deploy/kubernetes/overlays/ci-smoke` | CI-only kind overlay |
 
 ## GitHub validation
@@ -30,7 +31,8 @@ The workflow `.github/workflows/production-deployment-test.yml` validates both o
 1. renders the production Swarm stack,
 2. deploys a Swarm smoke stack,
 3. renders the Kubernetes Kustomize base,
-4. deploys a Kubernetes smoke overlay on kind.
+4. renders the Kubernetes production overlay and rejects mutable `latest` tags,
+5. deploys a Kubernetes smoke overlay on kind.
 
 The smoke deployments do not start the full data platform. They prove that the production
 deployment assets, image packaging, secrets, service accounts, and rollout mechanics are valid in
