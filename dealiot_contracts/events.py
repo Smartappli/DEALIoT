@@ -204,8 +204,7 @@ def validate_event(topic: str, event: dict[str, Any]) -> list[str]:
     if topic in MEDIA_TOPICS:
         allowed = MEDIA_ALLOWED_FIELDS[topic]
         errors.extend(
-            f"field not allowed by {topic}: {field}"
-            for field in sorted(set(event) - allowed)
+            f"field not allowed by {topic}: {field}" for field in sorted(set(event) - allowed)
         )
 
     _validate_types(event, errors)

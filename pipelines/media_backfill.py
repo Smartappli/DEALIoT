@@ -7,8 +7,9 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import boto3
-from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
 from kafka import KafkaProducer
+
+from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
 
 TOPIC_BY_MEDIA_KIND = {
     "image2d": "raw.image2d.meta",
