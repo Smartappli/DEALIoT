@@ -174,14 +174,14 @@ def build_dlq_event(
     intended_topic: str,
     errors: list[str],
     raw_event: dict[str, Any],
-    source_topic: str | None = None,
-    timestamp: str | None = None,
 ) -> dict[str, Any]:
     return {
-        "timestamp": timestamp or now_iso(),
+        "timestamp": now_iso(),
         "source": source,
         "intended_topic": intended_topic,
-        "source_topic": source_topic or raw_event.get("mqtt_topic", ""),
+        "source_topic": raw_event.get("source_topic")
+        or raw_event.get("mqtt_topic")
+        or raw_event.get("object_uri", ""),
         "device_id": str(raw_event.get("device_id", "unknown")),
         "errors": errors,
         "raw_event": raw_event,
@@ -195,14 +195,18 @@ def validate_event(topic: str, event: dict[str, Any]) -> list[str]:
     if required is None:
         return errors
 
-    for field in sorted(required):
-        if field not in event or event[field] in (None, ""):
-            errors.append(f"missing required field: {field}")
+    errors.extend(
+        f"missing required field: {field}"
+        for field in sorted(required)
+        if field not in event or event[field] in (None, "")
+    )
 
     if topic in MEDIA_TOPICS:
         allowed = MEDIA_ALLOWED_FIELDS[topic]
-        for field in sorted(set(event) - allowed):
-            errors.append(f"field not allowed by {topic}: {field}")
+        errors.extend(
+            f"field not allowed by {topic}: {field}"
+            for field in sorted(set(event) - allowed)
+        )
 
     _validate_types(event, errors)
     _validate_ranges(event, errors)
@@ -210,17 +214,23 @@ def validate_event(topic: str, event: dict[str, Any]) -> list[str]:
 
 
 def _validate_types(event: dict[str, Any], errors: list[str]) -> None:
-    for field in sorted(STRING_FIELDS & set(event)):
-        if event[field] is not None and not isinstance(event[field], str):
-            errors.append(f"field must be a string: {field}")
+    errors.extend(
+        f"field must be a string: {field}"
+        for field in sorted(STRING_FIELDS & set(event))
+        if event[field] is not None and not isinstance(event[field], str)
+    )
 
-    for field in sorted(INTEGER_FIELDS & set(event)):
-        if event[field] is not None and not isinstance(event[field], int):
-            errors.append(f"field must be an integer: {field}")
+    errors.extend(
+        f"field must be an integer: {field}"
+        for field in sorted(INTEGER_FIELDS & set(event))
+        if event[field] is not None and not isinstance(event[field], int)
+    )
 
-    for field in sorted(NUMBER_FIELDS & set(event)):
-        if event[field] is not None and not isinstance(event[field], int | float):
-            errors.append(f"field must be numeric: {field}")
+    errors.extend(
+        f"field must be numeric: {field}"
+        for field in sorted(NUMBER_FIELDS & set(event))
+        if event[field] is not None and not isinstance(event[field], int | float)
+    )
 
     if "payload" in event and not isinstance(event["payload"], dict):
         errors.append("field must be an object: payload")

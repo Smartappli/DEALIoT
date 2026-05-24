@@ -187,7 +187,6 @@ def route_event(msg, kafka_topic: str, event: dict[str, Any]) -> tuple[str, dict
         intended_topic=kafka_topic,
         errors=errors,
         raw_event=event,
-        source_topic=msg.topic,
     )
 
 

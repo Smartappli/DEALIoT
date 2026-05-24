@@ -43,6 +43,11 @@ EVENT_TYPE = Types.ROW_NAMED(
     ],
 )
 
+DEFAULT_SOURCE_TOPICS = (
+    "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,"
+    "raw.video2d.meta,raw.video3d.meta"
+)
+
 
 def env_or_default(name: str, default: str) -> str:
     value = os.getenv(name)
@@ -200,16 +205,7 @@ def main():
         topic.strip()
         for topic in env_or_default(
             "FLINK_SOURCE_TOPICS",
-            ",".join(
-                [
-                    "raw.sensor",
-                    "raw.gps",
-                    "raw.image2d.meta",
-                    "raw.image3d.meta",
-                    "raw.video2d.meta",
-                    "raw.video3d.meta",
-                ]
-            ),
+            DEFAULT_SOURCE_TOPICS,
         ).split(",")
         if topic.strip()
     ]

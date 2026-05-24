@@ -151,6 +151,10 @@ def main() -> None:
         key = obj["object_key"].encode("utf-8")
         errors = validate_event(kafka_topic, record)
         if errors:
+            raw_event = {
+                **record,
+                "source_topic": f"s3://{obj['bucket']}/{obj['object_key']}",
+            }
             producer.send(
                 DLQ_TOPIC,
                 key=key,
@@ -158,8 +162,7 @@ def main() -> None:
                     source="airflow-backfill",
                     intended_topic=kafka_topic,
                     errors=errors,
-                    raw_event=record,
-                    source_topic=f"s3://{obj['bucket']}/{obj['object_key']}",
+                    raw_event=raw_event,
                 ),
             )
             invalid += 1
