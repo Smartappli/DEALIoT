@@ -80,7 +80,9 @@ class AirflowDagUnitTests(unittest.TestCase):
         self.assertEqual(recorder["dag_kwargs"]["dag_id"], "media_backfill")
         self.assertEqual(recorder["dag_kwargs"]["schedule"], "*/30 * * * *")
         self.assertFalse(recorder["dag_kwargs"]["catchup"])
-        self.assertEqual(recorder["partial_kwargs"], {"task_id": "backfill_media", "do_xcom_push": False})
+        self.assertEqual(
+            recorder["partial_kwargs"], {"task_id": "backfill_media", "do_xcom_push": False}
+        )
 
         jobs = recorder["jobs"]
         self.assertEqual(len(jobs), 4)
