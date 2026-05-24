@@ -97,7 +97,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
 
         self.assertIn("COPY --chown=airflow:0 --chmod=0555 airflow/dags", orchestration_dockerfile)
-        self.assertIn("COPY --chown=airflow:0 --chmod=0555 pipelines", orchestration_dockerfile)
+        self.assertIn(
+            "COPY --chown=airflow:0 --chmod=0555 pipelines /opt/pipelines",
+            orchestration_dockerfile,
+        )
         self.assertIn("COPY --chown=flink:flink --chmod=0555 ./flink/jobs", flink_dockerfile)
         self.assertIn("COPY --chown=flink:flink --chmod=0555 ./pipelines", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
