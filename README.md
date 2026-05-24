@@ -112,6 +112,7 @@ flowchart LR
 airflow/                  Airflow DAGs, logs, plugins
 apicurio/bootstrap/       Registry bootstrap artifacts
 beam/                     Beam job server and Python harness images
+deploy/                   Docker Swarm and Kubernetes production targets
 flink/                    Custom PyFlink image and jobs
 grafana/                  Dashboards and provisioning
 haproxy/                  Read-write / read-only routing
@@ -335,6 +336,32 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ./install_dealiot.sh prod up -d --build
 ```
 
+### Docker Swarm production
+
+The Swarm stack lives in `deploy/swarm/dealiot-stack.yml`. It deploys the application/runtime
+plane and expects production-grade stateful dependencies to be provisioned outside the stack:
+Kafka, MQTT, S3-compatible storage, Airflow PostgreSQL, and Airflow Redis.
+
+```bash
+docker stack deploy -c deploy/swarm/dealiot-stack.yml dealiot
+```
+
+The CI-only stack `deploy/swarm/dealiot-smoke-stack.yml` verifies Swarm deployment mechanics with
+the locally built bridge image.
+
+### Kubernetes production
+
+The Kubernetes target is a Kustomize base under `deploy/kubernetes/base`.
+
+```bash
+kubectl apply -k deploy/kubernetes/base
+```
+
+Create environment-specific overlays for real clusters to patch image tags, external endpoints,
+ingress, storage classes, and secret references. The CI overlay
+`deploy/kubernetes/overlays/ci-smoke` is intentionally minimal and validates rollout wiring on
+kind.
+
 ## 9. Service endpoints
 
 These endpoints are available when the development overlay is active.
@@ -445,8 +472,8 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
    non-local deployment.
 2. Add backup and restore runbooks for Kafka metadata, TimescaleDB, SeaweedFS, Grafana, and
    Airflow metadata.
-3. Move production deployment to an orchestrator with real failure domains. The Compose topology
-   is suitable for local and CI validation, not multi-host resilience.
+3. Finalize the production stateful layer with managed services or dedicated operators for Kafka,
+   PostgreSQL, Redis, MQTT, and object storage before go-live.
 4. Add downstream consumers for `features.events`, `alerts.events`, and `state.latest`.
 5. Add one or more domain-specific Flink jobs under `flink/jobs/`.
 
@@ -464,3 +491,4 @@ This finalized package contains:
 - a corrected MQTT bridge
 - a corrected media backfill utility
 - a new `raw.gps` Apicurio schema
+- Docker Swarm and Kubernetes production deployment targets with CI smoke workflows
