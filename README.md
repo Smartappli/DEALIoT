@@ -191,6 +191,19 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `media.object.events`
 - `dlq.events`
 
+### WildFi ingestion
+
+The MQTT bridge subscribes to both generic devices and WildFi telemetry:
+
+```text
+$share/ingestors/devices/#
+$share/ingestors/wildfi/#
+```
+
+Decoded WildFi GPS/GNSS/raw GPS payloads are routed to `raw.gps`. Decoded IMU, environment,
+proximity, movement, and metadata payloads are routed to `raw.sensor`. See
+`docs/runbooks/wildfi-ingestion.md` for the expected topic and payload contract.
+
 ## 6. Network zones
 
 - `ingest_net`: internal ingestion plane for MQTT and SeaweedFS producers.

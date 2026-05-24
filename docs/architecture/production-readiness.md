@@ -30,6 +30,16 @@ target, but Kubernetes is where strict production controls are enforced first.
 | MQTT broker | Managed MQTT or operator/Helm-managed VerneMQ/EMQX with TLS and ACLs |
 | S3-compatible object storage | Managed S3-compatible storage or operator-backed on-prem object storage |
 
+## WildFi Ingestion
+
+WildFi is integrated as an MQTT data source, using the upstream firmware/gateway/decoder project at
+`https://github.com/trichl/WildFiOpenSource`. DEALIoT subscribes to
+`$share/ingestors/wildfi/#`; decoded GPS messages are mapped to `raw.gps`, while decoded IMU,
+environment, proximity, movement, and metadata messages are mapped to `raw.sensor`.
+
+Native WildFi binary logs should be decoded before publication or stored as object artifacts with
+metadata. They should not become an implicit binary telemetry contract inside the bridge.
+
 ## CI Gates
 
 The repository currently enforces:

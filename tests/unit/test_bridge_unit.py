@@ -109,6 +109,8 @@ class BridgeUnitTests(unittest.TestCase):
 
     def test_pick_kafka_topic_and_device_id_helpers(self):
         self.assertEqual(self.bridge.pick_kafka_topic("devices/a1/gnss/fix"), "raw.gps")
+        self.assertEqual(self.bridge.pick_kafka_topic("wildfi/tags/WF-001/rawgps"), "raw.gps")
+        self.assertEqual(self.bridge.pick_kafka_topic("wildfi/tags/WF-001/imu"), "raw.sensor")
         self.assertEqual(
             self.bridge.pick_kafka_topic("devices/a1/lidar/frame"),
             "raw.image3d.meta",
@@ -118,9 +120,22 @@ class BridgeUnitTests(unittest.TestCase):
             self.bridge.DEFAULT_KAFKA_TOPIC,
         )
         self.assertEqual(self.bridge.derive_device_id("/tenant/devices/cam-07/video"), "cam-07")
+        self.assertEqual(self.bridge.derive_device_id("wildfi/tags/WF-001/gps"), "WF-001")
+        self.assertEqual(self.bridge.derive_device_id("wildfi/WF-002/environment"), "WF-002")
         self.assertEqual(self.bridge.derive_device_id("orphan-topic"), "orphan-topic")
         self.assertEqual(self.bridge.derive_device_id("/"), "unknown")
         self.assertEqual(self.bridge.pick_key("/tenant/devices/cam-07/video"), b"cam-07")
+
+    def test_csv_env_or_default_ignores_empty_items(self):
+        with patch.dict(
+            self.bridge.os.environ,
+            {"UNIT_TOPICS": " devices/#, , wildfi/# "},
+            clear=False,
+        ):
+            self.assertEqual(
+                self.bridge.csv_env_or_default("UNIT_TOPICS", "fallback/#"),
+                ("devices/#", "wildfi/#"),
+            )
 
     def test_env_or_secret_file_prefers_environment_value(self):
         with patch.dict(
@@ -170,6 +185,43 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(event["latitude"], 1.1)
         self.assertEqual(event["longitude"], 2.2)
         self.assertEqual(event["speed_m_s"], 9.9)
+
+        wildfi_gps_msg = types.SimpleNamespace(
+            topic="wildfi/tags/WF-001/gps",
+            payload=json.dumps(
+                {
+                    "utcTimestamp": 1704067200,
+                    "lat": 47.695,
+                    "lon": 9.132,
+                    "hdop": 1.4,
+                }
+            ).encode(),
+            qos=1,
+            retain=False,
+        )
+        topic, key, event = self.bridge.build_event(wildfi_gps_msg)
+        self.assertEqual(topic, "raw.gps")
+        self.assertEqual(key, b"WF-001")
+        self.assertEqual(event["device_id"], "WF-001")
+        self.assertEqual(event["timestamp"], "2024-01-01T00:00:00+00:00")
+        self.assertEqual(event["latitude"], 47.695)
+        self.assertEqual(event["longitude"], 9.132)
+        self.assertEqual(event["source"], "wildfi-mqtt")
+
+        wildfi_sensor_msg = types.SimpleNamespace(
+            topic="wildfi/tags/WF-001/environment",
+            payload=json.dumps(
+                {"utc_timestamp": 1704067200000, "temperatureInDegCel": 18.7}
+            ).encode(),
+            qos=1,
+            retain=False,
+        )
+        topic, key, event = self.bridge.build_event(wildfi_sensor_msg)
+        self.assertEqual(topic, "raw.sensor")
+        self.assertEqual(key, b"WF-001")
+        self.assertEqual(event["timestamp"], "2024-01-01T00:00:00+00:00")
+        self.assertEqual(event["payload"]["temperatureInDegCel"], 18.7)
+        self.assertEqual(event["source"], "wildfi-mqtt")
 
         media_msg = types.SimpleNamespace(
             topic="tenant/devices/cam-1/video2d",
@@ -221,8 +273,15 @@ class BridgeUnitTests(unittest.TestCase):
 
     def test_on_connect_subscribes_on_success(self):
         client = _FakeClient()
-        self.bridge.on_connect(client, None, None, 0)
+        with patch.object(
+            self.bridge,
+            "MQTT_TOPICS",
+            ("$share/ingestors/devices/#", "$share/ingestors/wildfi/#"),
+        ):
+            self.bridge.on_connect(client, None, None, 0)
+
         self.assertIn((self.bridge.MQTT_TOPIC, 1), client.subscriptions)
+        self.assertIn(("$share/ingestors/wildfi/#", 1), client.subscriptions)
 
     def test_on_connect_failure_does_not_subscribe(self):
         client = _FakeClient()

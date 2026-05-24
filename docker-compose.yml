@@ -1188,7 +1188,8 @@ services:
       MQTT_PORT: "1883"
       MQTT_USERNAME: "admin"
       MQTT_PASSWORD: "${VERNEMQ_ADMIN_PASSWORD:?define VERNEMQ_ADMIN_PASSWORD in .env}"
-      MQTT_TOPIC: "$$share/ingestors/devices/#"
+      MQTT_TOPICS: "${MQTT_TOPICS:-$$share/ingestors/devices/#,$$share/ingestors/wildfi/#}"
+      WILDFI_TOPIC_PREFIXES: "${WILDFI_TOPIC_PREFIXES:-wildfi,wild-fi}"
       KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
       DEFAULT_KAFKA_TOPIC: "raw.sensor"
     networks:

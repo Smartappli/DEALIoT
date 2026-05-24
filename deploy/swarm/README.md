@@ -25,6 +25,8 @@ export DEALIOT_FLINK_PYFLINK_IMAGE=ghcr.io/smartappli/dealiot-flink-pyflink:late
 export DEALIOT_ORCHESTRATION_IMAGE=ghcr.io/smartappli/dealiot-orchestration:latest
 export KAFKA_BOOTSTRAP_SERVERS=kafka1.example.net:9092,kafka2.example.net:9092
 export MQTT_HOST=mqtt.example.net
+export MQTT_TOPICS='$share/ingestors/devices/#,$share/ingestors/wildfi/#'
+export WILDFI_TOPIC_PREFIXES='wildfi,wild-fi'
 export S3_ENDPOINT_URL=https://s3.example.net
 export AWS_ACCESS_KEY_ID=replace-me
 export AWS_SECRET_ACCESS_KEY=replace-me
@@ -40,3 +42,7 @@ docker stack deploy -c deploy/swarm/dealiot-stack.yml dealiot
 ```
 
 Use `dealiot-smoke-stack.yml` only in CI or temporary validation environments.
+
+Decoded WildFi GPS payloads are routed to `raw.gps`. Decoded WildFi IMU, environment, proximity,
+movement, and metadata payloads are routed to `raw.sensor`. Keep native WildFi binary logs in object
+storage or decode them before publishing telemetry.

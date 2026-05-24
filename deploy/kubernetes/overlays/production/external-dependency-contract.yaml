@@ -28,6 +28,9 @@ data:
         endpoint_config_keys:
           - MQTT_HOST
           - MQTT_PORT
+        required_topic_filters:
+          - $share/ingestors/devices/#
+          - $share/ingestors/wildfi/#
         required_security: tls_username_password_or_mtls
         required_secret_key: MQTT_PASSWORD
       object_storage:
