@@ -253,7 +253,7 @@ class _FakeTableEnvironment:
         cls.latest.stream_execution_environment = stream_execution_environment
         return cls.latest
 
-    def from_data_stream(self, stream, schema=None):
+    def from_data_stream(self, stream, schema):
         return {"stream": stream, "schema": schema}
 
     def create_temporary_view(self, name, table):
