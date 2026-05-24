@@ -78,12 +78,7 @@ class DeploymentReadinessTests(unittest.TestCase):
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "kustomization.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "airflow.yaml",
-            REPO_ROOT
-            / "deploy"
-            / "kubernetes"
-            / "overlays"
-            / "ci-smoke"
-            / "kustomization.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "kustomization.yaml",
         ]
 
         for manifest_path in manifest_paths:
@@ -98,12 +93,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         orchestration_dockerfile = (REPO_ROOT / "orchestration" / "Dockerfile").read_text(
             encoding="utf-8"
         )
-        flink_dockerfile = (REPO_ROOT / "flink" / "Dockerfile.pyflink").read_text(
-            encoding="utf-8"
-        )
-        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(
-            encoding="utf-8"
-        )
+        flink_dockerfile = (REPO_ROOT / "flink" / "Dockerfile.pyflink").read_text(encoding="utf-8")
+        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
 
         self.assertIn("COPY --chown=airflow:0 --chmod=0555 airflow/dags", orchestration_dockerfile)
         self.assertIn("COPY --chown=airflow:0 --chmod=0555 pipelines", orchestration_dockerfile)
