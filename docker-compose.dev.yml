@@ -2,19 +2,62 @@
 # Keeps local UIs exposed by the base compose file and enables faster feedback loops.
 
 services:
+  haproxy:
+    ports:
+      - "5432:5432"
+      - "5433:5433"
+      - "7000:7000"
+      - "8405:8405"
+
+  pgbouncer-rw:
+    ports:
+      - "6432:5432"
+
+  pgbouncer-ro:
+    ports:
+      - "6433:5432"
+
+  vernemq1:
+    ports:
+      - "1883:1883"
+      - "8080:8080"
+
+  kafka1:
+    ports:
+      - "19092:19092"
+
+  kafka2:
+    ports:
+      - "19093:19093"
+
+  kafka3:
+    ports:
+      - "19094:19094"
+
+  kafka-connect:
+    ports:
+      - "8083:8083"
+
+  seaweedfs-filer:
+    ports:
+      - "8889:8888"
+
+  seaweedfs-s3:
+    ports:
+      - "8333:8333"
+
+  seaweedfs-edge:
+    ports:
+      - "80:80"
+      - "443:443"
+
   mqtt-kafka-bridge:
     environment:
       LOG_LEVEL: "DEBUG"
 
-  airflow-scheduler:
-    environment:
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
-
-  airflow-worker:
-    environment:
-      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
-
   flink-jobmanager:
+    ports:
+      - "8081:8081"
     environment:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
@@ -40,3 +83,55 @@ services:
         metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
         metrics.reporter.prom.port: 9250
         metrics.reporter.prom.filterLabelValueCharacters: true
+
+  beam-jobserver:
+    ports:
+      - "8099:8099"
+      - "8098:8098"
+      - "8097:8097"
+
+  airflow-apiserver:
+    ports:
+      - "8088:8080"
+
+  airflow-scheduler:
+    environment:
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+
+  airflow-worker:
+    environment:
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+
+  pgadmin:
+    ports:
+      - "5050:80"
+
+  prometheus:
+    ports:
+      - "9090:9090"
+
+  grafana:
+    ports:
+      - "3000:3000"
+
+  cadvisor:
+    ports:
+      - "8089:8080"
+
+  statsd-exporter:
+    ports:
+      - "9102:9102"
+      - "9125:9125/udp"
+      - "9125:9125/tcp"
+
+  postgres-exporter-rw:
+    ports:
+      - "9187:9187"
+
+  apicurio-registry:
+    ports:
+      - "8082:8080"
+
+  apicurio-registry-ui:
+    ports:
+      - "8888:8080"

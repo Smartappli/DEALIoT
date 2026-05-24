@@ -326,11 +326,6 @@ services:
     networks:
       - patroni_backend
       - patroni_frontend
-    ports:
-      - "5432:5432"
-      - "5433:5433"
-      - "7000:7000"
-      - "8405:8405"
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     command: ["haproxy", "-W", "-db", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
@@ -347,8 +342,6 @@ services:
     networks:
       - patroni_backend
       - patroni_frontend
-    ports:
-      - "6432:5432"
     environment:
       DB_HOST: haproxy
       DB_PORT: "5432"
@@ -379,8 +372,6 @@ services:
     networks:
       - patroni_backend
       - patroni_frontend
-    ports:
-      - "6433:5432"
     environment:
       DB_HOST: haproxy
       DB_PORT: "5433"
@@ -405,9 +396,6 @@ services:
     restart: unless-stopped
     environment:
       <<: *vernemq-env
-    ports:
-      - "1883:1883"
-      - "8080:8080"
     volumes:
       - vernemq1_data:/vernemq/data
     networks:
@@ -471,8 +459,6 @@ services:
       KAFKA_NODE_ID: "1"
       KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19092"
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka1:9092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:19092"
-    ports:
-      - "19092:19092"
     volumes:
       - kafka1_data:/var/lib/kafka/data
     networks:
@@ -494,8 +480,6 @@ services:
       KAFKA_NODE_ID: "2"
       KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19093"
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka2:9092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:19093"
-    ports:
-      - "19093:19093"
     volumes:
       - kafka2_data:/var/lib/kafka/data
     networks:
@@ -517,8 +501,6 @@ services:
       KAFKA_NODE_ID: "3"
       KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19094"
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka3:9092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:19094"
-    ports:
-      - "19094:19094"
     volumes:
       - kafka3_data:/var/lib/kafka/data
     networks:
@@ -595,8 +577,6 @@ services:
       ENABLE_APICURIO_CONVERTERS: "true"
       CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
       CONNECT_REST_PORT: "8083"
-    ports:
-      - "8083:8083"
     networks:
       - kafka_net
       - patroni_frontend
@@ -1000,8 +980,6 @@ services:
           -master=seaweedfs-master1:9333,seaweedfs-master2:9333,seaweedfs-master3:9333 \
           -defaultReplicaPlacement=020 \
           -metricsPort=9327
-    ports:
-      - "8889:8888"
     volumes:
       - seaweed_filer_offsets:/var/lib/seaweedfs
     networks:
@@ -1074,8 +1052,6 @@ services:
           -port.iceberg=0 \
           -metricsPort=9327 \
           -config=/etc/seaweedfs/s3.json
-    ports:
-      - "8333:8333"
     networks:
       - orchestration_net
       - ingest_net
@@ -1189,9 +1165,6 @@ services:
     environment:
       ACME_EMAIL: "${ACME_EMAIL:?define ACME_EMAIL in .env}"
       STORAGE_BASE_DOMAIN: "${STORAGE_BASE_DOMAIN:?define STORAGE_BASE_DOMAIN in .env}"
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -1229,8 +1202,6 @@ services:
     hostname: flink-jobmanager
     restart: unless-stopped
     command: "jobmanager"
-    ports:
-      - "8081:8081"
     environment:
       ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.0.0.jar"
       FLINK_PYTHON: "/opt/flink/venv/bin/python"
@@ -1394,10 +1365,6 @@ services:
         restart: true
       kafka-init:
         condition: service_completed_successfully
-    ports:
-      - "8099:8099"
-      - "8098:8098"
-      - "8097:8097"
     healthcheck:
       test: ["CMD-SHELL", "sh -c 'exec 3<>/dev/tcp/127.0.0.1/8099'"]
       interval: 20s
@@ -1516,8 +1483,6 @@ services:
       airflow-init:
         condition: service_completed_successfully
     command: "api-server"
-    ports:
-      - "8088:8080"
     healthcheck:
       test:
         [
@@ -1622,8 +1587,6 @@ services:
       PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
     secrets:
       - pgadmin_default_password
-    ports:
-      - "5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
       - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
@@ -1642,8 +1605,6 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=15d
       - --web.enable-lifecycle
-    ports:
-      - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/rules:/etc/prometheus/rules:ro
@@ -1674,8 +1635,6 @@ services:
       GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
       GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?define GRAFANA_ADMIN_PASSWORD in .env}"
       GF_USERS_ALLOW_SIGN_UP: "false"
-    ports:
-      - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -1688,8 +1647,6 @@ services:
     container_name: cadvisor
     hostname: cadvisor
     restart: unless-stopped
-    ports:
-      - "8089:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -1711,10 +1668,6 @@ services:
       - --web.listen-address=:9102
       - --statsd.listen-udp=:9125
       - --statsd.listen-tcp=:9125
-    ports:
-      - "9102:9102"
-      - "9125:9125/udp"
-      - "9125:9125/tcp"
     networks:
       - orchestration_net
 
@@ -1733,8 +1686,6 @@ services:
       haproxy:
         condition: service_started
         restart: true
-    ports:
-      - "9187:9187"
     networks:
       - patroni_frontend
 
@@ -1748,8 +1699,6 @@ services:
         condition: service_completed_successfully
     environment:
       <<: *apicurio-env
-    ports:
-      - "8082:8080"
     networks:
       - kafka_net
       - orchestration_net
@@ -1764,8 +1713,6 @@ services:
         condition: service_started
     environment:
       REGISTRY_API_URL: "${APICURIO_PUBLIC_URL:-http://localhost:8082}/apis/registry/v3"
-    ports:
-      - "8888:8080"
     networks:
       - orchestration_net
 
