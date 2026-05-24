@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+  labels:
+    app.kubernetes.io/name: flink-jobmanager
+    app.kubernetes.io/part-of: dealiot
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flink-jobmanager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flink-jobmanager
+        app.kubernetes.io/part-of: dealiot
+    spec:
+      serviceAccountName: dealiot-runtime
+      automountServiceAccountToken: false
+      containers:
+        - name: jobmanager
+          image: ghcr.io/smartappli/dealiot-flink-pyflink:latest
+          imagePullPolicy: IfNotPresent
+          args: ["jobmanager"]
+          ports:
+            - name: rpc
+              containerPort: 6123
+            - name: rest
+              containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: dealiot-runtime-config
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: ENABLE_BUILT_IN_PLUGINS
+              value: flink-s3-fs-hadoop-2.0.0.jar
+            - name: FLINK_PYTHON
+              value: /opt/flink/venv/bin/python
+            - name: PYFLINK_CLIENT_EXECUTABLE
+              value: /opt/flink/venv/bin/python
+            - name: FLINK_PROPERTIES
+              value: |
+                jobmanager.rpc.address: flink-jobmanager
+                rest.address: flink-jobmanager
+                rest.port: 8081
+                parallelism.default: 4
+                taskmanager.numberOfTaskSlots: 4
+                state.backend.type: rocksdb
+                state.checkpoints.dir: s3://flink-checkpoints/streaming
+                execution.checkpointing.savepoint-dir: s3://flink-savepoints/streaming
+                execution.checkpointing.interval: 10s
+                execution.checkpointing.mode: EXACTLY_ONCE
+                execution.checkpointing.timeout: 5min
+                restart-strategy.type: exponential-delay
+                restart-strategy.exponential-delay.initial-backoff: 2 s
+                restart-strategy.exponential-delay.max-backoff: 30 s
+                s3.endpoint: $(S3_ENDPOINT_URL)
+                s3.path.style.access: true
+                s3.access-key: $(AWS_ACCESS_KEY_ID)
+                s3.secret-key: $(AWS_SECRET_ACCESS_KEY)
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flink-jobmanager
+  labels:
+    app.kubernetes.io/name: flink-jobmanager
+    app.kubernetes.io/part-of: dealiot
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: flink-jobmanager
+  ports:
+    - name: rpc
+      port: 6123
+      targetPort: rpc
+    - name: rest
+      port: 8081
+      targetPort: rest
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flink-taskmanager
+  labels:
+    app.kubernetes.io/name: flink-taskmanager
+    app.kubernetes.io/part-of: dealiot
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flink-taskmanager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: flink-taskmanager
+        app.kubernetes.io/part-of: dealiot
+    spec:
+      serviceAccountName: dealiot-runtime
+      automountServiceAccountToken: false
+      containers:
+        - name: taskmanager
+          image: ghcr.io/smartappli/dealiot-flink-pyflink:latest
+          imagePullPolicy: IfNotPresent
+          args: ["taskmanager"]
+          envFrom:
+            - configMapRef:
+                name: dealiot-runtime-config
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: ENABLE_BUILT_IN_PLUGINS
+              value: flink-s3-fs-hadoop-2.0.0.jar
+            - name: FLINK_PYTHON
+              value: /opt/flink/venv/bin/python
+            - name: PYFLINK_CLIENT_EXECUTABLE
+              value: /opt/flink/venv/bin/python
+            - name: FLINK_PROPERTIES
+              value: |
+                jobmanager.rpc.address: flink-jobmanager
+                rest.address: flink-jobmanager
+                taskmanager.numberOfTaskSlots: 4
+                parallelism.default: 4
+                state.backend.type: rocksdb
+                state.checkpoints.dir: s3://flink-checkpoints/streaming
+                execution.checkpointing.savepoint-dir: s3://flink-savepoints/streaming
+                execution.checkpointing.interval: 10s
+                execution.checkpointing.mode: EXACTLY_ONCE
+                execution.checkpointing.timeout: 5min
+                s3.endpoint: $(S3_ENDPOINT_URL)
+                s3.path.style.access: true
+                s3.access-key: $(AWS_ACCESS_KEY_ID)
+                s3.secret-key: $(AWS_SECRET_ACCESS_KEY)
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: flink-taskmanager
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: flink-taskmanager

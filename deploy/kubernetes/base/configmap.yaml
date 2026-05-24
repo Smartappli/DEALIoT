@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dealiot-runtime-config
+  labels:
+    app.kubernetes.io/part-of: dealiot
+data:
+  AWS_DEFAULT_REGION: "us-east-1"
+  AWS_REGION: "us-east-1"
+  DEFAULT_KAFKA_TOPIC: "raw.sensor"
+  FLINK_PARALLELISM: "4"
+  FLINK_TASK_SLOTS: "4"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-bootstrap.kafka.svc.cluster.local:9092"
+  LOG_LEVEL: "INFO"
+  MQTT_HOST: "mqtt-broker.ingest.svc.cluster.local"
+  MQTT_PORT: "1883"
+  MQTT_TOPIC: "$share/ingestors/devices/#"
+  MQTT_USERNAME: "admin"
+  S3_ENDPOINT_URL: "https://s3.example.net"
+  APICURIO_KAFKASQL_TOPIC: "kafkasql-journal-v3"
+  APICURIO_KAFKASQL_SNAPSHOTS_TOPIC: "kafkasql-snapshots-v3"
+  APICURIO_EVENTS_KAFKA_TOPIC: "registry-events-v3"
