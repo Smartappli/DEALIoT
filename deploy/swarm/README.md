@@ -20,9 +20,9 @@ printf '%s\n' "$MQTT_PASSWORD" | docker secret create mqtt_password -
 Render and deploy:
 
 ```bash
-export DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE=ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:latest
-export DEALIOT_FLINK_PYFLINK_IMAGE=ghcr.io/smartappli/dealiot-flink-pyflink:latest
-export DEALIOT_ORCHESTRATION_IMAGE=ghcr.io/smartappli/dealiot-orchestration:latest
+export DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE=ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:local-placeholder
+export DEALIOT_FLINK_PYFLINK_IMAGE=ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
+export DEALIOT_ORCHESTRATION_IMAGE=ghcr.io/smartappli/dealiot-orchestration:local-placeholder
 export KAFKA_BOOTSTRAP_SERVERS=kafka1.example.net:9092,kafka2.example.net:9092
 export MQTT_HOST=mqtt.example.net
 export MQTT_TOPICS='$share/ingestors/devices/#,$share/ingestors/wildfi/#'

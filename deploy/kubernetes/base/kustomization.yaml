@@ -14,8 +14,8 @@ resources:
 
 images:
   - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge
-    newTag: latest
+    newTag: local-placeholder
   - name: ghcr.io/smartappli/dealiot-flink-pyflink
-    newTag: latest
+    newTag: local-placeholder
   - name: ghcr.io/smartappli/dealiot-orchestration
-    newTag: latest
+    newTag: local-placeholder

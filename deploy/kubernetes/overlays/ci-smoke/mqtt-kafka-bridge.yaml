@@ -5,14 +5,10 @@ metadata:
   labels:
     app.kubernetes.io/name: mqtt-kafka-bridge
     app.kubernetes.io/part-of: dealiot
+    dealiot.io/environment: ci-smoke
 spec:
-  replicas: 2
-  revisionHistoryLimit: 3
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+  replicas: 1
+  revisionHistoryLimit: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: mqtt-kafka-bridge
@@ -21,6 +17,7 @@ spec:
       labels:
         app.kubernetes.io/name: mqtt-kafka-bridge
         app.kubernetes.io/part-of: dealiot
+        dealiot.io/environment: ci-smoke
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
@@ -31,6 +28,13 @@ spec:
         - name: bridge
           image: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:local-placeholder
           imagePullPolicy: IfNotPresent
+          command:
+            - python
+            - -c
+            - >-
+              import dealiot_contracts, time;
+              print("dealiot bridge image ready", flush=True);
+              time.sleep(3600)
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
@@ -43,11 +47,11 @@ spec:
               readOnly: true
           resources:
             requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
               cpu: 250m
               memory: 256Mi
-            limits:
-              cpu: "1"
-              memory: 768Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -60,16 +64,3 @@ spec:
             items:
               - key: MQTT_PASSWORD
                 path: mqtt-password
----
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: mqtt-kafka-bridge
-  labels:
-    app.kubernetes.io/name: mqtt-kafka-bridge
-    app.kubernetes.io/part-of: dealiot
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app.kubernetes.io/name: mqtt-kafka-bridge
