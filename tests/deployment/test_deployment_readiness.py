@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import unittest
 from pathlib import Path
+import re
 
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+FULL_LENGTH_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
 class DeploymentReadinessTests(unittest.TestCase):
@@ -326,6 +328,31 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("sha-${GITHUB_SHA}", workflow_text)
         self.assertIn("image_name: wildfi-decoder", workflow_text)
         self.assertIn("WILDFI_DECODER_GIT_REF", workflow_text)
+
+    def test_github_actions_are_pinned_to_full_length_commit_sha(self) -> None:
+        workflow_paths = sorted((REPO_ROOT / ".github" / "workflows").glob("*.yml"))
+
+        for workflow_path in workflow_paths:
+            workflow = yaml.safe_load(workflow_path.read_text(encoding="utf-8"))
+            for job in workflow.get("jobs", {}).values():
+                job_uses = job.get("uses")
+                if job_uses:
+                    job_action_ref = job_uses.rsplit("@", maxsplit=1)[-1]
+                    self.assertRegex(
+                        job_action_ref,
+                        FULL_LENGTH_SHA,
+                        f"{workflow_path.name} uses an unpinned reusable workflow: {job_uses}",
+                    )
+                for step in job.get("steps", []):
+                    uses = step.get("uses")
+                    if not uses:
+                        continue
+                    action_ref = uses.rsplit("@", maxsplit=1)[-1]
+                    self.assertRegex(
+                        action_ref,
+                        FULL_LENGTH_SHA,
+                        f"{workflow_path.name} uses an unpinned action: {uses}",
+                    )
 
     def test_production_images_package_runtime_code(self) -> None:
         orchestration_dockerfile = (REPO_ROOT / "orchestration" / "Dockerfile").read_text(
