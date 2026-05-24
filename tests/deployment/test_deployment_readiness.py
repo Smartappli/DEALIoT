@@ -445,6 +445,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
         self.assertIn("COPY --chown=root:root --chmod=0555 ./flink/jobs", flink_dockerfile)
         self.assertIn("COPY --chown=root:root --chmod=0555 ./pipelines", flink_dockerfile)
+        self.assertIn("flink-sql-connector-kafka", flink_dockerfile)
+        self.assertIn("flink-connector-base", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
 
 

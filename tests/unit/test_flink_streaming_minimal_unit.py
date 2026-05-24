@@ -49,9 +49,63 @@ class _FakeSimpleStringSchema:
     pass
 
 
-class _FakeFlinkKafkaConsumer:
-    def __init__(self, **kwargs):
-        self.kwargs = kwargs
+class _FakeWatermarkStrategy:
+    @staticmethod
+    def no_watermarks():
+        return "NO_WATERMARKS"
+
+
+class _FakeKafkaOffsetResetStrategy:
+    EARLIEST = "EARLIEST"
+    LATEST = "LATEST"
+    NONE = "NONE"
+
+
+class _FakeKafkaOffsetsInitializer:
+    @staticmethod
+    def committed_offsets(offset_reset_strategy="NONE"):
+        return ("committed_offsets", offset_reset_strategy)
+
+
+class _FakeKafkaSource:
+    def __init__(self, config):
+        self.config = config
+
+    @staticmethod
+    def builder():
+        return _FakeKafkaSourceBuilder()
+
+
+class _FakeKafkaSourceBuilder:
+    def __init__(self):
+        self.config: dict[str, Any] = {"properties": {}}
+
+    def set_bootstrap_servers(self, bootstrap_servers):
+        self.config["bootstrap_servers"] = bootstrap_servers
+        return self
+
+    def set_topics(self, *topics):
+        self.config["topics"] = topics
+        return self
+
+    def set_group_id(self, group_id):
+        self.config["group_id"] = group_id
+        return self
+
+    def set_starting_offsets(self, starting_offsets):
+        self.config["starting_offsets"] = starting_offsets
+        return self
+
+    def set_value_only_deserializer(self, deserialization_schema):
+        self.config["deserialization_schema"] = deserialization_schema
+        return self
+
+    def set_property(self, key, value):
+        self.config["properties"][key] = value
+        return self
+
+    def build(self):
+        return _FakeKafkaSource(dict(self.config))
 
 
 class _FakeValueStateDescriptor:
@@ -133,9 +187,9 @@ class _FakeStreamExecutionEnvironment:
     def enable_checkpointing(self, interval_ms, mode):
         self.checkpointing = (interval_ms, mode)
 
-    def add_source(self, consumer):
-        stream = _FakeStream(consumer.kwargs["topics"])
-        self.sources.append((consumer, stream))
+    def from_source(self, source, watermark_strategy, source_name):
+        stream = _FakeStream(source.config["topics"][0])
+        self.sources.append((source, stream, watermark_strategy, source_name))
         return stream
 
 
@@ -216,6 +270,7 @@ def _load_streaming_module():
     fake_pyflink = types.ModuleType("pyflink")
     fake_common = types.ModuleType("pyflink.common")
     fake_serialization = types.ModuleType("pyflink.common.serialization")
+    fake_watermark_strategy = types.ModuleType("pyflink.common.watermark_strategy")
     fake_datastream = types.ModuleType("pyflink.datastream")
     fake_connectors = types.ModuleType("pyflink.datastream.connectors")
     fake_kafka = types.ModuleType("pyflink.datastream.connectors.kafka")
@@ -226,10 +281,13 @@ def _load_streaming_module():
     cast("Any", fake_common).Row = _fake_row
     cast("Any", fake_common).Types = _FakeTypes
     cast("Any", fake_serialization).SimpleStringSchema = _FakeSimpleStringSchema
+    cast("Any", fake_watermark_strategy).WatermarkStrategy = _FakeWatermarkStrategy
     cast("Any", fake_datastream).CheckpointingMode = _FakeCheckpointingMode
     cast("Any", fake_datastream).RuntimeExecutionMode = _FakeRuntimeExecutionMode
     cast("Any", fake_datastream).StreamExecutionEnvironment = _FakeStreamExecutionEnvironment
-    cast("Any", fake_kafka).FlinkKafkaConsumer = _FakeFlinkKafkaConsumer
+    cast("Any", fake_kafka).KafkaOffsetResetStrategy = _FakeKafkaOffsetResetStrategy
+    cast("Any", fake_kafka).KafkaOffsetsInitializer = _FakeKafkaOffsetsInitializer
+    cast("Any", fake_kafka).KafkaSource = _FakeKafkaSource
     cast("Any", fake_functions).FlatMapFunction = object
     cast("Any", fake_functions).KeyedProcessFunction = object
     cast("Any", fake_functions).RuntimeContext = object
@@ -244,6 +302,7 @@ def _load_streaming_module():
             "pyflink": fake_pyflink,
             "pyflink.common": fake_common,
             "pyflink.common.serialization": fake_serialization,
+            "pyflink.common.watermark_strategy": fake_watermark_strategy,
             "pyflink.datastream": fake_datastream,
             "pyflink.datastream.connectors": fake_connectors,
             "pyflink.datastream.connectors.kafka": fake_kafka,
@@ -359,9 +418,15 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             topic_name="raw.sensor",
         )
 
-        consumer = env.sources[0][0]
-        self.assertEqual(consumer.kwargs["topics"], "raw.sensor")
-        self.assertEqual(consumer.kwargs["properties"]["bootstrap.servers"], "kafka:9092")
+        source, _stream, watermark_strategy, source_name = env.sources[0]
+        self.assertEqual(source.config["topics"], ("raw.sensor",))
+        self.assertEqual(source.config["bootstrap_servers"], "kafka:9092")
+        self.assertEqual(source.config["group_id"], "group")
+        self.assertEqual(source.config["starting_offsets"], ("committed_offsets", "EARLIEST"))
+        self.assertEqual(source.config["properties"]["enable.auto.commit"], "false")
+        self.assertEqual(source.config["properties"]["commit.offsets.on.checkpoint"], "true")
+        self.assertEqual(watermark_strategy, "NO_WATERMARKS")
+        self.assertEqual(source_name, "Kafka Source raw.sensor")
         self.assertEqual(stream.operations[0][0], "map")
 
         schema = self.module.build_table_schema()
@@ -406,7 +471,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         self.assertEqual(env.parallelism, 2)
         self.assertEqual(env.checkpointing, (5000, "EXACTLY_ONCE"))
         self.assertEqual(
-            [consumer.kwargs["topics"] for consumer, _stream in env.sources],
+            [source.config["topics"][0] for source, _stream, _watermark, _name in env.sources],
             ["raw.sensor", "raw.gps"],
         )
         self.assertIn("features_view", table_env.views)

@@ -106,8 +106,8 @@ x-flink-py-build: &flink-py-build
   dockerfile: flink/Dockerfile.pyflink
   args:
     FLINK_BASE_IMAGE: "apache/flink:2.0.0-scala_2.12-java17"
-    FLINK_KAFKA_CONNECTOR_VERSION: "4.0.1"
-    FLINK_KAFKA_CONNECTOR_SRC_URL: "https://downloads.apache.org/flink/flink-connector-kafka-4.0.1/flink-connector-kafka-4.0.1-src.tgz"
+    FLINK_CONNECTOR_BASE_VERSION: "2.0.0"
+    FLINK_KAFKA_CONNECTOR_VERSION: "4.0.1-2.0"
 
 x-etcd-health: &etcd-health
   healthcheck:
