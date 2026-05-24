@@ -103,7 +103,7 @@ jobs:
         run: uv run python -m unittest -v tests/integration/test_platform_integration.py
 
       - name: Deployment test suite
-        run: uv run python -m unittest -v tests/deployment/test_deployment_readiness.py
+        run: uv run --with PyYAML python -m unittest -v tests/deployment/test_deployment_readiness.py
 
       - name: Application smoke test suite
         run: uv run python -m unittest -v tests/test_application_smoke.py
