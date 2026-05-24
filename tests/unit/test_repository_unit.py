@@ -125,7 +125,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "dlq.events",
             "features.events",
             "state.latest",
-            "run-streaming-minimal.sh",
+            "compose run --rm flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh",
             "apicurio-registry:8080",
         ]:
             self.assertIn(expected, script_text)
