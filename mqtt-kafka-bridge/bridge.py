@@ -283,10 +283,8 @@ def route_event(msg, kafka_topic: str, event: dict[str, Any]) -> tuple[str, dict
         return kafka_topic, event
 
     LOGGER.warning(
-        "Routing invalid MQTT event to DLQ intended_topic=%s mqtt_topic=%s errors=%s",
-        kafka_topic,
-        msg.topic,
-        errors,
+        "Routing invalid MQTT event to DLQ (details redacted) error_count=%d",
+        len(errors),
     )
     return DLQ_TOPIC, build_dlq_event(
         source="mqtt-bridge",
