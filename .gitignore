@@ -2,5 +2,13 @@
 __pycache__/
 *.py[cod]
 
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+secrets/
+!secrets/.gitkeep
+!secrets/*.example
+
 # Airflow runtime artifacts
 airflow/logs/

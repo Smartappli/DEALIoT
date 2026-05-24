@@ -14,8 +14,6 @@ from pathlib import Path
 from typing import Any, ClassVar, cast
 from unittest.mock import Mock, patch
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MEDIA_BACKFILL_PATH = REPO_ROOT / "pipelines" / "media_backfill.py"
 
@@ -25,9 +23,12 @@ class MediaBackfillUnitTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        fake_boto3 = types.ModuleType("boto3")
+        cast("Any", fake_boto3).client = Mock()
+
         fake_kafka = types.ModuleType("kafka")
         cast("Any", fake_kafka).KafkaProducer = object
-        with patch.dict(sys.modules, {"kafka": fake_kafka}):
+        with patch.dict(sys.modules, {"boto3": fake_boto3, "kafka": fake_kafka}):
             spec = importlib.util.spec_from_file_location(
                 "media_backfill_under_test",
                 MEDIA_BACKFILL_PATH,
@@ -90,7 +91,7 @@ class MediaBackfillUnitTests(unittest.TestCase):
 
     def test_resolve_window_requires_arguments(self):
         args = argparse.Namespace(window_start=None, window_end=None, since_minutes=None)
-        with pytest.raises(ValueError, match="Use either"):
+        with self.assertRaisesRegex(ValueError, "Use either"):
             self.module.resolve_window(args)
 
     def test_resolve_window_rejects_partial_or_invalid_ranges(self):
@@ -99,7 +100,7 @@ class MediaBackfillUnitTests(unittest.TestCase):
             window_end=None,
             since_minutes=None,
         )
-        with pytest.raises(ValueError, match="must be set together"):
+        with self.assertRaisesRegex(ValueError, "must be set together"):
             self.module.resolve_window(partial)
 
         invalid_range = argparse.Namespace(
@@ -107,13 +108,13 @@ class MediaBackfillUnitTests(unittest.TestCase):
             window_end="2026-01-01T01:00:00Z",
             since_minutes=None,
         )
-        with pytest.raises(ValueError, match="must be earlier"):
+        with self.assertRaisesRegex(ValueError, "must be earlier"):
             self.module.resolve_window(invalid_range)
 
     def test_resolve_window_rejects_non_positive_since_minutes(self):
         for value in (0, -1):
             args = argparse.Namespace(window_start=None, window_end=None, since_minutes=value)
-            with pytest.raises(ValueError, match="positive integer"):
+            with self.assertRaisesRegex(ValueError, "positive integer"):
                 self.module.resolve_window(args)
 
     def test_iter_objects_between_filters_time_window(self):

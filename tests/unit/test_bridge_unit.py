@@ -10,8 +10,6 @@ from pathlib import Path
 from typing import Any, ClassVar, cast
 from unittest.mock import Mock, patch
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BRIDGE_PATH = REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py"
 
@@ -111,7 +109,10 @@ class BridgeUnitTests(unittest.TestCase):
 
     def test_pick_kafka_topic_and_device_id_helpers(self):
         self.assertEqual(self.bridge.pick_kafka_topic("devices/a1/gnss/fix"), "raw.gps")
-        self.assertEqual(self.bridge.pick_kafka_topic("devices/a1/lidar/frame"), "raw.image3d.meta")
+        self.assertEqual(
+            self.bridge.pick_kafka_topic("devices/a1/lidar/frame"),
+            "raw.image3d.meta",
+        )
         self.assertEqual(
             self.bridge.pick_kafka_topic("devices/a1/unknown"),
             self.bridge.DEFAULT_KAFKA_TOPIC,
@@ -157,6 +158,42 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(event["device_id"], "cam-1")
         self.assertEqual(event["frame"], 12)
 
+    def test_route_event_sends_invalid_media_metadata_to_dlq(self):
+        msg = types.SimpleNamespace(topic="tenant/devices/cam-1/video2d")
+        event = {
+            "device_id": "cam-1",
+            "timestamp": "2026-01-01T00:00:00+00:00",
+            "frame": 12,
+        }
+
+        topic, routed = self.bridge.route_event(msg, "raw.video2d.meta", event)
+
+        self.assertEqual(topic, self.bridge.DLQ_TOPIC)
+        self.assertEqual(routed["intended_topic"], "raw.video2d.meta")
+        self.assertIn("missing required field: bucket", routed["errors"])
+        self.assertIn("field not allowed by raw.video2d.meta: frame", routed["errors"])
+
+    def test_route_event_keeps_valid_media_metadata_on_raw_topic(self):
+        msg = types.SimpleNamespace(topic="tenant/devices/cam-1/video2d")
+        event = {
+            "device_id": "cam-1",
+            "timestamp": "2026-01-01T00:00:00+00:00",
+            "ingested_at": "2026-01-01T00:00:01+00:00",
+            "bucket": "media-raw-2d-videos",
+            "object_key": "cam-1/file.mp4",
+            "object_uri": "s3://media-raw-2d-videos/cam-1/file.mp4",
+            "format": "mp4",
+            "source": "mqtt-bridge",
+            "mqtt_topic": msg.topic,
+            "qos": 1,
+            "retain": False,
+        }
+
+        topic, routed = self.bridge.route_event(msg, "raw.video2d.meta", event)
+
+        self.assertEqual(topic, "raw.video2d.meta")
+        self.assertEqual(routed, event)
+
     def test_on_connect_subscribes_on_success(self):
         client = _FakeClient()
         self.bridge.on_connect(client, None, None, 0)
@@ -193,7 +230,7 @@ class BridgeUnitTests(unittest.TestCase):
 
         with (
             patch.object(self.bridge.time, "sleep") as mock_sleep,
-            pytest.raises(KeyboardInterrupt),
+            self.assertRaises(KeyboardInterrupt),
         ):
             self.bridge.run_bridge(client)
 
@@ -220,9 +257,9 @@ class BridgeUnitTests(unittest.TestCase):
         with (
             patch.object(self.bridge, "MQTT_USERNAME", "user"),
             patch.object(self.bridge, "MQTT_PASSWORD", None),
-            pytest.raises(
+            self.assertRaisesRegex(
                 ValueError,
-                match="MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled",
+                "MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled",
             ),
         ):
             self.bridge.main()

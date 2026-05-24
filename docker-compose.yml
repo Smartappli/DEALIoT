@@ -4,8 +4,8 @@ x-vernemq-env: &vernemq-env
   DOCKER_VERNEMQ_LISTENER__TCP__DEFAULT: "0.0.0.0:1883"
   DOCKER_VERNEMQ_LISTENER__WS__DEFAULT: "0.0.0.0:8080"
   DOCKER_VERNEMQ_LISTENER__VMQ__CLUSTERING: "0.0.0.0:44053"
-  DOCKER_VERNEMQ_DISTRIBUTED_COOKIE: "${VERNEMQ_DISTRIBUTED_COOKIE:-change-this-cookie}"
-  DOCKER_VERNEMQ_USER_admin: "${VERNEMQ_ADMIN_PASSWORD:-change-this-password}"
+  DOCKER_VERNEMQ_DISTRIBUTED_COOKIE: "${VERNEMQ_DISTRIBUTED_COOKIE:?define VERNEMQ_DISTRIBUTED_COOKIE in .env}"
+  DOCKER_VERNEMQ_USER_admin: "${VERNEMQ_ADMIN_PASSWORD:?define VERNEMQ_ADMIN_PASSWORD in .env}"
   DOCKER_VERNEMQ_SHARED_SUBSCRIPTION_POLICY: "prefer_local"
   DOCKER_VERNEMQ_COMPOSE: "1"
   DOCKER_VERNEMQ_LOG__CONSOLE: "both"
@@ -32,8 +32,8 @@ x-airflow-env: &airflow-env
   AIRFLOW__CORE__DEFAULT_TIMEZONE: "Europe/Brussels"
   AIRFLOW__CORE__FERNET_KEY: "${AIRFLOW_FERNET_KEY:?define AIRFLOW_FERNET_KEY in .env}"
   AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
-  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:-change-this-password}@airflow-postgres:5432/airflow"
-  AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://airflow:${AIRFLOW_DB_PASSWORD:-change-this-password}@airflow-postgres:5432/airflow"
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg://airflow:${AIRFLOW_DB_PASSWORD:?define AIRFLOW_DB_PASSWORD in .env}@airflow-postgres:5432/airflow"
+  AIRFLOW__CELERY__RESULT_BACKEND: "db+postgresql://airflow:${AIRFLOW_DB_PASSWORD:?define AIRFLOW_DB_PASSWORD in .env}@airflow-postgres:5432/airflow"
   AIRFLOW__CELERY__BROKER_URL: "redis://airflow-redis:6379/0"
   AIRFLOW__CELERY__WORKER_ENABLE_REMOTE_CONTROL: "true"
   AIRFLOW__FAB__AUTH_BACKENDS: "airflow.providers.fab.auth_manager.api.auth.backend.session"
@@ -59,8 +59,8 @@ x-airflow-env: &airflow-env
 
 x-airflow-common: &airflow-common
   build:
-    context: ./orchestration
-    dockerfile: Dockerfile
+    context: .
+    dockerfile: orchestration/Dockerfile
   environment:
     <<: *airflow-env
   user: "${AIRFLOW_UID:-50000}:0"
@@ -68,6 +68,7 @@ x-airflow-common: &airflow-common
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/plugins:/opt/airflow/plugins
+    - ./dealiot_contracts:/opt/airflow/dealiot_contracts:ro
     - ./pipelines:/opt/pipelines
   depends_on:
     airflow-postgres:
@@ -98,7 +99,7 @@ x-beam-env: &beam-env
   AWS_DEFAULT_REGION: "us-east-1"
   AWS_REGION: "us-east-1"
   S3_ENDPOINT_URL: "http://seaweedfs-s3:8333"
-  PYTHONPATH: "/opt/pipelines"
+  PYTHONPATH: "/opt/pipelines:/opt/dealiot_contracts"
 
 x-flink-py-build: &flink-py-build
   context: .
@@ -325,11 +326,6 @@ services:
     networks:
       - patroni_backend
       - patroni_frontend
-    ports:
-      - "5432:5432"
-      - "5433:5433"
-      - "7000:7000"
-      - "8405:8405"
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     command: ["haproxy", "-W", "-db", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
@@ -346,8 +342,6 @@ services:
     networks:
       - patroni_backend
       - patroni_frontend
-    ports:
-      - "6432:5432"
     environment:
       DB_HOST: haproxy
       DB_PORT: "5432"
@@ -378,8 +372,6 @@ services:
     networks:
       - patroni_backend
       - patroni_frontend
-    ports:
-      - "6433:5432"
     environment:
       DB_HOST: haproxy
       DB_PORT: "5433"
@@ -404,9 +396,6 @@ services:
     restart: unless-stopped
     environment:
       <<: *vernemq-env
-    ports:
-      - "1883:1883"
-      - "8080:8080"
     volumes:
       - vernemq1_data:/vernemq/data
     networks:
@@ -470,8 +459,6 @@ services:
       KAFKA_NODE_ID: "1"
       KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19092"
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka1:9092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:19092"
-    ports:
-      - "19092:19092"
     volumes:
       - kafka1_data:/var/lib/kafka/data
     networks:
@@ -493,8 +480,6 @@ services:
       KAFKA_NODE_ID: "2"
       KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19093"
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka2:9092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:19093"
-    ports:
-      - "19093:19093"
     volumes:
       - kafka2_data:/var/lib/kafka/data
     networks:
@@ -516,8 +501,6 @@ services:
       KAFKA_NODE_ID: "3"
       KAFKA_LISTENERS: "INTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:19094"
       KAFKA_ADVERTISED_LISTENERS: "INTERNAL://kafka3:9092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:19094"
-    ports:
-      - "19094:19094"
     volumes:
       - kafka3_data:/var/lib/kafka/data
     networks:
@@ -566,8 +549,8 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __connect-offsets --partitions 12 --replication-factor 3 --config cleanup.policy=compact;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __connect-status --partitions 6 --replication-factor 3 --config cleanup.policy=compact;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic __debezium-heartbeat.appdb --partitions 1 --replication-factor 3 --config min.insync.replicas=2;
-        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic state-latest --partitions 12 --replication-factor 3 --config cleanup.policy=compact --config min.cleanable.dirty.ratio=0.1 --config delete.retention.ms=86400000 --config min.insync.replicas=2;
-        /opt/kafka/bin/kafka-configs.sh --bootstrap-server kafka1:9092 --alter --entity-type topics --entity-name state-latest --add-config cleanup.policy=compact,min.cleanable.dirty.ratio=0.1,delete.retention.ms=86400000,min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic state.latest --partitions 12 --replication-factor 3 --config cleanup.policy=compact --config min.cleanable.dirty.ratio=0.1 --config delete.retention.ms=86400000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-configs.sh --bootstrap-server kafka1:9092 --alter --entity-type topics --entity-name state.latest --add-config cleanup.policy=compact,min.cleanable.dirty.ratio=0.1,delete.retention.ms=86400000,min.insync.replicas=2;
         echo "Kafka topics created."
     networks:
       - kafka_net
@@ -594,8 +577,6 @@ services:
       ENABLE_APICURIO_CONVERTERS: "true"
       CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
       CONNECT_REST_PORT: "8083"
-    ports:
-      - "8083:8083"
     networks:
       - kafka_net
       - patroni_frontend
@@ -657,7 +638,7 @@ services:
       - orchestration_net
 
   seaweedfs-master1:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-master1
     hostname: seaweedfs-master1
     restart: unless-stopped
@@ -685,7 +666,7 @@ services:
       start_period: 30s
 
   seaweedfs-master2:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-master2
     hostname: seaweedfs-master2
     restart: unless-stopped
@@ -713,7 +694,7 @@ services:
       start_period: 30s
 
   seaweedfs-master3:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-master3
     hostname: seaweedfs-master3
     restart: unless-stopped
@@ -741,7 +722,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume1:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-volume1
     hostname: seaweedfs-volume1
     restart: unless-stopped
@@ -778,7 +759,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume2:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-volume2
     hostname: seaweedfs-volume2
     restart: unless-stopped
@@ -815,7 +796,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume3:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-volume3
     hostname: seaweedfs-volume3
     restart: unless-stopped
@@ -913,7 +894,7 @@ services:
         max-file: "3"
 
   seaweedfs-filer:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-filer
     hostname: seaweedfs-filer
     restart: unless-stopped
@@ -999,8 +980,6 @@ services:
           -master=seaweedfs-master1:9333,seaweedfs-master2:9333,seaweedfs-master3:9333 \
           -defaultReplicaPlacement=020 \
           -metricsPort=9327
-    ports:
-      - "8889:8888"
     volumes:
       - seaweed_filer_offsets:/var/lib/seaweedfs
     networks:
@@ -1026,7 +1005,7 @@ services:
         max-file: "3"
 
   seaweedfs-s3:
-    image: chrislusf/seaweedfs:4.24
+    image: chrislusf/seaweedfs:4.28
     container_name: seaweedfs-s3
     hostname: seaweedfs-s3
     restart: unless-stopped
@@ -1073,8 +1052,6 @@ services:
           -port.iceberg=0 \
           -metricsPort=9327 \
           -config=/etc/seaweedfs/s3.json
-    ports:
-      - "8333:8333"
     networks:
       - orchestration_net
       - ingest_net
@@ -1097,7 +1074,7 @@ services:
         max-file: "3"
 
   seaweedfs-init:
-    image: amazon/aws-cli:2.34.46
+    image: amazon/aws-cli:2.34.52
     container_name: seaweedfs-init
     restart: "no"
     depends_on:
@@ -1188,9 +1165,6 @@ services:
     environment:
       ACME_EMAIL: "${ACME_EMAIL:?define ACME_EMAIL in .env}"
       STORAGE_BASE_DOMAIN: "${STORAGE_BASE_DOMAIN:?define STORAGE_BASE_DOMAIN in .env}"
-    ports:
-      - "80:80"
-      - "443:443"
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -1201,8 +1175,8 @@ services:
 
   mqtt-kafka-bridge:
     build:
-      context: ./mqtt-kafka-bridge
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: mqtt-kafka-bridge/Dockerfile
     restart: unless-stopped
     depends_on:
       kafka-init:
@@ -1213,7 +1187,7 @@ services:
       MQTT_HOST: "vernemq1"
       MQTT_PORT: "1883"
       MQTT_USERNAME: "admin"
-      MQTT_PASSWORD: "${VERNEMQ_ADMIN_PASSWORD:-change-this-password}"
+      MQTT_PASSWORD: "${VERNEMQ_ADMIN_PASSWORD:?define VERNEMQ_ADMIN_PASSWORD in .env}"
       MQTT_TOPIC: "$$share/ingestors/devices/#"
       KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
       DEFAULT_KAFKA_TOPIC: "raw.sensor"
@@ -1228,8 +1202,6 @@ services:
     hostname: flink-jobmanager
     restart: unless-stopped
     command: "jobmanager"
-    ports:
-      - "8081:8081"
     environment:
       ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.0.0.jar"
       FLINK_PYTHON: "/opt/flink/venv/bin/python"
@@ -1378,7 +1350,7 @@ services:
       - orchestration_net
 
   beam-jobserver:
-    image: apache/beam_flink_job_server:2.73.0-flink2.0
+    image: apache/beam_flink_job_server:2.74.0-flink2.0
     container_name: beam-jobserver
     hostname: beam-jobserver
     restart: unless-stopped
@@ -1393,10 +1365,6 @@ services:
         restart: true
       kafka-init:
         condition: service_completed_successfully
-    ports:
-      - "8099:8099"
-      - "8098:8098"
-      - "8097:8097"
     healthcheck:
       test: ["CMD-SHELL", "sh -c 'exec 3<>/dev/tcp/127.0.0.1/8099'"]
       interval: 20s
@@ -1415,10 +1383,11 @@ services:
     command: ["--worker_pool"]
     environment:
       <<: *beam-env
-      PYTHONPATH: "/opt/pipelines"
+      PYTHONPATH: "/opt/pipelines:/opt/dealiot_contracts"
     expose:
       - "50000"
     volumes:
+      - ./dealiot_contracts:/opt/dealiot_contracts/dealiot_contracts:ro
       - ./pipelines:/opt/pipelines:ro
     networks:
       - orchestration_net
@@ -1449,6 +1418,7 @@ services:
     environment:
       <<: *beam-env
     volumes:
+      - ./dealiot_contracts:/opt/dealiot_contracts/dealiot_contracts:ro
       - ./pipelines:/opt/pipelines
     networks:
       - orchestration_net
@@ -1462,7 +1432,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: "${AIRFLOW_DB_PASSWORD:-change-this-password}"
+      POSTGRES_PASSWORD: "${AIRFLOW_DB_PASSWORD:?define AIRFLOW_DB_PASSWORD in .env}"
       POSTGRES_DB: airflow
     volumes:
       - airflow_postgres_data:/var/lib/postgresql/data
@@ -1498,7 +1468,7 @@ services:
       _AIRFLOW_DB_MIGRATE: "true"
       _AIRFLOW_WWW_USER_CREATE: "true"
       _AIRFLOW_WWW_USER_USERNAME: "${AIRFLOW_ADMIN_USER:-admin}"
-      _AIRFLOW_WWW_USER_PASSWORD: "${AIRFLOW_ADMIN_PASSWORD:-admin}"
+      _AIRFLOW_WWW_USER_PASSWORD: "${AIRFLOW_ADMIN_PASSWORD:?define AIRFLOW_ADMIN_PASSWORD in .env}"
       _AIRFLOW_WWW_USER_FIRSTNAME: "Air"
       _AIRFLOW_WWW_USER_LASTNAME: "Flow"
       _AIRFLOW_WWW_USER_ROLE: "Admin"
@@ -1513,8 +1483,6 @@ services:
       airflow-init:
         condition: service_completed_successfully
     command: "api-server"
-    ports:
-      - "8088:8080"
     healthcheck:
       test:
         [
@@ -1619,8 +1587,6 @@ services:
       PGADMIN_REPLACE_SERVERS_ON_STARTUP: "True"
     secrets:
       - pgadmin_default_password
-    ports:
-      - "5050:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
       - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
@@ -1639,8 +1605,6 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=15d
       - --web.enable-lifecycle
-    ports:
-      - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/rules:/etc/prometheus/rules:ro
@@ -1669,10 +1633,8 @@ services:
         restart: true
     environment:
       GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
-      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-change-this-password}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?define GRAFANA_ADMIN_PASSWORD in .env}"
       GF_USERS_ALLOW_SIGN_UP: "false"
-    ports:
-      - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -1685,8 +1647,6 @@ services:
     container_name: cadvisor
     hostname: cadvisor
     restart: unless-stopped
-    ports:
-      - "8089:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -1708,10 +1668,6 @@ services:
       - --web.listen-address=:9102
       - --statsd.listen-udp=:9125
       - --statsd.listen-tcp=:9125
-    ports:
-      - "9102:9102"
-      - "9125:9125/udp"
-      - "9125:9125/tcp"
     networks:
       - orchestration_net
 
@@ -1730,8 +1686,6 @@ services:
       haproxy:
         condition: service_started
         restart: true
-    ports:
-      - "9187:9187"
     networks:
       - patroni_frontend
 
@@ -1745,8 +1699,6 @@ services:
         condition: service_completed_successfully
     environment:
       <<: *apicurio-env
-    ports:
-      - "8082:8080"
     networks:
       - kafka_net
       - orchestration_net
@@ -1761,8 +1713,6 @@ services:
         condition: service_started
     environment:
       REGISTRY_API_URL: "${APICURIO_PUBLIC_URL:-http://localhost:8082}/apis/registry/v3"
-    ports:
-      - "8888:8080"
     networks:
       - orchestration_net
 
@@ -1791,8 +1741,7 @@ services:
         post_artifact() {
           group="$$1"
           artifact="$$2"
-          artifact_type="$$3"
-          file="$$4"
+          file="$$3"
 
           if [ ! -f "$$file" ]; then
             echo "Missing schema file: $$file"
@@ -1805,35 +1754,21 @@ services:
             return 0
           fi
 
-          content_escaped="$$(sed 's/\\/\\\\/g; s/"/\\"/g' "$$file" | awk '{printf "%s\\n", $$0}')"
-
-          cat >/tmp/payload.json <<EOF
-        {
-          "artifactId": "$$artifact",
-          "artifactType": "$$artifact_type",
-          "firstVersion": {
-            "content": {
-              "content": "$$content_escaped",
-              "contentType": "application/json"
-            }
-          }
-        }
-        EOF
-
           curl -fsS -X POST "$$base/groups/$$group/artifacts" \
             -H "Content-Type: application/json" \
-            --data @/tmp/payload.json
+            --data @"$$file"
 
           echo "Artifact created: $$group/$$artifact"
         }
 
-        post_artifact telemetry raw.sensor JSON /bootstrap/raw.sensor.json
-        post_artifact telemetry raw.gps JSON /bootstrap/raw.gps.json
-        post_artifact media raw.image2d.meta JSON /bootstrap/raw.image2d.meta.json
-        post_artifact media raw.image3d.meta JSON /bootstrap/raw.image3d.meta.json
-        post_artifact media raw.video2d.meta JSON /bootstrap/raw.video2d.meta.json
-        post_artifact media raw.video3d.meta JSON /bootstrap/raw.video3d.meta.json
-        post_artifact media media.object.events JSON /bootstrap/media.object.events.json
+        post_artifact telemetry raw.sensor /bootstrap/raw.sensor.json
+        post_artifact telemetry raw.gps /bootstrap/raw.gps.json
+        post_artifact media raw.image2d.meta /bootstrap/raw.image2d.meta.json
+        post_artifact media raw.image3d.meta /bootstrap/raw.image3d.meta.json
+        post_artifact media raw.video2d.meta /bootstrap/raw.video2d.meta.json
+        post_artifact media raw.video3d.meta /bootstrap/raw.video3d.meta.json
+        post_artifact media media.object.events /bootstrap/media.object.events.json
+        post_artifact platform dlq.events /bootstrap/dlq.events.json
 
         echo "Apicurio bootstrap done."
     networks:

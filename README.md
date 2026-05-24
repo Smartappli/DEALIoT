@@ -188,6 +188,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `raw.video2d.meta`
 - `raw.video3d.meta`
 - `media.object.events`
+- `dlq.events`
 
 ## 6. Network zones
 
@@ -306,27 +307,37 @@ PY
 
 ## 8. Startup sequence
 
-Use the base compose file plus an environment-specific overlay.
+Use the base compose file plus an environment-specific overlay. The base file describes the
+internal topology and does not publish host ports. Development ports live in
+`docker-compose.dev.yml`; production-like local validation exposes only the explicit edge service.
 
 ### Development
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# or
+./install_dealiot.sh dev up -d --build
 ```
 
 ### Staging
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --build
+# or
+./install_dealiot.sh staging up -d --build
 ```
 
 ### Production-like local validation
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# or
+./install_dealiot.sh prod up -d --build
 ```
 
 ## 9. Service endpoints
+
+These endpoints are available when the development overlay is active.
 
 | Service | URL / Port |
 |---|---|
@@ -346,7 +357,19 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 | PgBouncer RW | `localhost:6432` |
 | PgBouncer RO | `localhost:6433` |
 
-## 10. Validation checklist
+## 10. End-to-end smoke test
+
+After rendering Compose and before accepting a platform change, run:
+
+```bash
+bash scripts/smoke-e2e.sh
+```
+
+The smoke test starts the event-flow services, submits the minimal Flink job, publishes MQTT
+fixtures, and verifies `raw.sensor`, `dlq.events`, `features.events`, `state.latest`, and Apicurio
+artifacts.
+
+## 11. Validation checklist
 
 After startup, validate in this order:
 
@@ -372,7 +395,17 @@ Open the registry UI and verify the expected groups/artifacts are present.
 ### Airflow DAG import
 Open the Airflow UI and verify that `media_backfill` is visible and import-error free.
 
-## 11. Operational notes
+## 12. Operational notes
+
+### Event contract enforcement
+Python producers validate critical event contracts before publishing to Kafka:
+
+- valid records go to their intended `raw.*` topic
+- invalid records go to `dlq.events`
+- `timestamp` is the event time; `ingested_at` is when the platform received or replayed it
+
+This local validation is a guardrail. Apicurio remains the source of schema documentation and
+consumer compatibility governance.
 
 ### Airflow 3
 The stack uses the Airflow 3 split model:
@@ -400,24 +433,32 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - pooled RW: PgBouncer `6432`
 - pooled RO: PgBouncer `6433`
 
-## 12. Recommended next steps
+## 13. Runbooks
 
-1. Add one or more concrete Flink jobs under `flink/jobs/`.
-2. Add downstream consumers for `features.events`, `alerts.events`, and `state.latest`.
-3. Add reverse proxy/TLS for non-local deployments.
-4. Add CI validation with:
-   - YAML validation
-   - Python linting
-   - Docker build checks
-   - smoke tests for bootstrap topics and schemas
-5. Add retention, compaction, and backup policies per environment.
+- [Operations](docs/runbooks/operations.md)
+- [Backup and restore](docs/runbooks/backup-restore.md)
+- [Security hardening](docs/runbooks/security-hardening.md)
 
-## 13. Included artifacts in this finalized package
+## 14. Recommended next steps
+
+1. Add TLS and authentication for Kafka, MQTT, object storage, and public UIs before any
+   non-local deployment.
+2. Add backup and restore runbooks for Kafka metadata, TimescaleDB, SeaweedFS, Grafana, and
+   Airflow metadata.
+3. Move production deployment to an orchestrator with real failure domains. The Compose topology
+   is suitable for local and CI validation, not multi-host resilience.
+4. Add downstream consumers for `features.events`, `alerts.events`, and `state.latest`.
+5. Add one or more domain-specific Flink jobs under `flink/jobs/`.
+
+## 15. Included artifacts in this finalized package
 
 This finalized package contains:
 
 - a patched `docker-compose.yml`
 - functional environment overlays for dev/staging/prod
+- a shared lightweight event contract module used by Python producers
+- a `dlq.events` schema and DLQ routing for invalid producer events
+- an E2E smoke script and runbooks for operations, backup/restore, and security hardening
 - a new `README.md`
 - a new `.env.example`
 - a corrected MQTT bridge

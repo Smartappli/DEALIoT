@@ -5,10 +5,10 @@ import logging
 import os
 import time
 import uuid
-from datetime import UTC, datetime
 from json import JSONDecodeError
 from typing import Any
 
+from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
 from paho.mqtt import client as mqtt_client
@@ -27,10 +27,6 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv(
 ).split(",")
 
 DEFAULT_KAFKA_TOPIC = os.getenv("DEFAULT_KAFKA_TOPIC", "raw.sensor")
-
-
-def now_iso() -> str:
-    return datetime.now(UTC).isoformat()
 
 
 def decode_payload(payload: bytes) -> Any:
@@ -127,13 +123,15 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
     kafka_topic = pick_kafka_topic(msg.topic)
     device_id = derive_device_id(msg.topic)
     decoded = decode_payload(msg.payload)
-    timestamp = decoded.get("timestamp", now_iso()) if isinstance(decoded, dict) else now_iso()
+    ingested_at = now_iso()
+    timestamp = decoded.get("timestamp", ingested_at) if isinstance(decoded, dict) else ingested_at
 
     if kafka_topic == "raw.sensor":
         payload = decoded if isinstance(decoded, dict) else {"value": decoded}
         event = {
             "device_id": device_id,
             "timestamp": timestamp,
+            "ingested_at": ingested_at,
             "payload": payload,
             "mqtt_topic": msg.topic,
             "qos": msg.qos,
@@ -145,12 +143,15 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
         event = {
             "device_id": device_id,
             "timestamp": payload.get("timestamp", timestamp),
+            "ingested_at": ingested_at,
             "latitude": payload.get("latitude", payload.get("lat", 0.0)),
             "longitude": payload.get("longitude", payload.get("lon", 0.0)),
             "altitude_m": payload.get("altitude_m", payload.get("altitude")),
             "speed_m_s": payload.get("speed_m_s", payload.get("speed")),
             "heading_deg": payload.get("heading_deg", payload.get("heading")),
             "mqtt_topic": msg.topic,
+            "qos": msg.qos,
+            "retain": msg.retain,
             "payload": payload,
             "source": "mqtt-bridge",
         }
@@ -160,6 +161,7 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
             **payload,
             "device_id": payload.get("device_id", device_id),
             "timestamp": payload.get("timestamp", timestamp),
+            "ingested_at": ingested_at,
             "mqtt_topic": msg.topic,
             "qos": msg.qos,
             "retain": msg.retain,
@@ -169,9 +171,30 @@ def build_event(msg) -> tuple[str, bytes, dict[str, Any]]:
     return kafka_topic, pick_key(msg.topic), event
 
 
+def route_event(msg, kafka_topic: str, event: dict[str, Any]) -> tuple[str, dict[str, Any]]:
+    errors = validate_event(kafka_topic, event)
+    if not errors:
+        return kafka_topic, event
+
+    LOGGER.warning(
+        "Routing invalid MQTT event to DLQ intended_topic=%s mqtt_topic=%s errors=%s",
+        kafka_topic,
+        msg.topic,
+        errors,
+    )
+    return DLQ_TOPIC, build_dlq_event(
+        source="mqtt-bridge",
+        intended_topic=kafka_topic,
+        errors=errors,
+        raw_event=event,
+        source_topic=msg.topic,
+    )
+
+
 def on_message(_client, _userdata, msg) -> None:
     kafka_topic, key, event = build_event(msg)
-    future = producer.send(kafka_topic, key=key, value=event)
+    send_topic, send_event = route_event(msg, kafka_topic, event)
+    future = producer.send(send_topic, key=key, value=send_event)
     future.add_callback(on_send_success)
     future.add_errback(on_send_error)
 
