@@ -1,0 +1,107 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dealiot
+
+resources:
+  - ../../base
+  - network-policies.yaml
+  - external-dependency-contract.yaml
+
+commonLabels:
+  dealiot.io/environment: production
+
+images:
+  - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge
+    newTag: sha-REPLACE_WITH_RELEASE_SHA
+  - name: ghcr.io/smartappli/dealiot-flink-pyflink
+    newTag: sha-REPLACE_WITH_RELEASE_SHA
+  - name: ghcr.io/smartappli/dealiot-orchestration
+    newTag: sha-REPLACE_WITH_RELEASE_SHA
+
+replicas:
+  - name: mqtt-kafka-bridge
+    count: 3
+  - name: apicurio-registry
+    count: 3
+  - name: flink-taskmanager
+    count: 3
+  - name: airflow-apiserver
+    count: 2
+  - name: airflow-worker
+    count: 3
+
+patches:
+  - target:
+      kind: Deployment
+      name: mqtt-kafka-bridge
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: mqtt-kafka-bridge
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: mqtt-kafka-bridge
+  - target:
+      kind: Deployment
+      name: apicurio-registry
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: apicurio-registry
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: apicurio-registry
+  - target:
+      kind: Deployment
+      name: flink-taskmanager
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: flink-taskmanager
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: flink-taskmanager
+  - target:
+      kind: Deployment
+      name: airflow-worker
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: airflow-worker
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: airflow
+                    app.kubernetes.io/component: worker
