@@ -75,10 +75,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /opt/apache/beam
 
 RUN mkdir -p /opt/apache/beam/jars
-COPY --from=builder --chown=appuser:appuser --chmod=0444 /out/jars/beam-runners-flink-job-server.jar /opt/apache/beam/jars/
-COPY --from=builder --chown=appuser:appuser --chmod=0555 /out/flink-job-server.sh /opt/apache/beam/flink-job-server.sh
-COPY --from=builder --chown=appuser:appuser --chmod=0444 /out/meta/LICENSE /opt/apache/beam/LICENSE
-COPY --from=builder --chown=appuser:appuser --chmod=0444 /out/meta/NOTICE /opt/apache/beam/NOTICE
+COPY --from=builder --chown=root:root --chmod=0444 /out/jars/beam-runners-flink-job-server.jar /opt/apache/beam/jars/
+COPY --from=builder --chown=root:root --chmod=0555 /out/flink-job-server.sh /opt/apache/beam/flink-job-server.sh
+COPY --from=builder --chown=root:root --chmod=0444 /out/meta/LICENSE /opt/apache/beam/LICENSE
+COPY --from=builder --chown=root:root --chmod=0444 /out/meta/NOTICE /opt/apache/beam/NOTICE
 
 USER appuser
 

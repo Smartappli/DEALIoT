@@ -9,13 +9,22 @@ from pathlib import Path
 import boto3
 from kafka import KafkaProducer
 
-from dealiot_contracts import DLQ_TOPIC, build_dlq_event, now_iso, validate_event
+from dealiot_contracts import (
+    DLQ_TOPIC,
+    RAW_IMAGE2D_META_TOPIC,
+    RAW_IMAGE3D_META_TOPIC,
+    RAW_VIDEO2D_META_TOPIC,
+    RAW_VIDEO3D_META_TOPIC,
+    build_dlq_event,
+    now_iso,
+    validate_event,
+)
 
 TOPIC_BY_MEDIA_KIND = {
-    "image2d": "raw.image2d.meta",
-    "image3d": "raw.image3d.meta",
-    "video2d": "raw.video2d.meta",
-    "video3d": "raw.video3d.meta",
+    "image2d": RAW_IMAGE2D_META_TOPIC,
+    "image3d": RAW_IMAGE3D_META_TOPIC,
+    "video2d": RAW_VIDEO2D_META_TOPIC,
+    "video3d": RAW_VIDEO3D_META_TOPIC,
 }
 
 

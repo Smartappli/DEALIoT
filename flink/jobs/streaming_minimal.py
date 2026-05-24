@@ -92,24 +92,48 @@ def env_or_default(name: str, default: str) -> str:
     return value.strip()
 
 
-def infer_entity_id(mqtt_topic: str) -> str:
-    parts = [part for part in mqtt_topic.split("/") if part]
-    lowered_parts = [part.lower() for part in parts]
+def _parts(topic: str) -> tuple[list[str], list[str]]:
+    parts = [part for part in topic.split("/") if part]
+    return parts, [part.lower() for part in parts]
 
-    for marker in WILDFI_TAG_MARKERS:
+
+def _part_after_marker(
+    parts: list[str],
+    lowered_parts: list[str],
+    markers: set[str],
+) -> str | None:
+    for marker in markers:
         if marker in lowered_parts:
             idx = lowered_parts.index(marker)
             if idx + 1 < len(parts):
                 return parts[idx + 1]
+    return None
 
+
+def _part_after_wildfi_marker(parts: list[str], lowered_parts: list[str]) -> str | None:
     for marker in WILDFI_TOPIC_MARKERS:
-        if marker in lowered_parts:
-            idx = lowered_parts.index(marker)
-            next_idx = idx + 1
-            if next_idx < len(parts) and lowered_parts[next_idx] not in WILDFI_SENSOR_MARKERS:
-                return parts[next_idx]
-            if next_idx + 1 < len(parts):
-                return parts[next_idx + 1]
+        if marker not in lowered_parts:
+            continue
+
+        idx = lowered_parts.index(marker)
+        next_idx = idx + 1
+        if next_idx < len(parts) and lowered_parts[next_idx] not in WILDFI_SENSOR_MARKERS:
+            return parts[next_idx]
+        if next_idx + 1 < len(parts):
+            return parts[next_idx + 1]
+
+    return None
+
+
+def infer_entity_id(mqtt_topic: str) -> str:
+    parts, lowered_parts = _parts(mqtt_topic)
+    marked_id = _part_after_marker(parts, lowered_parts, WILDFI_TAG_MARKERS)
+    if marked_id is not None:
+        return marked_id
+
+    wildfi_id = _part_after_wildfi_marker(parts, lowered_parts)
+    if wildfi_id is not None:
+        return wildfi_id
 
     if parts:
         return parts[-1]

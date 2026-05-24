@@ -394,12 +394,36 @@ class DeploymentReadinessTests(unittest.TestCase):
                     )
 
     def test_production_images_package_runtime_code(self) -> None:
+        beam_jobserver_dockerfile = (REPO_ROOT / "beam" / "Dockerfile.jobserver").read_text(
+            encoding="utf-8"
+        )
+        beam_runtime_dockerfile = (REPO_ROOT / "beam" / "Dockerfile.python-runtime").read_text(
+            encoding="utf-8"
+        )
         orchestration_dockerfile = (REPO_ROOT / "orchestration" / "Dockerfile").read_text(
             encoding="utf-8"
         )
         flink_dockerfile = (REPO_ROOT / "flink" / "Dockerfile.pyflink").read_text(encoding="utf-8")
+        bridge_dockerfile = (REPO_ROOT / "mqtt-kafka-bridge" / "Dockerfile").read_text(
+            encoding="utf-8"
+        )
         bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
 
+        self.assertIn("--chown=root:root --chmod=0444 /out/jars", beam_jobserver_dockerfile)
+        self.assertIn(
+            "--chown=root:root --chmod=0555 /out/flink-job-server.sh",
+            beam_jobserver_dockerfile,
+        )
+        self.assertIn(
+            "COPY --chown=root:root --chmod=0555 dealiot_contracts",
+            beam_runtime_dockerfile,
+        )
+        self.assertIn("COPY --chown=root:root --chmod=0555 pipelines", beam_runtime_dockerfile)
+        self.assertIn(
+            "COPY --chown=root:root --chmod=0444 mqtt-kafka-bridge/bridge.py",
+            bridge_dockerfile,
+        )
+        self.assertIn("COPY --chown=root:root --chmod=0555 dealiot_contracts", bridge_dockerfile)
         self.assertIn("COPY --chown=airflow:0 --chmod=0555 airflow/dags", orchestration_dockerfile)
         self.assertIn(
             "COPY --chown=airflow:0 --chmod=0555 pipelines /opt/pipelines",
