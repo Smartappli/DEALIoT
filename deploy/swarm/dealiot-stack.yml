@@ -56,7 +56,7 @@ services:
       MQTT_PORT: "${MQTT_PORT:-1883}"
       MQTT_USERNAME: "${MQTT_USERNAME:-admin}"
       MQTT_PASSWORD_FILE: "/run/secrets/mqtt_password"
-      MQTT_TOPIC: "${MQTT_TOPIC:-$share/ingestors/devices/#}"
+      MQTT_TOPIC: "${MQTT_TOPIC:-$$share/ingestors/devices/#}"
       KAFKA_BOOTSTRAP_SERVERS: "${KAFKA_BOOTSTRAP_SERVERS:?set KAFKA_BOOTSTRAP_SERVERS}"
       DEFAULT_KAFKA_TOPIC: "raw.sensor"
       LOG_LEVEL: "${LOG_LEVEL:-INFO}"
