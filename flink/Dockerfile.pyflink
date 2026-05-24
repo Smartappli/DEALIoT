@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --chmod=0444 ./flink/requirements-pyflink.txt /tmp/requirements-pyflink.txt
-COPY --chown=flink:flink --chmod=0555 ./flink/jobs /opt/flink/usrlib
-COPY --chown=flink:flink --chmod=0555 ./pipelines /opt/pipelines
+COPY --chown=root:root --chmod=0555 ./flink/jobs /opt/flink/usrlib
+COPY --chown=root:root --chmod=0555 ./pipelines /opt/pipelines
 
 RUN python3 --version \
  && python3 -m venv /opt/flink/venv \
