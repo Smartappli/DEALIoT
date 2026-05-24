@@ -39,8 +39,8 @@ bootstrap:
     - auth-host: scram-sha-256
     - auth-local: trust
   pg_hba:
-    - host all all 0.0.0.0/0 scram-sha-256
-    - host replication replicator 0.0.0.0/0 scram-sha-256
+    - host all all samenet scram-sha-256
+    - host replication replicator samenet scram-sha-256
   post_bootstrap: /bin/bash /scripts/post-bootstrap.sh
 
 postgresql:
