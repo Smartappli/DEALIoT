@@ -50,7 +50,7 @@ x-flink-env: &flink-env
 
 services:
   mqtt-kafka-bridge:
-    image: "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE:-ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:local-placeholder}"
+    image: "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE:?set DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}"
     environment:
       MQTT_HOST: "${MQTT_HOST:?set MQTT_HOST}"
       MQTT_PORT: "${MQTT_PORT:-1883}"
@@ -104,7 +104,7 @@ services:
           memory: 1G
 
   flink-jobmanager:
-    image: "${DEALIOT_FLINK_PYFLINK_IMAGE:-ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder}"
+    image: "${DEALIOT_FLINK_PYFLINK_IMAGE:?set DEALIOT_FLINK_PYFLINK_IMAGE}"
     command: "jobmanager"
     environment:
       <<: *flink-env
@@ -139,7 +139,7 @@ services:
           memory: 3G
 
   flink-taskmanager:
-    image: "${DEALIOT_FLINK_PYFLINK_IMAGE:-ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder}"
+    image: "${DEALIOT_FLINK_PYFLINK_IMAGE:?set DEALIOT_FLINK_PYFLINK_IMAGE}"
     command: "taskmanager"
     environment:
       <<: *flink-env
@@ -172,7 +172,7 @@ services:
           memory: 3G
 
   airflow-migrate:
-    image: "${DEALIOT_ORCHESTRATION_IMAGE:-ghcr.io/smartappli/dealiot-orchestration:local-placeholder}"
+    image: "${DEALIOT_ORCHESTRATION_IMAGE:?set DEALIOT_ORCHESTRATION_IMAGE}"
     command:
       - bash
       - -lc
@@ -196,7 +196,7 @@ services:
         max_attempts: 3
 
   airflow-apiserver:
-    image: "${DEALIOT_ORCHESTRATION_IMAGE:-ghcr.io/smartappli/dealiot-orchestration:local-placeholder}"
+    image: "${DEALIOT_ORCHESTRATION_IMAGE:?set DEALIOT_ORCHESTRATION_IMAGE}"
     command: "api-server"
     environment:
       <<: *airflow-env
@@ -214,7 +214,7 @@ services:
           memory: 3G
 
   airflow-scheduler:
-    image: "${DEALIOT_ORCHESTRATION_IMAGE:-ghcr.io/smartappli/dealiot-orchestration:local-placeholder}"
+    image: "${DEALIOT_ORCHESTRATION_IMAGE:?set DEALIOT_ORCHESTRATION_IMAGE}"
     command: "scheduler"
     environment:
       <<: *airflow-env
@@ -230,7 +230,7 @@ services:
           memory: 3G
 
   airflow-worker:
-    image: "${DEALIOT_ORCHESTRATION_IMAGE:-ghcr.io/smartappli/dealiot-orchestration:local-placeholder}"
+    image: "${DEALIOT_ORCHESTRATION_IMAGE:?set DEALIOT_ORCHESTRATION_IMAGE}"
     command: "celery worker"
     environment:
       <<: *airflow-env
@@ -249,7 +249,7 @@ services:
           memory: 3G
 
   airflow-triggerer:
-    image: "${DEALIOT_ORCHESTRATION_IMAGE:-ghcr.io/smartappli/dealiot-orchestration:local-placeholder}"
+    image: "${DEALIOT_ORCHESTRATION_IMAGE:?set DEALIOT_ORCHESTRATION_IMAGE}"
     command: "triggerer"
     environment:
       <<: *airflow-env
@@ -264,7 +264,7 @@ services:
           memory: 1G
 
   airflow-dag-processor:
-    image: "${DEALIOT_ORCHESTRATION_IMAGE:-ghcr.io/smartappli/dealiot-orchestration:local-placeholder}"
+    image: "${DEALIOT_ORCHESTRATION_IMAGE:?set DEALIOT_ORCHESTRATION_IMAGE}"
     command: "dag-processor"
     environment:
       <<: *airflow-env

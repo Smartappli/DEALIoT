@@ -43,14 +43,14 @@ jobs:
       contents: read
 
     env:
-      AIRFLOW_FERNET_KEY: "ci-fernet-key-32-bytes-minimum-value"
-      AIRFLOW_API_SECRET_KEY: "ci-api-secret"
-      AIRFLOW_JWT_SECRET: "ci-jwt-secret"
+      AIRFLOW_FERNET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-fernet
+      AIRFLOW_API_SECRET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-api
+      AIRFLOW_JWT_SECRET: ${{ github.run_id }}-${{ github.run_attempt }}-jwt
       AIRFLOW_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-airflow-admin
       AIRFLOW_DB_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-airflow-db
       VERNEMQ_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-vernemq-admin
-      VERNEMQ_DISTRIBUTED_COOKIE: "ci-vernemq-distributed-cookie"
-      SEAWEEDFS_S3_ACCESS_KEY: "ci-access-key"
+      VERNEMQ_DISTRIBUTED_COOKIE: ${{ github.run_id }}-${{ github.run_attempt }}-vernemq-cookie
+      SEAWEEDFS_S3_ACCESS_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-s3-access
       SEAWEEDFS_S3_SECRET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-seaweedfs-s3
       GRAFANA_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-grafana-admin
       ACME_EMAIL: "ci@example.com"
