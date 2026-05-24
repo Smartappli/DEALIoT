@@ -44,6 +44,30 @@ class PlatformIntegrationTests(unittest.TestCase):
         for service in expected_services:
             self.assertIn(f"  {service}:", compose_text, f"Missing integration service: {service}")
 
+    def test_core_event_topics_are_bootstrapped(self) -> None:
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+        expected_topics = [
+            "raw.sensor",
+            "raw.gps",
+            "raw.image2d.meta",
+            "raw.image3d.meta",
+            "raw.video2d.meta",
+            "raw.video3d.meta",
+            "features.events",
+            "state.latest",
+            "dlq.events",
+        ]
+
+        for topic in expected_topics:
+            self.assertIn(f"--topic {topic}", compose_text, f"Missing topic: {topic}")
+
+    def test_images_that_import_contracts_build_from_repo_root(self) -> None:
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+        self.assertIn("dockerfile: orchestration/Dockerfile", compose_text)
+        self.assertIn("dockerfile: mqtt-kafka-bridge/Dockerfile", compose_text)
+        self.assertIn("./dealiot_contracts:/opt/airflow/dealiot_contracts:ro", compose_text)
+
 
 if __name__ == "__main__":
     unittest.main()

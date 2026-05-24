@@ -25,8 +25,13 @@ jobs:
       AIRFLOW_FERNET_KEY: "ci-fernet-key-32-bytes-minimum-value"
       AIRFLOW_API_SECRET_KEY: "ci-api-secret"
       AIRFLOW_JWT_SECRET: "ci-jwt-secret"
+      AIRFLOW_ADMIN_PASSWORD: "ci-airflow-admin-password"
+      AIRFLOW_DB_PASSWORD: "ci-airflow-db-password"
+      VERNEMQ_ADMIN_PASSWORD: "ci-vernemq-admin-password"
+      VERNEMQ_DISTRIBUTED_COOKIE: "ci-vernemq-distributed-cookie"
       SEAWEEDFS_S3_ACCESS_KEY: "ci-access-key"
       SEAWEEDFS_S3_SECRET_KEY: "ci-secret-key"
+      GRAFANA_ADMIN_PASSWORD: "ci-grafana-admin-password"
       ACME_EMAIL: "ci@example.com"
       STORAGE_BASE_DOMAIN: "local.test"
 
