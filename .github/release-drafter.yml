@@ -45,7 +45,7 @@ template: |
     $CHANGES
 
     ## 🐳 Docker Images
-    - `ghcr.io/$OWNER/$REPOSITORY:latest`
+    - `ghcr.io/$OWNER/$REPOSITORY:sha-<commit-sha>`
     - `ghcr.io/$OWNER/$REPOSITORY:$RESOLVED_VERSION`
 
     **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$RESOLVED_VERSION

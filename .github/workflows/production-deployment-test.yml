@@ -24,11 +24,11 @@ env:
   MQTT_HOST: mqtt.example.net
   MQTT_USERNAME: admin
   S3_ENDPOINT_URL: https://s3.example.net
-  AWS_ACCESS_KEY_ID: ci-access-key
+  AWS_ACCESS_KEY_ID: ${{ github.run_id }}-${{ github.run_attempt }}-s3-access
   AWS_SECRET_ACCESS_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-s3
-  AIRFLOW__CORE__FERNET_KEY: ci-fernet-key-32-bytes-minimum-value
-  AIRFLOW__API__SECRET_KEY: ci-airflow-api-secret
-  AIRFLOW__API_AUTH__JWT_SECRET: ci-airflow-jwt-secret
+  AIRFLOW__CORE__FERNET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-fernet
+  AIRFLOW__API__SECRET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-airflow-api
+  AIRFLOW__API_AUTH__JWT_SECRET: ${{ github.run_id }}-${{ github.run_attempt }}-airflow-jwt
   AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg://airflow:${{ github.run_id }}-${{ github.run_attempt }}@postgres.example.net:5432/airflow
   AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:${{ github.run_id }}-${{ github.run_attempt }}@postgres.example.net:5432/airflow
   AIRFLOW__CELERY__BROKER_URL: redis://redis.example.net:6379/0
@@ -124,8 +124,8 @@ jobs:
       - name: Render Kubernetes production overlay
         run: |
           kubectl kustomize deploy/kubernetes/overlays/production >/tmp/dealiot-kubernetes-production.yaml
-          if grep -R "ghcr.io/smartappli/.*:latest" /tmp/dealiot-kubernetes-production.yaml; then
-            echo "Production overlay must not render mutable latest image tags." >&2
+          if grep -E "ghcr.io/smartappli/.*:(latest|local-placeholder)" /tmp/dealiot-kubernetes-production.yaml; then
+            echo "Production overlay must not render mutable or placeholder image tags." >&2
             exit 1
           fi
           kubectl apply --dry-run=server -f /tmp/dealiot-kubernetes-production.yaml

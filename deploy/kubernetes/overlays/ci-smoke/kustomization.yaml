@@ -17,4 +17,4 @@ images:
 secretGenerator:
   - name: dealiot-secrets
     literals:
-      - MQTT_PASSWORD=not-used-by-smoke-container
+      - MQTT_PASSWORD=unused-smoke-placeholder
