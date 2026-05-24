@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  mqtt-kafka-bridge:
+    image: "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE:-dealiot-mqtt-kafka-bridge:ci}"
+    command:
+      - python
+      - -c
+      - >
+        import dealiot_contracts, time;
+        print("dealiot bridge image ready", flush=True);
+        time.sleep(3600)
+    environment:
+      MQTT_HOST: "localhost"
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: "admin"
+      MQTT_PASSWORD_FILE: "/run/secrets/mqtt_password"
+      KAFKA_BOOTSTRAP_SERVERS: "localhost:9092"
+      DEFAULT_KAFKA_TOPIC: "raw.sensor"
+    secrets:
+      - source: mqtt_password
+        target: mqtt_password
+        mode: 0400
+    networks:
+      - smoke
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+networks:
+  smoke:
+    driver: overlay
+
+secrets:
+  mqtt_password:
+    external: true
