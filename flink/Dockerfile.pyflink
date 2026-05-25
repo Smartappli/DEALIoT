@@ -73,6 +73,7 @@ for artifact, version in artifacts:
 PY
 
 COPY --chmod=0444 ./flink/requirements-pyflink.txt /tmp/requirements-pyflink.txt
+COPY --chown=root:root --chmod=0444 ./flink/log4j-console.properties /opt/flink/conf/log4j-console.properties
 COPY --chown=root:root --chmod=0555 ./flink/docker-entrypoint.sh /opt/flink/bin/dealiot-flink-entrypoint.sh
 COPY --chown=root:root --chmod=0555 ./flink/jobs /opt/flink/usrlib
 COPY --chown=root:root --chmod=0555 ./pipelines /opt/pipelines
