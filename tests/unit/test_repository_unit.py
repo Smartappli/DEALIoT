@@ -131,6 +131,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "Core event-flow services failed to become ready.",
             "SMOKE_COMPOSE_OUTPUT_TAIL",
             "wait_for_core_event_flow_services",
+            "compose_service_running",
             "wait_for_compose_service kafka-init completed",
             "wait_for_compose_service seaweedfs-init completed",
             "wait_for_compose_service flink-jobmanager healthy",
@@ -168,9 +169,13 @@ class RepositoryUnitTests(unittest.TestCase):
             '--tail="$SMOKE_DIAGNOSTIC_LOG_TAIL"',
             "mktemp",
             "Docker compose up output (last ${SMOKE_COMPOSE_OUTPUT_TAIL} lines)",
+            "Flink JobManager is not running; skipping Flink job list",
+            "Kafka service kafka1 is not running; skipping topic state",
+            "run --no-deps --rm --entrypoint",
         ]:
             self.assertIn(expected, script_text)
-        self.assertIn(" up -d --build --quiet-pull --quiet-build \\", script_text)
+        self.assertIn(" up -d --build \\", script_text)
+        self.assertNotIn("--quiet-build", script_text)
         self.assertNotIn(" --wait \\", script_text)
         self.assertNotIn("e2e-sensor-001", script_text)
         self.assertNotIn("e2e-camera-001", script_text)

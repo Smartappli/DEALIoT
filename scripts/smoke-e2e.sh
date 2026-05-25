@@ -116,6 +116,11 @@ dump_kafka_topic_state() {
   local topic="$1"
 
   echo "Kafka topic state: ${topic}" >&2
+  if ! compose_service_running kafka1; then
+    echo "Kafka service kafka1 is not running; skipping topic state for ${topic}" >&2
+    return 0
+  fi
+
   compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" exec -T kafka1 \
     /opt/kafka/bin/kafka-topics.sh \
     --bootstrap-server kafka1:9092 \
@@ -139,6 +144,20 @@ compose_service_state() {
   docker inspect \
     --format '{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}|{{.State.ExitCode}}' \
     "$container_id"
+}
+
+compose_service_running() {
+  local service="$1"
+  local state
+  local status
+
+  state="$(compose_service_state "$service" || true)"
+  if [ -z "$state" ]; then
+    return 1
+  fi
+
+  status="${state%%|*}"
+  [ "$status" = "running" ]
 }
 
 wait_for_compose_service() {
@@ -217,7 +236,12 @@ dump_flink_rest_path() {
   local path="$2"
 
   echo "Flink REST ${label}" >&2
-  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" run --rm --entrypoint python flink-cli - \
+  if ! compose_service_running flink-jobmanager; then
+    echo "Flink JobManager is not running; skipping Flink REST ${label}" >&2
+    return 0
+  fi
+
+  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" run --no-deps --rm --entrypoint python flink-cli - \
     "$SMOKE_FLINK_REST_HOST" "$SMOKE_FLINK_REST_PORT" "$path" <<'PY' >&2 || true
 import http.client
 import json
@@ -266,8 +290,12 @@ dump_smoke_diagnostics() {
   compose ps >&2 || true
 
   echo "Flink running jobs" >&2
-  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" run --rm --entrypoint sh flink-cli -lc \
-    "/opt/flink/bin/flink list -r --jobmanager flink-jobmanager:8081 || true" >&2 || true
+  if compose_service_running flink-jobmanager; then
+    compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" run --no-deps --rm --entrypoint sh flink-cli -lc \
+      "/opt/flink/bin/flink list -r --jobmanager flink-jobmanager:8081 || true" >&2 || true
+  else
+    echo "Flink JobManager is not running; skipping Flink job list" >&2
+  fi
   dump_flink_job_diagnostics
 
   echo "Kafka topic diagnostics" >&2
@@ -470,7 +498,7 @@ compose config -q
 echo "Starting core event-flow services"
 compose_up_log="$(mktemp)"
 set +e
-compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build --quiet-pull --quiet-build \
+compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build \
   kafka1 kafka2 kafka3 kafka-init \
   apicurio-registry apicurio-init \
   vernemq1 mqtt-kafka-bridge \
