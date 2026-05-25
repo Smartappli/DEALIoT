@@ -12,6 +12,7 @@ SMOKE_COMPOSE_READY_POLL_SECONDS="${SMOKE_COMPOSE_READY_POLL_SECONDS:-5}"
 SMOKE_COMPOSE_READY_ATTEMPTS="${SMOKE_COMPOSE_READY_ATTEMPTS:-$(((SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS + SMOKE_COMPOSE_READY_POLL_SECONDS - 1) / SMOKE_COMPOSE_READY_POLL_SECONDS))}"
 SMOKE_COMPOSE_OUTPUT_TAIL="${SMOKE_COMPOSE_OUTPUT_TAIL:-120}"
 SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS="${SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS:-180}"
+SMOKE_FLINK_SUBMIT_OUTPUT_TAIL="${SMOKE_FLINK_SUBMIT_OUTPUT_TAIL:-80}"
 SMOKE_FLINK_LIST_TIMEOUT_SECONDS="${SMOKE_FLINK_LIST_TIMEOUT_SECONDS:-45}"
 SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS="${SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS:-45}"
 SMOKE_MQTT_PUBLISH_TIMEOUT_SECONDS="${SMOKE_MQTT_PUBLISH_TIMEOUT_SECONDS:-15}"
@@ -529,7 +530,9 @@ submit_status=$?
 set -e
 printf '%s\n' "$submit_output"
 if [ "$submit_status" -ne 0 ]; then
-  emit_smoke_error "Flink job submission failed or timed out."
+  echo "Flink submit output (last ${SMOKE_FLINK_SUBMIT_OUTPUT_TAIL} lines)" >&2
+  printf '%s\n' "$submit_output" | tail -n "$SMOKE_FLINK_SUBMIT_OUTPUT_TAIL" >&2 || true
+  emit_smoke_error "Flink job submission failed or timed out with status ${submit_status}. Last output: $(printf '%s\n' "$submit_output" | tail -n 20 | tr '\n' ' ' | cut -c 1-900)"
   dump_smoke_diagnostics
   exit "$submit_status"
 fi
