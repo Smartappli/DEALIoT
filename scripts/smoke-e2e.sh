@@ -136,7 +136,7 @@ compose_service_state() {
   local service="$1"
   local container_id
 
-  container_id="$(compose ps -q "$service" 2>/dev/null || true)"
+  container_id="$(compose ps -a -q "$service" 2>/dev/null || true)"
   if [ -z "$container_id" ]; then
     return 1
   fi

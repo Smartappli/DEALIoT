@@ -132,6 +132,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "SMOKE_COMPOSE_OUTPUT_TAIL",
             "wait_for_core_event_flow_services",
             "compose_service_running",
+            'compose ps -a -q "$service"',
             "wait_for_compose_service kafka-init completed",
             "wait_for_compose_service seaweedfs-init completed",
             "wait_for_compose_service flink-jobmanager healthy",
