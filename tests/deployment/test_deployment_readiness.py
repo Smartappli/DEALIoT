@@ -445,10 +445,24 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
         self.assertIn("COPY --chown=root:root --chmod=0555 ./flink/jobs", flink_dockerfile)
         self.assertIn("COPY --chown=root:root --chmod=0555 ./pipelines", flink_dockerfile)
+        self.assertIn("flink/log4j-console.properties", flink_dockerfile)
         self.assertIn("flink-sql-connector-kafka", flink_dockerfile)
         self.assertIn("flink-connector-base", flink_dockerfile)
         self.assertIn("jdk_only_exports", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
+
+    def test_flink_runtime_logs_suppress_kafka_client_info_noise(self) -> None:
+        log4j_config = (REPO_ROOT / "flink" / "log4j-console.properties").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("logger.kafka.name = org.apache.kafka", log4j_config)
+        self.assertIn("logger.kafka.level = WARN", log4j_config)
+        self.assertIn(
+            "logger.kafkaShaded.name = org.apache.flink.kafka.shaded.org.apache.kafka",
+            log4j_config,
+        )
+        self.assertIn("logger.kafkaShaded.level = WARN", log4j_config)
 
     def test_local_flink_services_use_seaweed_s3_secret_files(self) -> None:
         compose = yaml.safe_load((REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8"))
