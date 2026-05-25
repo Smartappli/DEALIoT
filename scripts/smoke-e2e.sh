@@ -8,6 +8,8 @@ COMPOSE_FILES=(
 
 SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS:-2100}"
 SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS:-1200}"
+SMOKE_COMPOSE_READY_POLL_SECONDS="${SMOKE_COMPOSE_READY_POLL_SECONDS:-5}"
+SMOKE_COMPOSE_READY_ATTEMPTS="${SMOKE_COMPOSE_READY_ATTEMPTS:-$(((SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS + SMOKE_COMPOSE_READY_POLL_SECONDS - 1) / SMOKE_COMPOSE_READY_POLL_SECONDS))}"
 SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS="${SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS:-180}"
 SMOKE_FLINK_LIST_TIMEOUT_SECONDS="${SMOKE_FLINK_LIST_TIMEOUT_SECONDS:-45}"
 SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS="${SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS:-45}"
@@ -107,6 +109,91 @@ dump_kafka_topic_state() {
     /opt/kafka/bin/kafka-get-offsets.sh \
     --bootstrap-server kafka1:9092 \
     --topic "$topic" >&2 || true
+}
+
+compose_service_state() {
+  local service="$1"
+  local container_id
+
+  container_id="$(compose ps -q "$service" 2>/dev/null || true)"
+  if [ -z "$container_id" ]; then
+    return 1
+  fi
+
+  docker inspect \
+    --format '{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}|{{.State.ExitCode}}' \
+    "$container_id"
+}
+
+wait_for_compose_service() {
+  local service="$1"
+  local condition="$2"
+  local attempts="${3:-$SMOKE_COMPOSE_READY_ATTEMPTS}"
+  local state
+  local status
+  local health
+  local exit_code
+
+  for _ in $(seq 1 "$attempts"); do
+    state="$(compose_service_state "$service" || true)"
+
+    if [ -n "$state" ]; then
+      IFS='|' read -r status health exit_code <<<"$state"
+      echo "Compose service ${service}: status=${status} health=${health} exit=${exit_code}; waiting for ${condition}"
+
+      case "$condition" in
+        healthy)
+          if [ "$status" = "running" ] && [ "$health" = "healthy" ]; then
+            return 0
+          fi
+          ;;
+        running)
+          if [ "$status" = "running" ]; then
+            return 0
+          fi
+          ;;
+        completed)
+          if [ "$status" = "exited" ] && [ "$exit_code" = "0" ]; then
+            return 0
+          fi
+          ;;
+        *)
+          echo "Unknown compose service condition: ${condition}" >&2
+          return 2
+          ;;
+      esac
+
+      if [ "$status" = "exited" ] && [ "$exit_code" != "0" ]; then
+        echo "Compose service ${service} exited with code ${exit_code} while waiting for ${condition}." >&2
+        dump_smoke_diagnostics
+        return 1
+      fi
+    else
+      echo "Compose service ${service}: not created yet; waiting for ${condition}"
+    fi
+
+    sleep "$SMOKE_COMPOSE_READY_POLL_SECONDS"
+  done
+
+  echo "Compose service ${service} did not reach ${condition}." >&2
+  dump_smoke_diagnostics
+  return 1
+}
+
+wait_for_core_event_flow_services() {
+  wait_for_compose_service kafka1 healthy
+  wait_for_compose_service kafka2 healthy
+  wait_for_compose_service kafka3 healthy
+  wait_for_compose_service kafka-init completed
+  wait_for_compose_service vernemq1 healthy
+  wait_for_compose_service seaweedfs-pg-init completed
+  wait_for_compose_service seaweedfs-filer healthy
+  wait_for_compose_service seaweedfs-s3 healthy
+  wait_for_compose_service seaweedfs-init completed
+  wait_for_compose_service apicurio-registry running
+  wait_for_compose_service apicurio-init completed
+  wait_for_compose_service mqtt-kafka-bridge running
+  wait_for_compose_service flink-jobmanager healthy
 }
 
 dump_flink_rest_path() {
@@ -367,8 +454,7 @@ compose config -q
 echo "Starting core event-flow services"
 set +e
 compose_up_output="$(
-  compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build --wait \
-    --wait-timeout "$SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS" \
+  compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build \
     kafka1 kafka2 kafka3 kafka-init \
     apicurio-registry apicurio-init \
     vernemq1 mqtt-kafka-bridge \
@@ -382,6 +468,7 @@ if [ "$compose_up_status" -ne 0 ]; then
   dump_smoke_diagnostics
   exit "$compose_up_status"
 fi
+wait_for_core_event_flow_services
 
 wait_for_flink_taskmanagers
 
