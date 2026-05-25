@@ -125,6 +125,9 @@ class RepositoryUnitTests(unittest.TestCase):
 
     def test_e2e_smoke_script_checks_runtime_contracts(self) -> None:
         script_text = (REPO_ROOT / "scripts" / "smoke-e2e.sh").read_text(encoding="utf-8")
+        flink_job_text = (REPO_ROOT / "flink" / "jobs" / "streaming_minimal.py").read_text(
+            encoding="utf-8"
+        )
 
         for expected in [
             "raw.sensor",
@@ -150,6 +153,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "SMOKE_FLINK_EXPECTED_TASKMANAGERS",
             "SMOKE_FLINK_TASKMANAGER_WAIT_ATTEMPTS",
             "SMOKE_FLINK_REST_HOST",
+            "SMOKE_FLINK_SUBMIT_OUTPUT_TAIL",
             "SMOKE_DIAGNOSTIC_LOG_TAIL",
             "SMOKE_KAFKA_DIAGNOSTIC_TOPICS",
             "emit_smoke_error",
@@ -169,6 +173,8 @@ class RepositoryUnitTests(unittest.TestCase):
             "require_command timeout",
             "compose_with_timeout",
             "SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS",
+            "Flink job submission failed or timed out with status ${submit_status}",
+            "Flink submit output (last ${SMOKE_FLINK_SUBMIT_OUTPUT_TAIL} lines)",
             "SMOKE_MQTT_PUBLISH_TIMEOUT_SECONDS",
             "wait_for_publish(timeout=publish_timeout)",
             "grep -F -m 1",
@@ -188,6 +194,10 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertNotIn("e2e-sensor-001", script_text)
         self.assertNotIn("e2e-camera-001", script_text)
         self.assertNotIn("http://flink-jobmanager", script_text)
+        self.assertIn(
+            "from pyflink.datastream.connectors.base import DeliveryGuarantee",
+            flink_job_text,
+        )
 
     def test_wildfi_ingestion_is_configured(self) -> None:
         bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")

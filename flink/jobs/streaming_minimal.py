@@ -2,7 +2,7 @@ import json
 import os
 from collections.abc import Iterable
 
-from pyflink.common import DeliveryGuarantee, Row, Types
+from pyflink.common import Row, Types
 from pyflink.common.serialization import SimpleStringSchema
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.datastream import (
@@ -10,6 +10,7 @@ from pyflink.datastream import (
     RuntimeExecutionMode,
     StreamExecutionEnvironment,
 )
+from pyflink.datastream.connectors.base import DeliveryGuarantee
 from pyflink.datastream.connectors.kafka import (
     KafkaOffsetResetStrategy,
     KafkaOffsetsInitializer,

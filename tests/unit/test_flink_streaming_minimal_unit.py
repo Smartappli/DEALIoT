@@ -285,18 +285,19 @@ def _load_streaming_module():
     fake_watermark_strategy = types.ModuleType("pyflink.common.watermark_strategy")
     fake_datastream = types.ModuleType("pyflink.datastream")
     fake_connectors = types.ModuleType("pyflink.datastream.connectors")
+    fake_connectors_base = types.ModuleType("pyflink.datastream.connectors.base")
     fake_kafka = types.ModuleType("pyflink.datastream.connectors.kafka")
     fake_functions = types.ModuleType("pyflink.datastream.functions")
     fake_state = types.ModuleType("pyflink.datastream.state")
 
     cast("Any", fake_common).Row = _fake_row
     cast("Any", fake_common).Types = _FakeTypes
-    cast("Any", fake_common).DeliveryGuarantee = _FakeDeliveryGuarantee
     cast("Any", fake_serialization).SimpleStringSchema = _FakeSimpleStringSchema
     cast("Any", fake_watermark_strategy).WatermarkStrategy = _FakeWatermarkStrategy
     cast("Any", fake_datastream).CheckpointingMode = _FakeCheckpointingMode
     cast("Any", fake_datastream).RuntimeExecutionMode = _FakeRuntimeExecutionMode
     cast("Any", fake_datastream).StreamExecutionEnvironment = _FakeStreamExecutionEnvironment
+    cast("Any", fake_connectors_base).DeliveryGuarantee = _FakeDeliveryGuarantee
     cast("Any", fake_kafka).KafkaOffsetResetStrategy = _FakeKafkaOffsetResetStrategy
     cast("Any", fake_kafka).KafkaOffsetsInitializer = _FakeKafkaOffsetsInitializer
     cast("Any", fake_kafka).KafkaRecordSerializationSchema = _FakeKafkaRecordSerializationSchema
@@ -316,6 +317,7 @@ def _load_streaming_module():
             "pyflink.common.watermark_strategy": fake_watermark_strategy,
             "pyflink.datastream": fake_datastream,
             "pyflink.datastream.connectors": fake_connectors,
+            "pyflink.datastream.connectors.base": fake_connectors_base,
             "pyflink.datastream.connectors.kafka": fake_kafka,
             "pyflink.datastream.functions": fake_functions,
             "pyflink.datastream.state": fake_state,
