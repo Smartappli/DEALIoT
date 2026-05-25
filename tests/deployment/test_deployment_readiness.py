@@ -477,6 +477,18 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("s3\\.access-key", entrypoint)
         self.assertIn("exec /docker-entrypoint.sh", entrypoint)
 
+    def test_local_flink_services_have_explicit_network_addresses(self) -> None:
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+        dev_text = (REPO_ROOT / "docker-compose.dev.yml").read_text(encoding="utf-8")
+
+        self.assertIn("jobmanager.bind-host: 0.0.0.0", compose_text)
+        self.assertIn("rest.bind-address: 0.0.0.0", compose_text)
+        self.assertIn("taskmanager.host: flink-taskmanager-1", compose_text)
+        self.assertIn("taskmanager.host: flink-taskmanager-2", compose_text)
+        self.assertIn("taskmanager.bind-host: 0.0.0.0", compose_text)
+        self.assertIn("jobmanager.bind-host: 0.0.0.0", dev_text)
+        self.assertIn("rest.bind-address: 0.0.0.0", dev_text)
+
     def test_seaweedfs_postgres_bootstrap_quotes_secret_with_psql(self) -> None:
         compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
 

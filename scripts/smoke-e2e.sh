@@ -16,6 +16,7 @@ SMOKE_KAFKA_CONSUMER_GRACE_SECONDS="${SMOKE_KAFKA_CONSUMER_GRACE_SECONDS:-15}"
 SMOKE_APICURIO_STEP_TIMEOUT_SECONDS="${SMOKE_APICURIO_STEP_TIMEOUT_SECONDS:-45}"
 SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS="${SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS:-20}"
 SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS="${SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS:-60}"
+SMOKE_FLINK_EXPECTED_TASKMANAGERS="${SMOKE_FLINK_EXPECTED_TASKMANAGERS:-2}"
 SMOKE_CANCEL_FLINK_JOB="${SMOKE_CANCEL_FLINK_JOB:-1}"
 
 compose() {
@@ -114,6 +115,32 @@ wait_for_flink_job_running() {
   done
 
   echo "Flink job $job_id did not reach RUNNING state." >&2
+  dump_smoke_diagnostics
+  return 1
+}
+
+wait_for_flink_taskmanagers() {
+  local expected="${1:-$SMOKE_FLINK_EXPECTED_TASKMANAGERS}"
+  local attempts="${2:-45}"
+  local taskmanager_count
+
+  for _ in $(seq 1 "$attempts"); do
+    taskmanager_count="$(
+      compose_with_timeout "$SMOKE_FLINK_LIST_TIMEOUT_SECONDS" run --rm --entrypoint sh flink-cli -lc \
+        'python -c "import json, urllib.request; response = urllib.request.urlopen(\"http://flink-jobmanager:8081/taskmanagers\", timeout=5); print(len(json.load(response).get(\"taskmanagers\", [])))"' 2>/dev/null || true
+    )"
+    taskmanager_count="$(tr -dc '0-9' <<<"$taskmanager_count")"
+    taskmanager_count="${taskmanager_count:-0}"
+
+    echo "Flink registered taskmanagers: ${taskmanager_count}/${expected}"
+    if [ "$taskmanager_count" -ge "$expected" ]; then
+      return 0
+    fi
+
+    sleep 2
+  done
+
+  echo "Flink did not register ${expected} TaskManagers before job submission." >&2
   dump_smoke_diagnostics
   return 1
 }
@@ -241,6 +268,8 @@ compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build --wa
   apicurio-registry apicurio-init \
   vernemq1 mqtt-kafka-bridge \
   flink-jobmanager flink-taskmanager-1 flink-taskmanager-2
+
+wait_for_flink_taskmanagers
 
 echo "Submitting Flink streaming job"
 set +e

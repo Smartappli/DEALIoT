@@ -61,7 +61,9 @@ services:
     environment:
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
+        jobmanager.bind-host: 0.0.0.0
         rest.address: flink-jobmanager
+        rest.bind-address: 0.0.0.0
         rest.port: 8081
         parallelism.default: 2
         taskmanager.numberOfTaskSlots: 2
