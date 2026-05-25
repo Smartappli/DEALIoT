@@ -999,7 +999,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget -q -S --spider http://127.0.0.1:8888/ 2>&1 | grep -Eq 'HTTP/[0-9.]+ (200|301|302|403|404)'"
+          "wget -q -O - http://127.0.0.1:8888/ >/dev/null 2>&1"
         ]
       interval: 20s
       timeout: 10s

@@ -506,6 +506,12 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertNotIn("meth GET uri /primary", haproxy_cfg)
         self.assertNotIn("meth GET uri /replica", haproxy_cfg)
 
+    def test_seaweedfs_filer_healthcheck_uses_get_request(self) -> None:
+        compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+        self.assertIn("wget -q -O - http://127.0.0.1:8888/ >/dev/null 2>&1", compose_text)
+        self.assertNotIn("--spider http://127.0.0.1:8888/", compose_text)
+
     def test_seaweedfs_postgres_bootstrap_quotes_secret_with_psql(self) -> None:
         compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
 
