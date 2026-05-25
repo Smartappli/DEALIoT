@@ -129,6 +129,12 @@ class RepositoryUnitTests(unittest.TestCase):
             "smoke_run_id=",
             "FLINK_CONSUMER_GROUP",
             "Core event-flow services failed to become ready.",
+            "wait_for_core_event_flow_services",
+            "wait_for_compose_service kafka-init completed",
+            "wait_for_compose_service seaweedfs-init completed",
+            "wait_for_compose_service flink-jobmanager healthy",
+            "SMOKE_COMPOSE_READY_POLL_SECONDS",
+            "SMOKE_COMPOSE_READY_ATTEMPTS",
             "wait_for_flink_job_running",
             "wait_for_flink_taskmanagers",
             "dump_smoke_diagnostics",
@@ -158,6 +164,8 @@ class RepositoryUnitTests(unittest.TestCase):
             '--tail="$SMOKE_DIAGNOSTIC_LOG_TAIL"',
         ]:
             self.assertIn(expected, script_text)
+        self.assertIn(" up -d --build \\", script_text)
+        self.assertNotIn(" --wait \\", script_text)
         self.assertNotIn("e2e-sensor-001", script_text)
         self.assertNotIn("e2e-camera-001", script_text)
         self.assertNotIn("http://flink-jobmanager", script_text)
