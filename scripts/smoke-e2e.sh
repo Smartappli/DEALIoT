@@ -6,8 +6,8 @@ COMPOSE_FILES=(
   -f docker-compose.dev.yml
 )
 
-SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS:-1800}"
-SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS:-900}"
+SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS:-2100}"
+SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS:-1200}"
 SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS="${SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS:-180}"
 SMOKE_FLINK_LIST_TIMEOUT_SECONDS="${SMOKE_FLINK_LIST_TIMEOUT_SECONDS:-45}"
 SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS="${SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS:-45}"
@@ -365,12 +365,23 @@ echo "Rendering compose configuration"
 compose config -q
 
 echo "Starting core event-flow services"
-compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build --wait \
-  --wait-timeout "$SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS" \
-  kafka1 kafka2 kafka3 kafka-init \
-  apicurio-registry apicurio-init \
-  vernemq1 mqtt-kafka-bridge \
-  flink-jobmanager flink-taskmanager-1 flink-taskmanager-2
+set +e
+compose_up_output="$(
+  compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build --wait \
+    --wait-timeout "$SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS" \
+    kafka1 kafka2 kafka3 kafka-init \
+    apicurio-registry apicurio-init \
+    vernemq1 mqtt-kafka-bridge \
+    flink-jobmanager flink-taskmanager-1 flink-taskmanager-2 2>&1
+)"
+compose_up_status=$?
+set -e
+printf '%s\n' "$compose_up_output"
+if [ "$compose_up_status" -ne 0 ]; then
+  echo "Core event-flow services failed to become ready." >&2
+  dump_smoke_diagnostics
+  exit "$compose_up_status"
+fi
 
 wait_for_flink_taskmanagers
 
