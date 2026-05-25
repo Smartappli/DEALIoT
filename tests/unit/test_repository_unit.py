@@ -133,6 +133,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "dump_smoke_diagnostics",
             "flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh",
             "SMOKE_FLINK_EXPECTED_TASKMANAGERS",
+            "SMOKE_FLINK_TASKMANAGER_WAIT_ATTEMPTS",
             "SMOKE_FLINK_REST_HOST",
             "http.client.HTTPConnection",
             "apicurio-registry:8080",
