@@ -178,6 +178,33 @@ finally:
 PY
 }
 
+check_apicurio_artifact() {
+  local group="$1"
+  local artifact="$2"
+  local version="${3:-1.0.0}"
+  local artifact_url="${registry_base}/groups/${group}/artifacts/${artifact}/versions/${version}/content"
+  local check_output
+  local check_status
+
+  echo "Checking Apicurio artifact ${group}/${artifact} version ${version}"
+
+  set +e
+  check_output="$(
+    compose_with_timeout "$SMOKE_APICURIO_STEP_TIMEOUT_SECONDS" run --rm --entrypoint sh \
+      apicurio-init -lc \
+      "curl --connect-timeout 5 --max-time ${SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS} -fsS ${artifact_url} >/dev/null" 2>&1
+  )"
+  check_status=$?
+  set -e
+
+  if [ "$check_status" -ne 0 ]; then
+    printf '%s\n' "$check_output" >&2
+    echo "Failed checking Apicurio artifact at ${artifact_url}" >&2
+    dump_smoke_diagnostics
+    return 1
+  fi
+}
+
 cleanup_smoke() {
   local exit_code=$?
   trap - EXIT
@@ -255,11 +282,7 @@ echo "Checking Apicurio artifacts"
 registry_scheme="${APICURIO_REGISTRY_SCHEME:-http}"
 registry_host="${APICURIO_REGISTRY_HOST:-apicurio-registry:8080}"
 registry_base="${registry_scheme}://${registry_host}/apis/registry/v3"
-compose_with_timeout "$SMOKE_APICURIO_STEP_TIMEOUT_SECONDS" run --rm --entrypoint sh \
-  apicurio-init -lc \
-  "curl --connect-timeout 5 --max-time ${SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS} -fsS ${registry_base}/groups/platform/artifacts/dlq.events >/dev/null"
-compose_with_timeout "$SMOKE_APICURIO_STEP_TIMEOUT_SECONDS" run --rm --entrypoint sh \
-  apicurio-init -lc \
-  "curl --connect-timeout 5 --max-time ${SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS} -fsS ${registry_base}/groups/telemetry/artifacts/raw.sensor >/dev/null"
+check_apicurio_artifact platform dlq.events
+check_apicurio_artifact telemetry raw.sensor
 
 echo "E2E smoke test passed"
