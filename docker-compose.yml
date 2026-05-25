@@ -1209,6 +1209,11 @@ services:
     hostname: flink-jobmanager
     restart: unless-stopped
     command: "jobmanager"
+    secrets:
+      - source: seaweedfs_s3_access_key
+        target: seaweedfs_s3_access_key
+      - source: seaweedfs_s3_secret_key
+        target: seaweedfs_s3_secret_key
     environment:
       ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.0.0.jar"
       FLINK_PYTHON: "/opt/flink/venv/bin/python"
@@ -1260,6 +1265,11 @@ services:
     hostname: flink-taskmanager-1
     restart: unless-stopped
     command: "taskmanager"
+    secrets:
+      - source: seaweedfs_s3_access_key
+        target: seaweedfs_s3_access_key
+      - source: seaweedfs_s3_secret_key
+        target: seaweedfs_s3_secret_key
     depends_on:
       flink-jobmanager:
         condition: service_healthy
@@ -1303,6 +1313,11 @@ services:
     hostname: flink-taskmanager-2
     restart: unless-stopped
     command: "taskmanager"
+    secrets:
+      - source: seaweedfs_s3_access_key
+        target: seaweedfs_s3_access_key
+      - source: seaweedfs_s3_secret_key
+        target: seaweedfs_s3_secret_key
     depends_on:
       flink-jobmanager:
         condition: service_healthy
@@ -1346,6 +1361,11 @@ services:
     hostname: flink-cli
     profiles: ["tools"]
     command: ["bash", "-lc", "sleep infinity"]
+    secrets:
+      - source: seaweedfs_s3_access_key
+        target: seaweedfs_s3_access_key
+      - source: seaweedfs_s3_secret_key
+        target: seaweedfs_s3_secret_key
     depends_on:
       flink-jobmanager:
         condition: service_healthy

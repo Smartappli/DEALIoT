@@ -449,6 +449,34 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("flink-connector-base", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
 
+    def test_local_flink_services_use_seaweed_s3_secret_files(self) -> None:
+        compose = yaml.safe_load((REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8"))
+        dockerfile = (REPO_ROOT / "flink" / "Dockerfile.pyflink").read_text(encoding="utf-8")
+        entrypoint = (REPO_ROOT / "flink" / "docker-entrypoint.sh").read_text(encoding="utf-8")
+
+        for service_name in (
+            "flink-jobmanager",
+            "flink-taskmanager-1",
+            "flink-taskmanager-2",
+            "flink-cli",
+        ):
+            secrets = {
+                item["source"]: item["target"]
+                for item in compose["services"][service_name]["secrets"]
+            }
+            self.assertEqual(secrets["seaweedfs_s3_access_key"], "seaweedfs_s3_access_key")
+            self.assertEqual(secrets["seaweedfs_s3_secret_key"], "seaweedfs_s3_secret_key")
+
+        self.assertIn(
+            "COPY --chown=root:root --chmod=0555 ./flink/docker-entrypoint.sh",
+            dockerfile,
+        )
+        self.assertIn('ENTRYPOINT ["/opt/flink/bin/dealiot-flink-entrypoint.sh"]', dockerfile)
+        self.assertIn("/run/secrets/seaweedfs_s3_access_key", entrypoint)
+        self.assertIn("/run/secrets/seaweedfs_s3_secret_key", entrypoint)
+        self.assertIn("s3\\.access-key", entrypoint)
+        self.assertIn("exec /docker-entrypoint.sh", entrypoint)
+
     def test_seaweedfs_postgres_bootstrap_quotes_secret_with_psql(self) -> None:
         compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
 
