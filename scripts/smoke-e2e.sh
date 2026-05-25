@@ -16,6 +16,8 @@ SMOKE_KAFKA_CONSUMER_GRACE_SECONDS="${SMOKE_KAFKA_CONSUMER_GRACE_SECONDS:-15}"
 SMOKE_APICURIO_STEP_TIMEOUT_SECONDS="${SMOKE_APICURIO_STEP_TIMEOUT_SECONDS:-45}"
 SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS="${SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS:-20}"
 SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS="${SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS:-60}"
+SMOKE_DIAGNOSTIC_LOG_TAIL="${SMOKE_DIAGNOSTIC_LOG_TAIL:-120}"
+SMOKE_KAFKA_DIAGNOSTIC_TOPICS="${SMOKE_KAFKA_DIAGNOSTIC_TOPICS:-raw.sensor dlq.events features.events state.latest}"
 SMOKE_FLINK_EXPECTED_TASKMANAGERS="${SMOKE_FLINK_EXPECTED_TASKMANAGERS:-2}"
 SMOKE_FLINK_TASKMANAGER_WAIT_ATTEMPTS="${SMOKE_FLINK_TASKMANAGER_WAIT_ATTEMPTS:-45}"
 SMOKE_FLINK_REST_HOST="${SMOKE_FLINK_REST_HOST:-flink-jobmanager}"
@@ -76,15 +78,40 @@ wait_for_topic_message() {
     return 0
   fi
 
-  if [ "$consumer_status" -ne 0 ]; then
-    printf '%s\n' "$consumer_output" >&2
+  echo "Kafka consumer exit status for ${topic}: ${consumer_status}" >&2
+  if [ -n "$consumer_output" ]; then
+    echo "Kafka consumer output for ${topic} (first 80 lines)" >&2
+    printf '%s\n' "$consumer_output" | sed -n '1,80p' >&2
+  else
+    echo "Kafka consumer produced no output for ${topic}" >&2
   fi
+
+  dump_kafka_topic_state "$topic"
+
   echo "Did not observe expected message on $topic: $pattern" >&2
   dump_smoke_diagnostics
   return 1
 }
 
+dump_kafka_topic_state() {
+  local topic="$1"
+
+  echo "Kafka topic state: ${topic}" >&2
+  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" exec -T kafka1 \
+    /opt/kafka/bin/kafka-topics.sh \
+    --bootstrap-server kafka1:9092 \
+    --describe \
+    --topic "$topic" >&2 || true
+  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" exec -T kafka1 \
+    /opt/kafka/bin/kafka-get-offsets.sh \
+    --bootstrap-server kafka1:9092 \
+    --topic "$topic" >&2 || true
+}
+
 dump_smoke_diagnostics() {
+  local diagnostic_topic
+  local -a diagnostic_topics
+
   echo "Docker compose status" >&2
   compose ps >&2 || true
 
@@ -92,8 +119,14 @@ dump_smoke_diagnostics() {
   compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" run --rm --entrypoint sh flink-cli -lc \
     "/opt/flink/bin/flink list -r --jobmanager flink-jobmanager:8081 || true" >&2 || true
 
+  echo "Kafka topic diagnostics" >&2
+  read -r -a diagnostic_topics <<<"$SMOKE_KAFKA_DIAGNOSTIC_TOPICS"
+  for diagnostic_topic in "${diagnostic_topics[@]}"; do
+    dump_kafka_topic_state "$diagnostic_topic"
+  done
+
   echo "Recent event-flow logs" >&2
-  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" logs --no-color --tail=250 \
+  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" logs --no-color --tail="$SMOKE_DIAGNOSTIC_LOG_TAIL" \
     flink-jobmanager flink-taskmanager-1 flink-taskmanager-2 \
     mqtt-kafka-bridge kafka1 kafka2 kafka3 \
     seaweedfs-filer seaweedfs-s3 seaweedfs-init seaweedfs-pg-init >&2 || true
