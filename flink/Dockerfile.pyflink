@@ -45,6 +45,7 @@ for artifact, version in artifacts:
 PY
 
 COPY --chmod=0444 ./flink/requirements-pyflink.txt /tmp/requirements-pyflink.txt
+COPY --chown=root:root --chmod=0555 ./flink/docker-entrypoint.sh /opt/flink/bin/dealiot-flink-entrypoint.sh
 COPY --chown=root:root --chmod=0555 ./flink/jobs /opt/flink/usrlib
 COPY --chown=root:root --chmod=0555 ./pipelines /opt/pipelines
 
@@ -66,5 +67,7 @@ PY
 ENV PYFLINK_CLIENT_EXECUTABLE=/opt/flink/venv/bin/python
 ENV PYTHON_EXECUTABLE=/opt/flink/venv/bin/python
 ENV PATH="/opt/flink/venv/bin:${PATH}"
+
+ENTRYPOINT ["/opt/flink/bin/dealiot-flink-entrypoint.sh"]
 
 USER flink
