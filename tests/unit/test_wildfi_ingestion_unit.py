@@ -131,7 +131,8 @@ class WildFiDecoderWrapperUnitTests(unittest.TestCase):
         self.assertIn("run_decoder", self.wrapper)
         self.assertIn("env -u JAVA_TOOL_OPTIONS -u JDK_JAVA_OPTIONS", self.wrapper)
         self.assertIn(
-            'java -Djava.io.tmpdir="${TMPDIR:-/tmp}" -jar "${decoder_home}/WildFiDecoderStandalone.jar"',
+            'java -Djava.io.tmpdir="${TMPDIR:-/tmp}" '
+            '-jar "${decoder_home}/WildFiDecoderStandalone.jar"',
             self.wrapper,
         )
 
