@@ -158,6 +158,10 @@ class _FakeKafkaSinkBuilder:
         self.config["serializer"] = serializer
         return self
 
+    def set_delivery_guarantee(self, delivery_guarantee):
+        self.config["delivery_guarantee"] = delivery_guarantee
+        return self
+
     def set_property(self, key, value):
         self.config["properties"][key] = value
         return self
@@ -270,6 +274,10 @@ class _FakeCheckpointingMode:
     EXACTLY_ONCE = "EXACTLY_ONCE"
 
 
+class _FakeDeliveryGuarantee:
+    NONE = "NONE"
+
+
 def _load_streaming_module():
     fake_pyflink = types.ModuleType("pyflink")
     fake_common = types.ModuleType("pyflink.common")
@@ -283,6 +291,7 @@ def _load_streaming_module():
 
     cast("Any", fake_common).Row = _fake_row
     cast("Any", fake_common).Types = _FakeTypes
+    cast("Any", fake_common).DeliveryGuarantee = _FakeDeliveryGuarantee
     cast("Any", fake_serialization).SimpleStringSchema = _FakeSimpleStringSchema
     cast("Any", fake_watermark_strategy).WatermarkStrategy = _FakeWatermarkStrategy
     cast("Any", fake_datastream).CheckpointingMode = _FakeCheckpointingMode
@@ -432,6 +441,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
 
         sink = self.module.build_kafka_sink("kafka:9092", "features.events")
         self.assertEqual(sink.config["bootstrap_servers"], "kafka:9092")
+        self.assertEqual(sink.config["delivery_guarantee"], "NONE")
         self.assertEqual(sink.config["properties"]["acks"], "all")
         self.assertEqual(sink.config["serializer"].config["topic"], "features.events")
         self.assertIn("value_schema", sink.config["serializer"].config)
