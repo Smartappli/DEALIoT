@@ -493,9 +493,16 @@ class DeploymentReadinessTests(unittest.TestCase):
     def test_haproxy_uses_patroni_options_health_checks(self) -> None:
         haproxy_cfg = (REPO_ROOT / "haproxy" / "haproxy.cfg").read_text(encoding="utf-8")
 
-        self.assertIn("option httpchk OPTIONS /primary", haproxy_cfg)
-        self.assertIn("option httpchk OPTIONS /replica", haproxy_cfg)
+        self.assertIn("option httpchk", haproxy_cfg)
         self.assertIn("http-check connect port 8008", haproxy_cfg)
+        self.assertIn(
+            "http-check send meth OPTIONS uri /primary ver HTTP/1.1 hdr Host patroni",
+            haproxy_cfg,
+        )
+        self.assertIn(
+            "http-check send meth OPTIONS uri /replica ver HTTP/1.1 hdr Host patroni",
+            haproxy_cfg,
+        )
         self.assertNotIn("meth GET uri /primary", haproxy_cfg)
         self.assertNotIn("meth GET uri /replica", haproxy_cfg)
 
