@@ -129,6 +129,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "smoke_run_id=",
             "FLINK_CONSUMER_GROUP",
             "Core event-flow services failed to become ready.",
+            "SMOKE_COMPOSE_OUTPUT_TAIL",
             "wait_for_core_event_flow_services",
             "wait_for_compose_service kafka-init completed",
             "wait_for_compose_service seaweedfs-init completed",
@@ -144,6 +145,9 @@ class RepositoryUnitTests(unittest.TestCase):
             "SMOKE_FLINK_REST_HOST",
             "SMOKE_DIAGNOSTIC_LOG_TAIL",
             "SMOKE_KAFKA_DIAGNOSTIC_TOPICS",
+            "emit_smoke_error",
+            "::error title=E2E smoke",
+            "GITHUB_STEP_SUMMARY",
             "http.client.HTTPConnection",
             "apicurio-registry:8080",
             "check_apicurio_artifact",
@@ -162,9 +166,11 @@ class RepositoryUnitTests(unittest.TestCase):
             "grep -F -m 1",
             "cancel --jobmanager flink-jobmanager:8081",
             '--tail="$SMOKE_DIAGNOSTIC_LOG_TAIL"',
+            "mktemp",
+            "Docker compose up output (last ${SMOKE_COMPOSE_OUTPUT_TAIL} lines)",
         ]:
             self.assertIn(expected, script_text)
-        self.assertIn(" up -d --build \\", script_text)
+        self.assertIn(" up -d --build --quiet-pull --quiet-build \\", script_text)
         self.assertNotIn(" --wait \\", script_text)
         self.assertNotIn("e2e-sensor-001", script_text)
         self.assertNotIn("e2e-camera-001", script_text)
