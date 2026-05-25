@@ -1220,7 +1220,9 @@ services:
       PYFLINK_CLIENT_EXECUTABLE: "/opt/flink/venv/bin/python"
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
+        jobmanager.bind-host: 0.0.0.0
         rest.address: flink-jobmanager
+        rest.bind-address: 0.0.0.0
         rest.port: 8081
         parallelism.default: 4
         taskmanager.numberOfTaskSlots: 4
@@ -1282,6 +1284,8 @@ services:
       PYFLINK_CLIENT_EXECUTABLE: "/opt/flink/venv/bin/python"
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
+        taskmanager.host: flink-taskmanager-1
+        taskmanager.bind-host: 0.0.0.0
         rest.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 4
         parallelism.default: 4
@@ -1330,6 +1334,8 @@ services:
       PYFLINK_CLIENT_EXECUTABLE: "/opt/flink/venv/bin/python"
       FLINK_PROPERTIES: |
         jobmanager.rpc.address: flink-jobmanager
+        taskmanager.host: flink-taskmanager-2
+        taskmanager.bind-host: 0.0.0.0
         rest.address: flink-jobmanager
         taskmanager.numberOfTaskSlots: 4
         parallelism.default: 4
