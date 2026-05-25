@@ -128,7 +128,12 @@ class WildFiDecoderWrapperUnitTests(unittest.TestCase):
     def test_raw_decoder_input_is_forwarded_to_standalone_jar(self) -> None:
         self.assertIn("WILDFI_DECODER_RAW_INPUT:-", self.wrapper)
         self.assertIn("printf '%b' \"$WILDFI_DECODER_RAW_INPUT\"", self.wrapper)
-        self.assertIn('java -jar "${decoder_home}/WildFiDecoderStandalone.jar"', self.wrapper)
+        self.assertIn("run_decoder", self.wrapper)
+        self.assertIn("env -u JAVA_TOOL_OPTIONS -u JDK_JAVA_OPTIONS", self.wrapper)
+        self.assertIn(
+            'java -Djava.io.tmpdir="${TMPDIR:-/tmp}" -jar "${decoder_home}/WildFiDecoderStandalone.jar"',
+            self.wrapper,
+        )
 
     def test_batch_decode_modes_send_expected_interactive_answers(self) -> None:
         self.assertIn("1 | 2)", self.wrapper)

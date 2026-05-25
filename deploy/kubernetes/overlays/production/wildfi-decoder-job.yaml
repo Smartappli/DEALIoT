@@ -27,8 +27,6 @@ spec:
           image: ghcr.io/smartappli/dealiot-wildfi-decoder:local-placeholder
           imagePullPolicy: IfNotPresent
           env:
-            - name: JAVA_TOOL_OPTIONS
-              value: -Djava.io.tmpdir=/tmp
             - name: WILDFI_DECODER_MODE
               value: "2"
             - name: WILDFI_DECODER_BURST_FORM

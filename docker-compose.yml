@@ -1778,8 +1778,7 @@ services:
           group="$$1"
           artifact="$$2"
           file="$$3"
-          version="1.0.0"
-          artifact_content_url="$$base/groups/$$group/artifacts/$$artifact/versions/$$version/content"
+          artifact_url="$$base/groups/$$group/artifacts/$$artifact"
 
           if [ ! -f "$$file" ]; then
             echo "Missing schema file: $$file"
@@ -1787,8 +1786,8 @@ services:
             exit 1
           fi
 
-          if curl -fsS "$$artifact_content_url" >/dev/null 2>&1; then
-            echo "Artifact $$group/$$artifact version $$version already exists."
+          if curl -fsS "$$artifact_url" >/dev/null 2>&1; then
+            echo "Artifact $$group/$$artifact already exists."
             return 0
           fi
 

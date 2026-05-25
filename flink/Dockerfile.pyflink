@@ -17,6 +17,34 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 
 RUN python3 - <<'PY'
+from pathlib import Path
+
+jdk_only_exports = (
+    "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+    "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+)
+
+for config_path in (
+    Path("/opt/flink/conf/config.yaml"),
+    Path("/opt/flink/conf/flink-conf.yaml"),
+):
+    if not config_path.exists():
+        continue
+
+    config = config_path.read_text(encoding="utf-8")
+    for jdk_only_export in jdk_only_exports:
+        config = config.replace(jdk_only_export, "")
+
+    config_path.write_text(
+        "\n".join(line.rstrip() for line in config.splitlines()) + "\n",
+        encoding="utf-8",
+    )
+PY
+
+RUN python3 - <<'PY'
 import os
 from pathlib import Path
 from urllib.request import urlretrieve
