@@ -135,9 +135,13 @@ class RepositoryUnitTests(unittest.TestCase):
             "SMOKE_FLINK_EXPECTED_TASKMANAGERS",
             "SMOKE_FLINK_TASKMANAGER_WAIT_ATTEMPTS",
             "SMOKE_FLINK_REST_HOST",
+            "SMOKE_DIAGNOSTIC_LOG_TAIL",
+            "SMOKE_KAFKA_DIAGNOSTIC_TOPICS",
             "http.client.HTTPConnection",
             "apicurio-registry:8080",
             "check_apicurio_artifact",
+            "dump_kafka_topic_state",
+            "kafka-get-offsets.sh",
             "groups/${group}/artifacts/${artifact}",
             "require_command timeout",
             "compose_with_timeout",
@@ -146,6 +150,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "wait_for_publish(timeout=publish_timeout)",
             "grep -F -m 1",
             "cancel --jobmanager flink-jobmanager:8081",
+            '--tail="$SMOKE_DIAGNOSTIC_LOG_TAIL"',
         ]:
             self.assertIn(expected, script_text)
         self.assertNotIn("e2e-sensor-001", script_text)

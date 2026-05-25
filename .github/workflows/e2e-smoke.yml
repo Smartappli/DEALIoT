@@ -66,7 +66,12 @@ jobs:
 
       - name: Dump compose logs on failure
         if: failure()
-        run: docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --no-color --timestamps
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml ps
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml logs --no-color --timestamps --tail="${SMOKE_DIAGNOSTIC_LOG_TAIL:-120}" \
+            flink-jobmanager flink-taskmanager-1 flink-taskmanager-2 \
+            mqtt-kafka-bridge kafka1 kafka2 kafka3 \
+            seaweedfs-filer seaweedfs-s3 seaweedfs-init seaweedfs-pg-init
 
       - name: Tear down
         if: always()
