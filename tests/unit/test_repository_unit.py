@@ -175,6 +175,7 @@ class RepositoryUnitTests(unittest.TestCase):
         ]:
             self.assertIn(expected, script_text)
         self.assertIn(" up -d --build \\", script_text)
+        self.assertNotIn("--quiet-pull", script_text)
         self.assertNotIn("--quiet-build", script_text)
         self.assertNotIn(" --wait \\", script_text)
         self.assertNotIn("e2e-sensor-001", script_text)
