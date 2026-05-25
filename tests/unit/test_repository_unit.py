@@ -65,6 +65,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn('--data @"$$file"', compose_text)
         self.assertNotIn("content_escaped", compose_text)
+        self.assertIn("versions/$$version/content", compose_text)
         self.assertIn("post_artifact platform dlq.events /bootstrap/dlq.events.json", compose_text)
 
     def test_local_secrets_are_excluded_from_git_and_docker_contexts(self) -> None:
@@ -131,6 +132,8 @@ class RepositoryUnitTests(unittest.TestCase):
             "dump_smoke_diagnostics",
             "flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh",
             "apicurio-registry:8080",
+            "check_apicurio_artifact",
+            "versions/${version}/content",
             "require_command timeout",
             "compose_with_timeout",
             "SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS",
