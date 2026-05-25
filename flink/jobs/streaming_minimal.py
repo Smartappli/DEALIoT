@@ -2,7 +2,7 @@ import json
 import os
 from collections.abc import Iterable
 
-from pyflink.common import Row, Types
+from pyflink.common import DeliveryGuarantee, Row, Types
 from pyflink.common.serialization import SimpleStringSchema
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.datastream import (
@@ -280,6 +280,7 @@ def build_kafka_sink(
         KafkaSink.builder()
         .set_bootstrap_servers(bootstrap_servers)
         .set_record_serializer(serializer_builder.build())
+        .set_delivery_guarantee(DeliveryGuarantee.NONE)
         .set_property("acks", "all")
         .build()
     )

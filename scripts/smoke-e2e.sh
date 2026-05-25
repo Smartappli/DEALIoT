@@ -87,6 +87,7 @@ wait_for_topic_message() {
   fi
 
   dump_kafka_topic_state "$topic"
+  dump_flink_job_diagnostics
 
   echo "Did not observe expected message on $topic: $pattern" >&2
   dump_smoke_diagnostics
@@ -108,6 +109,52 @@ dump_kafka_topic_state() {
     --topic "$topic" >&2 || true
 }
 
+dump_flink_rest_path() {
+  local label="$1"
+  local path="$2"
+
+  echo "Flink REST ${label}" >&2
+  compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" run --rm --entrypoint python flink-cli - \
+    "$SMOKE_FLINK_REST_HOST" "$SMOKE_FLINK_REST_PORT" "$path" <<'PY' >&2 || true
+import http.client
+import json
+import sys
+
+host = sys.argv[1]
+port = int(sys.argv[2])
+path = sys.argv[3]
+
+connection = http.client.HTTPConnection(host, port, timeout=5)
+try:
+    connection.request("GET", path)
+    response = connection.getresponse()
+    payload = response.read()
+finally:
+    connection.close()
+
+print(f"HTTP {response.status} {response.reason}")
+try:
+    rendered = json.dumps(json.loads(payload), indent=2, sort_keys=True)
+except Exception:
+    rendered = payload.decode("utf-8", errors="replace")
+
+print(rendered[:12000])
+if len(rendered) > 12000:
+    print("... truncated ...")
+PY
+}
+
+dump_flink_job_diagnostics() {
+  dump_flink_rest_path "overview" "/overview"
+  dump_flink_rest_path "jobs overview" "/jobs/overview"
+
+  if [ -n "${flink_job_id:-}" ]; then
+    dump_flink_rest_path "job ${flink_job_id}" "/jobs/${flink_job_id}"
+    dump_flink_rest_path "job ${flink_job_id} exceptions" "/jobs/${flink_job_id}/exceptions"
+    dump_flink_rest_path "job ${flink_job_id} checkpoints" "/jobs/${flink_job_id}/checkpoints"
+  fi
+}
+
 dump_smoke_diagnostics() {
   local diagnostic_topic
   local -a diagnostic_topics
@@ -118,6 +165,7 @@ dump_smoke_diagnostics() {
   echo "Flink running jobs" >&2
   compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" run --rm --entrypoint sh flink-cli -lc \
     "/opt/flink/bin/flink list -r --jobmanager flink-jobmanager:8081 || true" >&2 || true
+  dump_flink_job_diagnostics
 
   echo "Kafka topic diagnostics" >&2
   read -r -a diagnostic_topics <<<"$SMOKE_KAFKA_DIAGNOSTIC_TOPICS"
