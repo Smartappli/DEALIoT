@@ -133,6 +133,8 @@ class RepositoryUnitTests(unittest.TestCase):
             "dump_smoke_diagnostics",
             "flink-cli sh /opt/flink/usrlib/run-streaming-minimal.sh",
             "SMOKE_FLINK_EXPECTED_TASKMANAGERS",
+            "SMOKE_FLINK_REST_HOST",
+            "http.client.HTTPConnection",
             "apicurio-registry:8080",
             "check_apicurio_artifact",
             "versions/${version}/content",
@@ -147,6 +149,7 @@ class RepositoryUnitTests(unittest.TestCase):
             self.assertIn(expected, script_text)
         self.assertNotIn("e2e-sensor-001", script_text)
         self.assertNotIn("e2e-camera-001", script_text)
+        self.assertNotIn("http://flink-jobmanager", script_text)
 
     def test_wildfi_ingestion_is_configured(self) -> None:
         bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")

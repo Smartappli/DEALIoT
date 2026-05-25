@@ -17,6 +17,8 @@ SMOKE_APICURIO_STEP_TIMEOUT_SECONDS="${SMOKE_APICURIO_STEP_TIMEOUT_SECONDS:-45}"
 SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS="${SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS:-20}"
 SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS="${SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS:-60}"
 SMOKE_FLINK_EXPECTED_TASKMANAGERS="${SMOKE_FLINK_EXPECTED_TASKMANAGERS:-2}"
+SMOKE_FLINK_REST_HOST="${SMOKE_FLINK_REST_HOST:-flink-jobmanager}"
+SMOKE_FLINK_REST_PORT="${SMOKE_FLINK_REST_PORT:-8081}"
 SMOKE_CANCEL_FLINK_JOB="${SMOKE_CANCEL_FLINK_JOB:-1}"
 
 compose() {
@@ -125,9 +127,28 @@ wait_for_flink_taskmanagers() {
   local taskmanager_count
 
   for _ in $(seq 1 "$attempts"); do
+    # Flink REST is intentionally queried only from inside the Docker test network.
     taskmanager_count="$(
-      compose_with_timeout "$SMOKE_FLINK_LIST_TIMEOUT_SECONDS" run --rm --entrypoint sh flink-cli -lc \
-        'python -c "import json, urllib.request; response = urllib.request.urlopen(\"http://flink-jobmanager:8081/taskmanagers\", timeout=5); print(len(json.load(response).get(\"taskmanagers\", [])))"' 2>/dev/null || true
+      compose_with_timeout "$SMOKE_FLINK_LIST_TIMEOUT_SECONDS" run --rm --entrypoint python flink-cli - \
+        "$SMOKE_FLINK_REST_HOST" "$SMOKE_FLINK_REST_PORT" "/taskmanagers" 2>/dev/null <<'PY' || true
+import http.client
+import json
+import sys
+
+host = sys.argv[1]
+port = int(sys.argv[2])
+path = sys.argv[3]
+
+connection = http.client.HTTPConnection(host, port, timeout=5)
+try:
+    connection.request("GET", path)
+    response = connection.getresponse()
+    if response.status != 200:
+        raise SystemExit(f"Flink REST returned HTTP {response.status} {response.reason}")
+    print(len(json.loads(response.read()).get("taskmanagers", [])))
+finally:
+    connection.close()
+PY
     )"
     taskmanager_count="$(tr -dc '0-9' <<<"$taskmanager_count")"
     taskmanager_count="${taskmanager_count:-0}"
