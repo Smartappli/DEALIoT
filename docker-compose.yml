@@ -1768,9 +1768,17 @@ services:
         set -eu
 
         base="http://apicurio-registry:8080/apis/registry/v3"
+        ready_url="http://apicurio-registry:9000/health/ready"
+        ready_attempt=1
+        ready_attempts=120
 
-        until curl -fsS http://apicurio-registry:8080/health/ready >/dev/null 2>&1; do
-          echo "Waiting for Apicurio Registry..."
+        until curl --connect-timeout 5 --max-time 10 -fsS "$$ready_url" >/dev/null 2>&1; do
+          if [ "$$ready_attempt" -ge "$$ready_attempts" ]; then
+            echo "Apicurio Registry did not become ready at $$ready_url"
+            exit 1
+          fi
+          echo "Waiting for Apicurio Registry at $$ready_url..."
+          ready_attempt=$$((ready_attempt + 1))
           sleep 3
         done
 
@@ -1786,12 +1794,12 @@ services:
             exit 1
           fi
 
-          if curl -fsS "$$artifact_url" >/dev/null 2>&1; then
+          if curl --connect-timeout 5 --max-time 20 -fsS "$$artifact_url" >/dev/null 2>&1; then
             echo "Artifact $$group/$$artifact already exists."
             return 0
           fi
 
-          curl -fsS -X POST "$$base/groups/$$group/artifacts" \
+          curl --connect-timeout 5 --max-time 30 -fsS -X POST "$$base/groups/$$group/artifacts" \
             -H "Content-Type: application/json" \
             --data @"$$file"
 
