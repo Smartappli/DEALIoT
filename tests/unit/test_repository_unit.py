@@ -66,6 +66,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('--data @"$$file"', compose_text)
         self.assertNotIn("content_escaped", compose_text)
         self.assertIn('"$$base/groups/$$group/artifacts/$$artifact"', compose_text)
+        self.assertIn('ready_url="http://apicurio-registry:9000/health/ready"', compose_text)
+        self.assertIn("ready_attempts=120", compose_text)
+        self.assertIn("curl --connect-timeout 5 --max-time 10 -fsS", compose_text)
+        self.assertIn("curl --connect-timeout 5 --max-time 30 -fsS -X POST", compose_text)
+        self.assertNotIn("apicurio-registry:8080/health/ready", compose_text)
         self.assertIn("post_artifact platform dlq.events /bootstrap/dlq.events.json", compose_text)
 
     def test_local_secrets_are_excluded_from_git_and_docker_contexts(self) -> None:
@@ -153,6 +158,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "http.client.HTTPConnection",
             "apicurio-registry:8080",
             "check_apicurio_artifact",
+            "apicurio-registry apicurio-init kafka1 kafka2 kafka3",
             "dump_kafka_topic_state",
             "dump_flink_job_diagnostics",
             "dump_flink_rest_path",

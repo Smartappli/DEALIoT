@@ -307,7 +307,7 @@ dump_smoke_diagnostics() {
   echo "Recent event-flow logs" >&2
   compose_with_timeout "$SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS" logs --no-color --tail="$SMOKE_DIAGNOSTIC_LOG_TAIL" \
     flink-jobmanager flink-taskmanager-1 flink-taskmanager-2 \
-    mqtt-kafka-bridge kafka1 kafka2 kafka3 \
+    mqtt-kafka-bridge apicurio-registry apicurio-init kafka1 kafka2 kafka3 \
     seaweedfs-filer seaweedfs-s3 seaweedfs-init seaweedfs-pg-init >&2 || true
 }
 

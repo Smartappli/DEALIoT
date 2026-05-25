@@ -69,6 +69,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("Dump compose logs on failure", workflow_text)
         self.assertIn('--tail="${SMOKE_DIAGNOSTIC_LOG_TAIL:-60}"', workflow_text)
         self.assertIn("flink-jobmanager flink-taskmanager-1 flink-taskmanager-2", workflow_text)
+        self.assertIn("mqtt-kafka-bridge apicurio-registry apicurio-init kafka1 kafka2 kafka3", workflow_text)
         self.assertIn(
             "docker compose -f docker-compose.yml -f docker-compose.dev.yml down",
             workflow_text,
