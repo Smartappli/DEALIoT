@@ -128,6 +128,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "state.latest",
             "smoke_run_id=",
             "FLINK_CONSUMER_GROUP",
+            "Core event-flow services failed to become ready.",
             "wait_for_flink_job_running",
             "wait_for_flink_taskmanagers",
             "dump_smoke_diagnostics",
