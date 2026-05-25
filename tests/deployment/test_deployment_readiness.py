@@ -358,7 +358,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertTrue(container["securityContext"]["readOnlyRootFilesystem"])
         self.assertIn("WILDFI_DECODER_MODE", env_names)
         self.assertIn("WILDFI_IMU_FREQUENCY", env_names)
-        self.assertIn("JAVA_TOOL_OPTIONS", env_names)
+        self.assertNotIn("JAVA_TOOL_OPTIONS", env_names)
         self.assertEqual(
             volumes["workdir"]["persistentVolumeClaim"]["claimName"],
             "wildfi-decoder-workdir",
@@ -447,6 +447,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("COPY --chown=root:root --chmod=0555 ./pipelines", flink_dockerfile)
         self.assertIn("flink-sql-connector-kafka", flink_dockerfile)
         self.assertIn("flink-connector-base", flink_dockerfile)
+        self.assertIn("jdk_only_exports", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
 
     def test_local_flink_services_use_seaweed_s3_secret_files(self) -> None:
@@ -488,6 +489,15 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("taskmanager.bind-host: 0.0.0.0", compose_text)
         self.assertIn("jobmanager.bind-host: 0.0.0.0", dev_text)
         self.assertIn("rest.bind-address: 0.0.0.0", dev_text)
+
+    def test_haproxy_uses_patroni_options_health_checks(self) -> None:
+        haproxy_cfg = (REPO_ROOT / "haproxy" / "haproxy.cfg").read_text(encoding="utf-8")
+
+        self.assertIn("option httpchk OPTIONS /primary", haproxy_cfg)
+        self.assertIn("option httpchk OPTIONS /replica", haproxy_cfg)
+        self.assertIn("http-check connect port 8008", haproxy_cfg)
+        self.assertNotIn("meth GET uri /primary", haproxy_cfg)
+        self.assertNotIn("meth GET uri /replica", haproxy_cfg)
 
     def test_seaweedfs_postgres_bootstrap_quotes_secret_with_psql(self) -> None:
         compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")

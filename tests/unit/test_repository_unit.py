@@ -65,7 +65,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn('--data @"$$file"', compose_text)
         self.assertNotIn("content_escaped", compose_text)
-        self.assertIn("versions/$$version/content", compose_text)
+        self.assertIn('"$$base/groups/$$group/artifacts/$$artifact"', compose_text)
         self.assertIn("post_artifact platform dlq.events /bootstrap/dlq.events.json", compose_text)
 
     def test_local_secrets_are_excluded_from_git_and_docker_contexts(self) -> None:
@@ -138,7 +138,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "http.client.HTTPConnection",
             "apicurio-registry:8080",
             "check_apicurio_artifact",
-            "versions/${version}/content",
+            "groups/${group}/artifacts/${artifact}",
             "require_command timeout",
             "compose_with_timeout",
             "SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS",
@@ -178,6 +178,7 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("WildFiDecoderStandalone.jar", dockerfile)
         self.assertIn("WILDFI_DECODER_RAW_INPUT", wrapper)
         self.assertIn("WILDFI_DECODER_MODE", wrapper)
+        self.assertIn("env -u JAVA_TOOL_OPTIONS -u JDK_JAVA_OPTIONS", wrapper)
 
     def test_ci_assets_do_not_contain_static_placeholder_secrets(self) -> None:
         scanned_paths = [

@@ -230,12 +230,11 @@ PY
 check_apicurio_artifact() {
   local group="$1"
   local artifact="$2"
-  local version="${3:-1.0.0}"
-  local artifact_url="${registry_base}/groups/${group}/artifacts/${artifact}/versions/${version}/content"
+  local artifact_url="${registry_base}/groups/${group}/artifacts/${artifact}"
   local check_output
   local check_status
 
-  echo "Checking Apicurio artifact ${group}/${artifact} version ${version}"
+  echo "Checking Apicurio artifact ${group}/${artifact}"
 
   set +e
   check_output="$(
