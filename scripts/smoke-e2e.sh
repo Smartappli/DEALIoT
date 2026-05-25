@@ -10,6 +10,7 @@ SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS:-
 SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS="${SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS:-1200}"
 SMOKE_COMPOSE_READY_POLL_SECONDS="${SMOKE_COMPOSE_READY_POLL_SECONDS:-5}"
 SMOKE_COMPOSE_READY_ATTEMPTS="${SMOKE_COMPOSE_READY_ATTEMPTS:-$(((SMOKE_COMPOSE_UP_WAIT_TIMEOUT_SECONDS + SMOKE_COMPOSE_READY_POLL_SECONDS - 1) / SMOKE_COMPOSE_READY_POLL_SECONDS))}"
+SMOKE_COMPOSE_OUTPUT_TAIL="${SMOKE_COMPOSE_OUTPUT_TAIL:-120}"
 SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS="${SMOKE_FLINK_SUBMIT_TIMEOUT_SECONDS:-180}"
 SMOKE_FLINK_LIST_TIMEOUT_SECONDS="${SMOKE_FLINK_LIST_TIMEOUT_SECONDS:-45}"
 SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS="${SMOKE_MQTT_PUBLISH_STEP_TIMEOUT_SECONDS:-45}"
@@ -18,7 +19,7 @@ SMOKE_KAFKA_CONSUMER_GRACE_SECONDS="${SMOKE_KAFKA_CONSUMER_GRACE_SECONDS:-15}"
 SMOKE_APICURIO_STEP_TIMEOUT_SECONDS="${SMOKE_APICURIO_STEP_TIMEOUT_SECONDS:-45}"
 SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS="${SMOKE_APICURIO_CHECK_TIMEOUT_SECONDS:-20}"
 SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS="${SMOKE_DIAGNOSTIC_TIMEOUT_SECONDS:-60}"
-SMOKE_DIAGNOSTIC_LOG_TAIL="${SMOKE_DIAGNOSTIC_LOG_TAIL:-120}"
+SMOKE_DIAGNOSTIC_LOG_TAIL="${SMOKE_DIAGNOSTIC_LOG_TAIL:-60}"
 SMOKE_KAFKA_DIAGNOSTIC_TOPICS="${SMOKE_KAFKA_DIAGNOSTIC_TOPICS:-raw.sensor dlq.events features.events state.latest}"
 SMOKE_FLINK_EXPECTED_TASKMANAGERS="${SMOKE_FLINK_EXPECTED_TASKMANAGERS:-2}"
 SMOKE_FLINK_TASKMANAGER_WAIT_ATTEMPTS="${SMOKE_FLINK_TASKMANAGER_WAIT_ATTEMPTS:-45}"
@@ -43,6 +44,21 @@ require_command() {
   if ! command -v "$command_name" >/dev/null 2>&1; then
     echo "Missing required command: $command_name" >&2
     exit 127
+  fi
+}
+
+emit_smoke_error() {
+  local message="$1"
+
+  echo "$message" >&2
+  if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+    printf '::error title=E2E smoke::%s\n' "$message" >&2
+  fi
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+    {
+      printf '### E2E smoke failure\n\n'
+      printf '%s\n' "$message"
+    } >>"$GITHUB_STEP_SUMMARY" || true
   fi
 }
 
@@ -91,7 +107,7 @@ wait_for_topic_message() {
   dump_kafka_topic_state "$topic"
   dump_flink_job_diagnostics
 
-  echo "Did not observe expected message on $topic: $pattern" >&2
+  emit_smoke_error "Did not observe expected message on ${topic}: ${pattern}"
   dump_smoke_diagnostics
   return 1
 }
@@ -164,7 +180,7 @@ wait_for_compose_service() {
       esac
 
       if [ "$status" = "exited" ] && [ "$exit_code" != "0" ]; then
-        echo "Compose service ${service} exited with code ${exit_code} while waiting for ${condition}." >&2
+        emit_smoke_error "Compose service ${service} exited with code ${exit_code} while waiting for ${condition}."
         dump_smoke_diagnostics
         return 1
       fi
@@ -175,7 +191,7 @@ wait_for_compose_service() {
     sleep "$SMOKE_COMPOSE_READY_POLL_SECONDS"
   done
 
-  echo "Compose service ${service} did not reach ${condition}." >&2
+  emit_smoke_error "Compose service ${service} did not reach ${condition}."
   dump_smoke_diagnostics
   return 1
 }
@@ -286,7 +302,7 @@ wait_for_flink_job_running() {
     sleep 2
   done
 
-  echo "Flink job $job_id did not reach RUNNING state." >&2
+  emit_smoke_error "Flink job $job_id did not reach RUNNING state."
   dump_smoke_diagnostics
   return 1
 }
@@ -331,7 +347,7 @@ PY
     sleep 2
   done
 
-  echo "Flink did not register ${expected} TaskManagers before job submission." >&2
+  emit_smoke_error "Flink did not register ${expected} TaskManagers before job submission."
   dump_smoke_diagnostics
   return 1
 }
@@ -416,7 +432,7 @@ check_apicurio_artifact() {
 
   if [ "$check_status" -ne 0 ]; then
     printf '%s\n' "$check_output" >&2
-    echo "Failed checking Apicurio artifact at ${artifact_url}" >&2
+    emit_smoke_error "Failed checking Apicurio artifact at ${artifact_url}"
     dump_smoke_diagnostics
     return 1
   fi
@@ -452,22 +468,24 @@ echo "Rendering compose configuration"
 compose config -q
 
 echo "Starting core event-flow services"
+compose_up_log="$(mktemp)"
 set +e
-compose_up_output="$(
-  compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build \
-    kafka1 kafka2 kafka3 kafka-init \
-    apicurio-registry apicurio-init \
-    vernemq1 mqtt-kafka-bridge \
-    flink-jobmanager flink-taskmanager-1 flink-taskmanager-2 2>&1
-)"
+compose_with_timeout "$SMOKE_COMPOSE_UP_STEP_TIMEOUT_SECONDS" up -d --build --quiet-pull --quiet-build \
+  kafka1 kafka2 kafka3 kafka-init \
+  apicurio-registry apicurio-init \
+  vernemq1 mqtt-kafka-bridge \
+  flink-jobmanager flink-taskmanager-1 flink-taskmanager-2 >"$compose_up_log" 2>&1
 compose_up_status=$?
 set -e
-printf '%s\n' "$compose_up_output"
+echo "Docker compose up output (last ${SMOKE_COMPOSE_OUTPUT_TAIL} lines)"
+tail -n "$SMOKE_COMPOSE_OUTPUT_TAIL" "$compose_up_log" || true
 if [ "$compose_up_status" -ne 0 ]; then
-  echo "Core event-flow services failed to become ready." >&2
+  emit_smoke_error "Core event-flow services failed to become ready."
+  rm -f "$compose_up_log"
   dump_smoke_diagnostics
   exit "$compose_up_status"
 fi
+rm -f "$compose_up_log"
 wait_for_core_event_flow_services
 
 wait_for_flink_taskmanagers
@@ -483,7 +501,7 @@ submit_status=$?
 set -e
 printf '%s\n' "$submit_output"
 if [ "$submit_status" -ne 0 ]; then
-  echo "Flink job submission failed or timed out." >&2
+  emit_smoke_error "Flink job submission failed or timed out."
   dump_smoke_diagnostics
   exit "$submit_status"
 fi
@@ -494,7 +512,7 @@ flink_job_id="$(
     tail -n 1
 )"
 if [ -z "$flink_job_id" ]; then
-  echo "Unable to parse Flink JobID from submit output." >&2
+  emit_smoke_error "Unable to parse Flink JobID from submit output."
   dump_smoke_diagnostics
   exit 1
 fi
