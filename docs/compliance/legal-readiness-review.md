@@ -13,10 +13,14 @@ DEALIoT now has a technical evidence baseline for DGA, Data Act, NIS2, DORA and 
 - Data Act access, third-party sharing and safeguards are tracked;
 - NIS2/DORA/CRA security and resilience evidence topics are present;
 - legal scope decisions and reporting channels are explicit;
+- a legal dossier register and release gates are exposed in the management console;
 - Zenodo publication is draft-first and blocked without legal approval.
 
 The architecture is not yet legally complete because operating evidence, contracts, notices,
-authority channels and final role decisions must still be recorded.
+authority channels, approvals and final role decisions must still be recorded.
+
+The legal dossier to close those gaps is defined in
+`docs/compliance/legal-compliance-dossier.md` and recorded in `compliance.legal.dossier`.
 
 ## Primary Regulations
 
@@ -64,6 +68,8 @@ Zenodo export is legally acceptable only as a controlled publication workflow:
 - Complete CRA product classification and support/vulnerability disclosure commitments.
 - Define retention enforcement for Kafka, object storage, database, backups and Zenodo exports.
 - Run a table-top incident exercise covering GDPR, NIS2, CRA and DORA reporting paths.
+- Approve the legal dossier artefacts that gate production, third-party sharing, AI deployment,
+  product-market release and Zenodo publication.
 
 ## Current Conclusion
 

@@ -34,6 +34,7 @@ Before production sharing or publication:
 5. Apply Data Act safeguards before third-party access, including trade-secret controls.
 6. Prefer derived, minimised, pseudonymised or aggregated datasets over raw GPS, raw payloads and
    media.
+7. Record the required legal dossier artefact in `compliance.legal.dossier`.
 
 ## AI Gate
 

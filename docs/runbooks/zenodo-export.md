@@ -44,6 +44,7 @@ Before publishing a Zenodo record:
 5. DGA research protocol, ethics status and disclosure review are recorded.
 6. Open release is blocked for internal, restricted, personal, sensitive or mixed datasets.
 7. Publication requires `legal_review_approved=true`.
+8. The publication approval is recorded in `compliance.legal.dossier`.
 
 ## Evidence
 
