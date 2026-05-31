@@ -1,0 +1,18 @@
+=127.0.0.1 : Le terme ®=127.0.0.1¯ n'est pas reconnu comme nom d'applet de commande, fonction, fichier de script ou 
+programme ex‚cutable. V‚rifiez l'orthographe du nom, ou si un chemin d'accŠs existe, v‚rifiez que le chemin d'accŠs 
+est correct et r‚essayez.
+Au caractŠre Ligne:1 : 1
++ ='127.0.0.1'; ='8095'; & 'D:\projects\DEALIoT\.venv\Scripts\python.ex ...
++ ~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (=127.0.0.1:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 
+=8095 : Le terme ®=8095¯ n'est pas reconnu comme nom d'applet de commande, fonction, fichier de script ou programme 
+ex‚cutable. V‚rifiez l'orthographe du nom, ou si un chemin d'accŠs existe, v‚rifiez que le chemin d'accŠs est correct 
+et r‚essayez.
+Au caractŠre Ligne:1 : 15
++ ='127.0.0.1'; ='8095'; & 'D:\projects\DEALIoT\.venv\Scripts\python.ex ...
++               ~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (=8095:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+ 

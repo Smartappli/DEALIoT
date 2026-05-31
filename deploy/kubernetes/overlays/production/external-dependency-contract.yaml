@@ -33,6 +33,7 @@ data:
           - governance.research.outputs
           - governance.dataset.catalog
           - governance.data_management_plans
+          - governance.repository.exports
           - dataact.product.catalog
           - dataact.user.access.requests
           - dataact.third_party.sharing
@@ -59,6 +60,7 @@ data:
           data_product_catalog: governance.data.products
           dataset_catalog: governance.dataset.catalog
           data_management_plan_register: governance.data_management_plans
+          repository_export_log: governance.repository.exports
           unauthorised_transfer_notice_log: governance.transfer.notices
           research_project_register: governance.research.projects
           research_output_register: governance.research.outputs
@@ -89,6 +91,7 @@ data:
             research_access: combine_data_act_entitlement_with_dga_governance
             product_and_related_service_data: catalogue_before_release
             dataset_release: requires_dataset_catalog_and_dmp
+            repository_publication: requires_dmp_and_legal_review
         required_security_resilience:
           asset_inventory: security.asset.inventory
           incident_log: security.incident.events

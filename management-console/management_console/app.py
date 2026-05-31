@@ -27,6 +27,11 @@ from management_console.catalog import (
     research_payload,
     security_resilience_payload,
 )
+from management_console.zenodo import (
+    ZenodoExportError,
+    export_dataset_to_zenodo,
+    zenodo_export_payload,
+)
 
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
 DEFAULT_TIMEOUT_SECONDS = 2.0
@@ -266,6 +271,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
             "/api/cra": lambda: self.respond_json(cra_payload()),
             "/api/data-act": lambda: self.respond_json(data_act_payload()),
             "/api/datasets": lambda: self.respond_json(dataset_payload()),
+            "/api/datasets/zenodo": lambda: self.respond_json(zenodo_export_payload()),
             "/api/dga": lambda: self.respond_json(dga_payload()),
             "/api/dora": lambda: self.respond_json(dora_payload()),
             "/api/health": lambda: self.respond_json(health_payload()),
@@ -286,20 +292,36 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
         self.serve_static()
 
     def do_POST(self) -> None:
-        if self.path != "/api/operations/trigger-media-backfill":
+        actions = {
+            "/api/operations/trigger-media-backfill": trigger_media_backfill,
+            "/api/datasets/zenodo/export": lambda payload: (
+                HTTPStatus.CREATED,
+                export_dataset_to_zenodo(payload),
+            ),
+        }
+        action = actions.get(self.path)
+        if action is None:
             self.respond_json({"error": "not_found"}, status=HTTPStatus.NOT_FOUND)
             return
 
         try:
             payload = read_json_body(self)
-        except (json.JSONDecodeError, ValueError) as exc:
+        except (json.JSONDecodeError, TypeError, ValueError) as exc:
             self.respond_json(
                 {"error": "invalid_request", "detail": str(exc)},
                 status=HTTPStatus.BAD_REQUEST,
             )
             return
 
-        status, response_payload = trigger_media_backfill(payload)
+        try:
+            status, response_payload = action(payload)
+        except ZenodoExportError as exc:
+            self.respond_json(
+                {"error": exc.error_code, "detail": exc.detail},
+                status=exc.status,
+            )
+            return
+
         self.respond_json(response_payload, status=status)
 
     def serve_static(self) -> None:
