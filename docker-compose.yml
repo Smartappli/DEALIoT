@@ -569,6 +569,7 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic compliance.scope.decisions --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic compliance.control.assessments --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic compliance.reporting.channels --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic compliance.legal.dossier --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic cra.product.lifecycle --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-journal-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-snapshots-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
@@ -1909,6 +1910,7 @@ services:
         post_artifact compliance compliance.scope.decisions /bootstrap/compliance.scope.decisions.json
         post_artifact compliance compliance.control.assessments /bootstrap/compliance.control.assessments.json
         post_artifact compliance compliance.reporting.channels /bootstrap/compliance.reporting.channels.json
+        post_artifact compliance compliance.legal.dossier /bootstrap/compliance.legal.dossier.json
         post_artifact cra cra.product.lifecycle /bootstrap/cra.product.lifecycle.json
 
         echo "Apicurio bootstrap done."
