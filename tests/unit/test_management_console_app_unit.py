@@ -6,7 +6,6 @@ import sys
 import threading
 import unittest
 from contextlib import contextmanager
-from email.message import Message
 from http import HTTPStatus
 from http.server import ThreadingHTTPServer
 from pathlib import Path
@@ -104,30 +103,16 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
     def test_probe_http_reports_status_classes_and_errors(self) -> None:
         self.assertEqual(app.probe_http("ftp://example.net", 0.1)["status"], "unknown")
 
-        with patch("management_console.app.request.urlopen", return_value=FakeResponse(204)):
+        with patch("management_console.app.open_http_request", return_value=FakeResponse(204)):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "healthy")
-        with patch("management_console.app.request.urlopen", return_value=FakeResponse(503)):
+        with patch("management_console.app.open_http_request", return_value=FakeResponse(503)):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "degraded")
 
-        not_found = error.HTTPError(
-            "https://example.net",
-            404,
-            "not found",
-            hdrs=Message(),
-            fp=io.BytesIO(b"missing"),
-        )
-        server_error = error.HTTPError(
-            "https://example.net",
-            500,
-            "server error",
-            hdrs=Message(),
-            fp=io.BytesIO(b"broken"),
-        )
-        with patch("management_console.app.request.urlopen", side_effect=not_found):
+        with patch("management_console.app.open_http_request", return_value=FakeResponse(404)):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "healthy")
-        with patch("management_console.app.request.urlopen", side_effect=server_error):
+        with patch("management_console.app.open_http_request", return_value=FakeResponse(500)):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "degraded")
-        with patch("management_console.app.request.urlopen", side_effect=OSError("offline")):
+        with patch("management_console.app.open_http_request", side_effect=OSError("offline")):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "unreachable")
 
     def test_runtime_probe_overrides_cover_registered_components(self) -> None:
@@ -257,7 +242,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 clear=True,
             ),
             patch(
-                "management_console.app.request.urlopen",
+                "management_console.app.open_http_request",
                 return_value=FakeResponse(200, response_body),
             ),
         ):
@@ -265,20 +250,16 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
         self.assertEqual(status, HTTPStatus.OK)
         self.assertEqual(payload["status"], "submitted")
 
-        rejected = error.HTTPError(
-            "https://airflow.example",
-            409,
-            "conflict",
-            hdrs=Message(),
-            fp=io.BytesIO(b"already exists"),
-        )
         with (
             patch.dict(
                 "os.environ",
                 {"AIRFLOW_API_USERNAME": "u", "AIRFLOW_API_PASSWORD": "p"},
                 clear=True,
             ),
-            patch("management_console.app.request.urlopen", side_effect=rejected),
+            patch(
+                "management_console.app.open_http_request",
+                return_value=FakeResponse(409, b"already exists"),
+            ),
         ):
             status, payload = app.trigger_media_backfill({})
         self.assertEqual(status, 409)
@@ -290,7 +271,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 {"AIRFLOW_API_USERNAME": "u", "AIRFLOW_API_PASSWORD": "p"},
                 clear=True,
             ),
-            patch("management_console.app.request.urlopen", side_effect=OSError("offline")),
+            patch("management_console.app.open_http_request", side_effect=OSError("offline")),
         ):
             status, payload = app.trigger_media_backfill({})
         self.assertEqual(status, HTTPStatus.BAD_GATEWAY)
