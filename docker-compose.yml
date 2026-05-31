@@ -554,6 +554,7 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dataact.third_party.sharing --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dataact.user.exports --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dataact.safeguards --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dataact.legal_basis.checks --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic security.asset.inventory --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic security.incident.events --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic security.vulnerability.findings --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
@@ -562,6 +563,10 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic resilience.backup.tests --partitions 3 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic resilience.operational.risk --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic resilience.third_party.risk --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic compliance.scope.decisions --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic compliance.control.assessments --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic compliance.reporting.channels --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic cra.product.lifecycle --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-journal-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-snapshots-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic registry-events-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
@@ -1886,6 +1891,7 @@ services:
         post_artifact dataact dataact.third_party.sharing /bootstrap/dataact.third_party.sharing.json
         post_artifact dataact dataact.user.exports /bootstrap/dataact.user.exports.json
         post_artifact dataact dataact.safeguards /bootstrap/dataact.safeguards.json
+        post_artifact dataact dataact.legal_basis.checks /bootstrap/dataact.legal_basis.checks.json
         post_artifact security security.asset.inventory /bootstrap/security.asset.inventory.json
         post_artifact security security.incident.events /bootstrap/security.incident.events.json
         post_artifact security security.vulnerability.findings /bootstrap/security.vulnerability.findings.json
@@ -1894,6 +1900,10 @@ services:
         post_artifact resilience resilience.backup.tests /bootstrap/resilience.backup.tests.json
         post_artifact resilience resilience.operational.risk /bootstrap/resilience.operational.risk.json
         post_artifact resilience resilience.third_party.risk /bootstrap/resilience.third_party.risk.json
+        post_artifact compliance compliance.scope.decisions /bootstrap/compliance.scope.decisions.json
+        post_artifact compliance compliance.control.assessments /bootstrap/compliance.control.assessments.json
+        post_artifact compliance compliance.reporting.channels /bootstrap/compliance.reporting.channels.json
+        post_artifact cra cra.product.lifecycle /bootstrap/cra.product.lifecycle.json
 
         echo "Apicurio bootstrap done."
     networks:
