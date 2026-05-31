@@ -4,23 +4,163 @@ const state = {
   activePlane: "all",
 };
 
-async function fetchJson(url, options = {}) {
-  const response = await fetch(url, {
+async function fetchJson(endpointName, options = {}) {
+  const init = {
     headers: { Accept: "application/json", ...(options.headers || {}) },
     ...options,
-  });
+  };
+  let response;
+  switch (endpointName) {
+    case "architecture":
+      response = await fetch("/api/architecture", init);
+      break;
+    case "health":
+      response = await fetch("/api/health", init);
+      break;
+    case "zenodoExport":
+      response = await fetch("/api/datasets/zenodo/export", init);
+      break;
+    case "openaireExport":
+      response = await fetch("/api/datasets/openaire/export", init);
+      break;
+    default:
+      throw new Error("Endpoint API non autorise");
+  }
   if (!response.ok) {
-    throw new Error(`${url} returned ${response.status}`);
+    throw new Error(`${endpointName} returned ${response.status}`);
   }
   return response.json();
+}
+
+function query(selector) {
+  const node = document.querySelector(selector);
+  if (!node) {
+    throw new Error(`Missing element: ${selector}`);
+  }
+  return node;
 }
 
 function text(value) {
   return value === null || value === undefined || value === "" ? "-" : String(value);
 }
 
+function textList(values) {
+  return Array.isArray(values) ? values.map(text).join(", ") : text(values);
+}
+
+function cssToken(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[^A-Za-z0-9_-]+/g, "-")
+    .slice(0, 80);
+}
+
+function appendChildren(parent, children) {
+  const childList = Array.isArray(children) ? children : [children];
+  childList.forEach((child) => {
+    if (child === null || child === undefined) {
+      return;
+    }
+    if (child instanceof Node) {
+      parent.appendChild(child);
+      return;
+    }
+    parent.appendChild(document.createTextNode(text(child)));
+  });
+}
+
+function element(tagName, options = {}, children = []) {
+  const node = document.createElement(tagName);
+  if (options.className) {
+    node.className = options.className;
+  }
+  if (options.textContent !== undefined) {
+    node.textContent = text(options.textContent);
+  }
+  Object.entries(options.attrs || {}).forEach(([name, value]) => {
+    if (value !== null && value !== undefined) {
+      node.setAttribute(name, String(value));
+    }
+  });
+  Object.entries(options.dataset || {}).forEach(([name, value]) => {
+    node.dataset[name] = String(value ?? "");
+  });
+  appendChildren(node, children);
+  return node;
+}
+
+function replaceChildren(selector, children) {
+  query(selector).replaceChildren(...(Array.isArray(children) ? children : [children]));
+}
+
+function strong(value) {
+  return element("strong", { textContent: value });
+}
+
+function small(value) {
+  return element("small", { textContent: value });
+}
+
 function pill(label, className = "") {
-  return `<span class="pill ${className}">${text(label)}</span>`;
+  const token = cssToken(className);
+  return element("span", {
+    className: token ? `pill ${token}` : "pill",
+    textContent: label,
+  });
+}
+
+function meta(children) {
+  return element("div", { className: "meta" }, children);
+}
+
+function footer(children) {
+  return element("footer", {}, children);
+}
+
+function td(children) {
+  return element("td", {}, children);
+}
+
+function tr(cells) {
+  return element("tr", {}, cells.map((cell) => td(cell)));
+}
+
+function actionButton(label, action, datasetId = "") {
+  return element("button", {
+    textContent: label,
+    attrs: { type: "button" },
+    dataset: { action, datasetId },
+  });
+}
+
+function safeHttpUrl(value) {
+  if (!value) {
+    return null;
+  }
+  try {
+    const parsed = new URL(String(value), window.location.origin);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.href;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function externalLink(value) {
+  const href = safeHttpUrl(value);
+  if (!href) {
+    return null;
+  }
+  return element(
+    "a",
+    {
+      className: "link-button",
+      attrs: { href, target: "_blank", rel: "noreferrer noopener" },
+    },
+    "Ouvrir",
+  );
 }
 
 function renderMetrics() {
@@ -30,568 +170,430 @@ function renderMetrics() {
     return acc;
   }, {});
 
-  document.querySelector("#metric-services").textContent = components.length;
-  document.querySelector("#metric-healthy").textContent = summary.healthy || 0;
-  document.querySelector("#metric-unreachable").textContent = summary.unreachable || 0;
-  document.querySelector("#metric-topics").textContent = state.architecture?.topics.length || 0;
+  query("#metric-services").textContent = components.length;
+  query("#metric-healthy").textContent = summary.healthy || 0;
+  query("#metric-unreachable").textContent = summary.unreachable || 0;
+  query("#metric-topics").textContent = state.architecture?.topics.length || 0;
 }
 
 function renderPlaneFilter() {
-  const select = document.querySelector("#plane-filter");
+  const select = query("#plane-filter");
   const planes = [...new Set(state.architecture.components.map((item) => item.plane))].sort();
-  select.innerHTML = [
-    '<option value="all">Tous les plans</option>',
-    ...planes.map((plane) => `<option value="${plane}">${plane}</option>`),
-  ].join("");
+  const options = [
+    element("option", { textContent: "Tous les plans", attrs: { value: "all" } }),
+    ...planes.map((plane) => element("option", { textContent: plane, attrs: { value: plane } })),
+  ];
+  select.replaceChildren(...options);
   select.value = state.activePlane;
 }
 
 function renderComponents() {
-  const container = document.querySelector("#component-grid");
   const components = state.architecture.components.filter(
     (item) => state.activePlane === "all" || item.plane === state.activePlane,
   );
 
-  container.innerHTML = components
-    .map((component) => {
+  replaceChildren(
+    "#component-grid",
+    components.map((component) => {
       const health = state.healthById.get(component.id) || {
         status: "unknown",
         detail: "not checked",
       };
-      const links = component.ui
-        ? `<a class="link-button" href="${component.ui}" target="_blank" rel="noreferrer">Ouvrir</a>`
-        : "";
-      return `
-        <article class="component">
-          <h3>${component.name}</h3>
-          <p>${component.role}</p>
-          <div class="meta">
-            ${pill(component.plane)}
-            ${pill(health.status, health.status)}
-            ${pill(`risk ${component.risk}`, component.risk)}
-          </div>
-          <small>${component.data_scope}</small>
-          <footer>${links}</footer>
-        </article>
-      `;
-    })
-    .join("");
+      return element("article", { className: "component" }, [
+        element("h3", { textContent: component.name }),
+        element("p", { textContent: component.role }),
+        meta([
+          pill(component.plane),
+          pill(health.status, health.status),
+          pill(`risk ${component.risk}`, component.risk),
+        ]),
+        small(component.data_scope),
+        footer([externalLink(component.ui)]),
+      ]);
+    }),
+  );
 }
 
 function renderTopics() {
-  const table = document.querySelector("#topic-table");
-  table.innerHTML = state.architecture.topics
-    .map(
-      (topic) => `
-        <tr>
-          <td><strong>${topic.name}</strong></td>
-          <td>${topic.plane}</td>
-          <td>${topic.classification}</td>
-          <td>${topic.retention}</td>
-        </tr>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#topic-table",
+    state.architecture.topics.map((topic) =>
+      tr([
+        [strong(topic.name)],
+        topic.plane,
+        topic.classification,
+        topic.retention,
+      ]),
+    ),
+  );
 }
 
 function renderDatasets() {
-  const datasets = document.querySelector("#dataset-table");
-  datasets.innerHTML = (state.architecture.datasets || [])
-    .map(
-      (dataset) => `
-        <tr>
-          <td>
-            <strong>${dataset.title}</strong>
-            <small>${dataset.dataset_id}</small>
-          </td>
-          <td>${dataset.dataset_type}</td>
-          <td>${dataset.classification}</td>
-          <td>${dataset.access_mode}</td>
-          <td>${dataset.dmp_id}</td>
-          <td>
-            <button type="button" data-action="zenodo-export" data-dataset-id="${dataset.dataset_id}">
-              Draft
-            </button>
-          </td>
-          <td>
-            <button type="button" data-action="openaire-export" data-dataset-id="${dataset.dataset_id}">
-              Metadata
-            </button>
-          </td>
-        </tr>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#dataset-table",
+    (state.architecture.datasets || []).map((dataset) =>
+      tr([
+        [strong(dataset.title), small(dataset.dataset_id)],
+        dataset.dataset_type,
+        dataset.classification,
+        dataset.access_mode,
+        dataset.dmp_id,
+        [actionButton("Draft", "zenodo-export", dataset.dataset_id)],
+        [actionButton("Metadata", "openaire-export", dataset.dataset_id)],
+      ]),
+    ),
+  );
 
-  const zenodoPolicy = document.querySelector("#zenodo-export-policy");
-  zenodoPolicy.innerHTML = (state.architecture.zenodo_export_policy || [])
-    .map((control) => pill(control.id, control.status))
-    .join("");
-
-  const openairePolicy = document.querySelector("#openaire-export-policy");
-  openairePolicy.innerHTML = (state.architecture.openaire_export_policy || [])
-    .map((control) => pill(control.id, control.status))
-    .join("");
-
-  const dmps = document.querySelector("#dmp-table");
-  dmps.innerHTML = (state.architecture.data_management_plans || [])
-    .map(
-      (dmp) => `
-        <tr>
-          <td>
-            <strong>${dmp.dmp_id}</strong>
-            <small>${dmp.owner}</small>
-          </td>
-          <td>${dmp.project_id}</td>
-          <td>${pill(dmp.status, dmp.status)}</td>
-          <td>${dmp.access_policy}</td>
-          <td>${dmp.retention_policy}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const controls = document.querySelector("#dmp-control-list");
-  controls.innerHTML = (state.architecture.dmp_controls || [])
-    .map(
-      (control) => `
-        <article class="control">
-          <h3>${control.id}</h3>
-          <p>${control.control}</p>
-          <div class="meta">
-            ${pill(control.status, control.status)}
-            ${pill(control.evidence)}
-          </div>
-        </article>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#zenodo-export-policy",
+    (state.architecture.zenodo_export_policy || []).map((control) =>
+      pill(control.id, control.status),
+    ),
+  );
+  replaceChildren(
+    "#openaire-export-policy",
+    (state.architecture.openaire_export_policy || []).map((control) =>
+      pill(control.id, control.status),
+    ),
+  );
+  replaceChildren(
+    "#dmp-table",
+    (state.architecture.data_management_plans || []).map((dmp) =>
+      tr([
+        [strong(dmp.dmp_id), small(dmp.owner)],
+        dmp.project_id,
+        [pill(dmp.status, dmp.status)],
+        dmp.access_policy,
+        dmp.retention_policy,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#dmp-control-list",
+    (state.architecture.dmp_controls || []).map((control) =>
+      element("article", { className: "control" }, [
+        element("h3", { textContent: control.id }),
+        element("p", { textContent: control.control }),
+        meta([pill(control.status, control.status), pill(control.evidence)]),
+      ]),
+    ),
+  );
 }
 
 function renderIntermediation() {
-  const flow = document.querySelector("#intermediation-flow");
-  flow.innerHTML = state.architecture.intermediation_flow
-    .map(
-      (step) => `
-        <article class="item">
-          <h3>${step.step}. ${step.name}</h3>
-          <p>${step.control}</p>
-          <div class="meta">${pill(step.source)}</div>
-        </article>
-      `,
-    )
-    .join("");
-
-  const profiles = document.querySelector("#consumer-profile-table");
-  profiles.innerHTML = state.architecture.consumer_profiles
-    .map(
-      (profile) => `
-        <tr>
-          <td>
-            <strong>${profile.name}</strong>
-            <small>${profile.profile_id}</small>
-          </td>
-          <td>${profile.consumer_type}</td>
-          <td>${profile.default_access.join(", ")}</td>
-          <td>${profile.raw_access}</td>
-        </tr>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#intermediation-flow",
+    state.architecture.intermediation_flow.map((step) =>
+      element("article", { className: "item" }, [
+        element("h3", { textContent: `${step.step}. ${text(step.name)}` }),
+        element("p", { textContent: step.control }),
+        meta([pill(step.source)]),
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#consumer-profile-table",
+    state.architecture.consumer_profiles.map((profile) =>
+      tr([
+        [strong(profile.name), small(profile.profile_id)],
+        profile.consumer_type,
+        textList(profile.default_access),
+        profile.raw_access,
+      ]),
+    ),
+  );
 }
 
 function renderDataAct() {
-  const journey = document.querySelector("#data-act-journey");
-  journey.innerHTML = (state.architecture.data_act_user_journey || [])
-    .map(
-      (step) => `
-        <article class="item">
-          <h3>${step.step}. ${step.name}</h3>
-          <p>${step.control}</p>
-          <div class="meta">${pill(step.evidence)}</div>
-        </article>
-      `,
-    )
-    .join("");
-
-  const products = document.querySelector("#data-act-product-table");
-  products.innerHTML = (state.architecture.data_act_connected_products || [])
-    .map(
-      (product) => `
-        <tr>
-          <td>
-            <strong>${product.connected_product}</strong>
-            <small>${product.product_id}</small>
-          </td>
-          <td>${product.generated_data.join(", ")}</td>
-          <td>${product.default_access}</td>
-          <td>${product.third_party_sharing}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const channels = document.querySelector("#data-act-channel-table");
-  channels.innerHTML = (state.architecture.data_act_access_channels || [])
-    .map(
-      (channel) => `
-        <tr>
-          <td>
-            <strong>${channel.name}</strong>
-            <small>${channel.channel_id}</small>
-          </td>
-          <td>${channel.consumer}</td>
-          <td>${channel.delivery}</td>
-          <td>${channel.evidence_topics.join(", ")}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const obligations = document.querySelector("#data-act-obligation-list");
-  obligations.innerHTML = (state.architecture.data_act_obligations || [])
-    .map(
-      (obligation) => `
-        <article class="control">
-          <h3>${obligation.article}</h3>
-          <p>${obligation.control}</p>
-          <div class="meta">${pill(obligation.status, obligation.status)}</div>
-        </article>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#data-act-journey",
+    (state.architecture.data_act_user_journey || []).map((step) =>
+      element("article", { className: "item" }, [
+        element("h3", { textContent: `${step.step}. ${text(step.name)}` }),
+        element("p", { textContent: step.control }),
+        meta([pill(step.evidence)]),
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#data-act-product-table",
+    (state.architecture.data_act_connected_products || []).map((product) =>
+      tr([
+        [strong(product.connected_product), small(product.product_id)],
+        textList(product.generated_data),
+        product.default_access,
+        product.third_party_sharing,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#data-act-channel-table",
+    (state.architecture.data_act_access_channels || []).map((channel) =>
+      tr([
+        [strong(channel.name), small(channel.channel_id)],
+        channel.consumer,
+        channel.delivery,
+        textList(channel.evidence_topics),
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#data-act-obligation-list",
+    (state.architecture.data_act_obligations || []).map((obligation) =>
+      element("article", { className: "control" }, [
+        element("h3", { textContent: obligation.article }),
+        element("p", { textContent: obligation.control }),
+        meta([pill(obligation.status, obligation.status)]),
+      ]),
+    ),
+  );
 }
 
 function renderResearch() {
   const context = state.architecture.research_context;
-  const contextContainer = document.querySelector("#research-context");
-  contextContainer.innerHTML = `
-    <article class="item">
-      <h3>${context.primary_purpose}</h3>
-      <p>${context.dga_mode}</p>
-      <div class="meta">
-        ${context.general_interest_objectives.map((objective) => pill(objective)).join("")}
-      </div>
-    </article>
-  `;
-
-  const projects = document.querySelector("#research-project-list");
-  projects.innerHTML = state.architecture.research_projects
-    .map(
-      (project) => `
-        <article class="component">
-          <h3>${project.title}</h3>
-          <p>${project.objective}</p>
-          <div class="meta">
-            ${pill(project.permission_model)}
-            ${pill(project.ethics_review_status, project.ethics_review_status)}
-          </div>
-          <small>${project.sharing_layer}</small>
-        </article>
-      `,
-    )
-    .join("");
-
-  const controls = document.querySelector("#research-control-list");
-  controls.innerHTML = state.architecture.research_controls
-    .map(
-      (control) => `
-        <article class="control">
-          <h3>${control.id}</h3>
-          <p>${control.control}</p>
-          <div class="meta">${pill(control.status, control.status)}</div>
-        </article>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#research-context",
+    context
+      ? [
+          element("article", { className: "item" }, [
+            element("h3", { textContent: context.primary_purpose }),
+            element("p", { textContent: context.dga_mode }),
+            meta((context.general_interest_objectives || []).map((objective) => pill(objective))),
+          ]),
+        ]
+      : [],
+  );
+  replaceChildren(
+    "#research-project-list",
+    state.architecture.research_projects.map((project) =>
+      element("article", { className: "component" }, [
+        element("h3", { textContent: project.title }),
+        element("p", { textContent: project.objective }),
+        meta([
+          pill(project.permission_model),
+          pill(project.ethics_review_status, project.ethics_review_status),
+        ]),
+        small(project.sharing_layer),
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#research-control-list",
+    state.architecture.research_controls.map((control) =>
+      element("article", { className: "control" }, [
+        element("h3", { textContent: control.id }),
+        element("p", { textContent: control.control }),
+        meta([pill(control.status, control.status)]),
+      ]),
+    ),
+  );
 }
 
 function renderDga() {
-  const principles = document.querySelector("#dga-principles");
-  principles.innerHTML = state.architecture.dga_obligations
-    ? state.architecture.dga_obligations
-        .filter((item) => item.status === "implemented")
-        .map((item) => pill(item.article, item.status))
-        .join("")
-    : "";
-
-  const products = document.querySelector("#data-product-table");
-  products.innerHTML = state.architecture.data_products
-    .map(
-      (product) => `
-        <tr>
-          <td>
-            <strong>${product.title}</strong>
-            <small>${product.product_id}</small>
-          </td>
-          <td>${product.data_category}</td>
-          <td>${product.access_mode}</td>
-          <td>${product.dga_gate}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const obligations = document.querySelector("#dga-obligation-list");
-  obligations.innerHTML = state.architecture.dga_obligations
-    .map(
-      (obligation) => `
-        <article class="control">
-          <h3>${obligation.article}</h3>
-          <p>${obligation.control}</p>
-          <div class="meta">${pill(obligation.status, obligation.status)}</div>
-        </article>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#dga-principles",
+    (state.architecture.dga_obligations || [])
+      .filter((item) => item.status === "implemented")
+      .map((item) => pill(item.article, item.status)),
+  );
+  replaceChildren(
+    "#data-product-table",
+    state.architecture.data_products.map((product) =>
+      tr([
+        [strong(product.title), small(product.product_id)],
+        product.data_category,
+        product.access_mode,
+        product.dga_gate,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#dga-obligation-list",
+    state.architecture.dga_obligations.map((obligation) =>
+      element("article", { className: "control" }, [
+        element("h3", { textContent: obligation.article }),
+        element("p", { textContent: obligation.control }),
+        meta([pill(obligation.status, obligation.status)]),
+      ]),
+    ),
+  );
 }
 
 function renderSecurityResilience() {
-  const scope = document.querySelector("#security-scope-list");
-  scope.innerHTML = [
-    "NIS2: secteur, taille et transposition nationale a confirmer",
-    "DORA: applicable si perimetre financier ou fournisseur ICT finance",
-    "CRA: applicable aux produits avec elements numeriques mis sur le marche UE",
-  ]
-    .map((item) => pill(item))
-    .join("");
-
-  const gates = document.querySelector("#security-gate-list");
-  gates.innerHTML = (state.architecture.security_resilience_gates || [])
-    .map(
-      (gate) => `
-        <article class="item">
-          <h3>${gate.gate}</h3>
-          <p>${gate.control}</p>
-          <div class="meta">
-            ${pill(gate.status, gate.status)}
-            ${pill(gate.evidence)}
-          </div>
-        </article>
-      `,
-    )
-    .join("");
-
-  const controls = document.querySelector("#security-control-table");
-  controls.innerHTML = (state.architecture.security_resilience_controls || [])
-    .map(
-      (control) => `
-        <tr>
-          <td>
-            <strong>${control.id}</strong>
-            <small>${control.control}</small>
-          </td>
-          <td>${control.regulation}</td>
-          <td>${control.domain}</td>
-          <td>
-            ${control.evidence_topic}
-            <small>${pill(control.status, control.status)}</small>
-          </td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const topics = document.querySelector("#security-topic-table");
-  topics.innerHTML = (state.architecture.topics || [])
-    .filter(
-      (topic) =>
-        topic.name.startsWith("security.") ||
-        topic.name.startsWith("resilience.") ||
-        topic.name.startsWith("compliance.") ||
-        topic.name.startsWith("cra."),
-    )
-    .map(
-      (topic) => `
-        <tr>
-          <td><strong>${topic.name}</strong></td>
-          <td>${topic.plane}</td>
-          <td>${topic.classification}</td>
-          <td>${topic.retention}</td>
-        </tr>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#security-scope-list",
+    [
+      "NIS2: secteur, taille et transposition nationale a confirmer",
+      "DORA: applicable si perimetre financier ou fournisseur ICT finance",
+      "CRA: applicable aux produits avec elements numeriques mis sur le marche UE",
+    ].map((item) => pill(item)),
+  );
+  replaceChildren(
+    "#security-gate-list",
+    (state.architecture.security_resilience_gates || []).map((gate) =>
+      element("article", { className: "item" }, [
+        element("h3", { textContent: gate.gate }),
+        element("p", { textContent: gate.control }),
+        meta([pill(gate.status, gate.status), pill(gate.evidence)]),
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#security-control-table",
+    (state.architecture.security_resilience_controls || []).map((control) =>
+      tr([
+        [strong(control.id), small(control.control)],
+        control.regulation,
+        control.domain,
+        [control.evidence_topic, element("small", {}, [pill(control.status, control.status)])],
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#security-topic-table",
+    (state.architecture.topics || [])
+      .filter(
+        (topic) =>
+          topic.name.startsWith("security.") ||
+          topic.name.startsWith("resilience.") ||
+          topic.name.startsWith("compliance.") ||
+          topic.name.startsWith("cra."),
+      )
+      .map((topic) => tr([[strong(topic.name)], topic.plane, topic.classification, topic.retention])),
+  );
 }
 
 function renderOperations() {
-  const container = document.querySelector("#operations-list");
-  container.innerHTML = state.architecture.operations
-    .map((operation) => {
-      const action =
-        operation.id === "refresh-health"
-          ? '<button type="button" data-action="refresh">Executer</button>'
-          : "";
-      return `
-        <article class="item">
-          <h3>${operation.name}</h3>
-          <p>${operation.description}</p>
-          <div class="meta">
-            ${pill(operation.method)}
-            ${pill(operation.scope)}
-          </div>
-          <footer>${action}</footer>
-        </article>
-      `;
-    })
-    .join("");
+  replaceChildren(
+    "#operations-list",
+    state.architecture.operations.map((operation) =>
+      element("article", { className: "item" }, [
+        element("h3", { textContent: operation.name }),
+        element("p", { textContent: operation.description }),
+        meta([pill(operation.method), pill(operation.scope)]),
+        footer([
+          operation.id === "refresh-health" ? actionButton("Executer", "refresh") : null,
+        ]),
+      ]),
+    ),
+  );
 }
 
 function renderRunbooks() {
-  const container = document.querySelector("#runbook-list");
-  container.innerHTML = state.architecture.runbooks
-    .map(
-      (runbook) => `
-        <article class="item">
-          <h3>${runbook.name}</h3>
-          <p>${runbook.scope}</p>
-          <div class="meta">${pill(runbook.path)}</div>
-        </article>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#runbook-list",
+    state.architecture.runbooks.map((runbook) =>
+      element("article", { className: "item" }, [
+        element("h3", { textContent: runbook.name }),
+        element("p", { textContent: runbook.scope }),
+        meta([pill(runbook.path)]),
+      ]),
+    ),
+  );
 }
 
 function renderCompliance() {
-  const finalization = document.querySelector("#legal-finalization-table");
-  finalization.innerHTML = (state.architecture.legal_finalization_items || [])
-    .map(
-      (item) => `
-        <tr>
-          <td><strong>${item.id}</strong></td>
-          <td>${pill(item.status, item.status)}</td>
-          <td>${item.owner}</td>
-          <td>${item.decision}</td>
-          <td>${item.evidence}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const legalDossier = document.querySelector("#legal-dossier-table");
-  legalDossier.innerHTML = (state.architecture.legal_compliance_dossier || [])
-    .map(
-      (item) => `
-        <tr>
-          <td>
-            <strong>${item.id}</strong>
-            <small>${item.artifact}</small>
-          </td>
-          <td>${item.regulation}</td>
-          <td>${pill(item.status, item.status)}</td>
-          <td>${item.evidence_topic}</td>
-          <td>${item.required_before}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const legalGates = document.querySelector("#legal-release-gate-list");
-  legalGates.innerHTML = (state.architecture.legal_release_gates || [])
-    .map(
-      (gate) => `
-        <article class="control">
-          <h3>${gate.id}</h3>
-          <p>${gate.before}</p>
-          <small>${gate.required_artifacts}</small>
-          <div class="meta">${pill(gate.status, gate.status)}</div>
-          <footer>${gate.block_rule}</footer>
-        </article>
-      `,
-    )
-    .join("");
-
-  const legalTemplates = document.querySelector("#legal-template-table");
-  legalTemplates.innerHTML = (state.architecture.legal_templates || [])
-    .map(
-      (template) => `
-        <tr>
-          <td><strong>${template.id}</strong></td>
-          <td>${template.regulation}</td>
-          <td>${template.purpose}</td>
-          <td>${template.path}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const readiness = document.querySelector("#compliance-readiness-table");
-  readiness.innerHTML = (state.architecture.compliance_readiness || [])
-    .map(
-      (item) => `
-        <tr>
-          <td>
-            <strong>${item.regulation}</strong>
-            <small>${item.technical_status}</small>
-          </td>
-          <td>${pill(item.readiness, item.readiness)}</td>
-          <td>${item.blocking_gap}</td>
-          <td>${item.next_action}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const scope = document.querySelector("#compliance-scope-table");
-  scope.innerHTML = (state.architecture.compliance_scope_decisions || [])
-    .map(
-      (item) => `
-        <tr>
-          <td>
-            <strong>${item.regulation}</strong>
-            <small>${item.basis}</small>
-          </td>
-          <td>${pill(item.scope_status, item.scope_status)}</td>
-          <td>${item.owner}</td>
-          <td>${item.evidence_topic}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const reporting = document.querySelector("#compliance-reporting-table");
-  reporting.innerHTML = (state.architecture.compliance_reporting_channels || [])
-    .map(
-      (item) => `
-        <tr>
-          <td><strong>${item.regulation}</strong></td>
-          <td>${item.trigger}</td>
-          <td>${pill(item.channel_status, item.channel_status)}</td>
-          <td>${item.evidence_topic}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const additionalLegislation = document.querySelector("#additional-legislation-table");
-  additionalLegislation.innerHTML = (state.architecture.additional_legislation || [])
-    .map(
-      (item) => `
-        <tr>
-          <td>
-            <strong>${item.regulation}</strong>
-            <small>${item.evidence_topic}</small>
-          </td>
-          <td>${pill(item.applicability, item.applicability)}</td>
-          <td>${item.reason}</td>
-          <td>${item.architecture_action}</td>
-        </tr>
-      `,
-    )
-    .join("");
-
-  const container = document.querySelector("#compliance-list");
-  container.innerHTML = state.architecture.compliance_controls
-    .map(
-      (control) => `
-        <article class="control">
-          <h3>${control.regulation}</h3>
-          <p>${control.control}</p>
-          <div class="meta">${pill(control.status, control.status)}</div>
-        </article>
-      `,
-    )
-    .join("");
+  replaceChildren(
+    "#legal-finalization-table",
+    (state.architecture.legal_finalization_items || []).map((item) =>
+      tr([
+        [strong(item.id)],
+        [pill(item.status, item.status)],
+        item.owner,
+        item.decision,
+        item.evidence,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#legal-dossier-table",
+    (state.architecture.legal_compliance_dossier || []).map((item) =>
+      tr([
+        [strong(item.id), small(item.artifact)],
+        item.regulation,
+        [pill(item.status, item.status)],
+        item.evidence_topic,
+        item.required_before,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#legal-release-gate-list",
+    (state.architecture.legal_release_gates || []).map((gate) =>
+      element("article", { className: "control" }, [
+        element("h3", { textContent: gate.id }),
+        element("p", { textContent: gate.before }),
+        small(gate.required_artifacts),
+        meta([pill(gate.status, gate.status)]),
+        footer([gate.block_rule]),
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#legal-template-table",
+    (state.architecture.legal_templates || []).map((template) =>
+      tr([
+        [strong(template.id)],
+        template.regulation,
+        template.purpose,
+        template.path,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#compliance-readiness-table",
+    (state.architecture.compliance_readiness || []).map((item) =>
+      tr([
+        [strong(item.regulation), small(item.technical_status)],
+        [pill(item.readiness, item.readiness)],
+        item.blocking_gap,
+        item.next_action,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#compliance-scope-table",
+    (state.architecture.compliance_scope_decisions || []).map((item) =>
+      tr([
+        [strong(item.regulation), small(item.basis)],
+        [pill(item.scope_status, item.scope_status)],
+        item.owner,
+        item.evidence_topic,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#compliance-reporting-table",
+    (state.architecture.compliance_reporting_channels || []).map((item) =>
+      tr([
+        [strong(item.regulation)],
+        item.trigger,
+        [pill(item.channel_status, item.channel_status)],
+        item.evidence_topic,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#additional-legislation-table",
+    (state.architecture.additional_legislation || []).map((item) =>
+      tr([
+        [strong(item.regulation), small(item.evidence_topic)],
+        [pill(item.applicability, item.applicability)],
+        item.reason,
+        item.architecture_action,
+      ]),
+    ),
+  );
+  replaceChildren(
+    "#compliance-list",
+    state.architecture.compliance_controls.map((control) =>
+      element("article", { className: "control" }, [
+        element("h3", { textContent: control.regulation }),
+        element("p", { textContent: control.control }),
+        meta([pill(control.status, control.status)]),
+      ]),
+    ),
+  );
 }
 
 function renderAll() {
@@ -611,63 +613,78 @@ function renderAll() {
 }
 
 async function refreshHealth() {
-  const health = await fetchJson("/api/health");
+  const health = await fetchJson("health");
   state.healthById = new Map(health.checks.map((item) => [item.id, item]));
   renderMetrics();
   renderComponents();
 }
 
 async function exportDatasetToZenodo(datasetId) {
-  const result = document.querySelector("#zenodo-export-result");
+  const result = query("#zenodo-export-result");
   result.textContent = "Export Zenodo en cours...";
-  const payload = await fetchJson("/api/datasets/zenodo/export", {
+  const payload = await fetchJson("zenodoExport", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ dataset_id: datasetId }),
   });
-  result.textContent = `Draft Zenodo cree pour ${payload.dataset_id}: ${payload.record_url || "-"}`;
+  result.textContent = `Draft Zenodo cree pour ${text(payload.dataset_id)}: ${text(
+    payload.record_url,
+  )}`;
 }
 
 async function exportDatasetToOpenAire(datasetId) {
-  const result = document.querySelector("#openaire-export-result");
+  const result = query("#openaire-export-result");
   result.textContent = "Export OpenAIRE en cours...";
-  const payload = await fetchJson("/api/datasets/openaire/export", {
+  const payload = await fetchJson("openaireExport", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ dataset_id: datasetId }),
   });
-  result.textContent = `Package OpenAIRE cree pour ${payload.dataset_id}: ${payload.files.join(", ")}`;
+  result.textContent = `Package OpenAIRE cree pour ${text(payload.dataset_id)}: ${textList(
+    payload.files,
+  )}`;
 }
 
 async function init() {
-  state.architecture = await fetchJson("/api/architecture");
+  state.architecture = await fetchJson("architecture");
   renderAll();
   await refreshHealth();
 }
 
 document.addEventListener("click", (event) => {
-  if (event.target.matches("#refresh-health") || event.target.matches('[data-action="refresh"]')) {
+  const target = event.target instanceof Element ? event.target.closest("button") : null;
+  if (!target) {
+    return;
+  }
+  const action = target.dataset.action;
+  if (target.matches("#refresh-health") || action === "refresh") {
     refreshHealth().catch((error) => console.error(error));
   }
-  if (event.target.matches('[data-action="zenodo-export"]')) {
-    exportDatasetToZenodo(event.target.dataset.datasetId).catch((error) => {
-      document.querySelector("#zenodo-export-result").textContent = error.message;
+  if (action === "zenodo-export") {
+    exportDatasetToZenodo(target.dataset.datasetId).catch((error) => {
+      query("#zenodo-export-result").textContent = error.message;
     });
   }
-  if (event.target.matches('[data-action="openaire-export"]')) {
-    exportDatasetToOpenAire(event.target.dataset.datasetId).catch((error) => {
-      document.querySelector("#openaire-export-result").textContent = error.message;
+  if (action === "openaire-export") {
+    exportDatasetToOpenAire(target.dataset.datasetId).catch((error) => {
+      query("#openaire-export-result").textContent = error.message;
     });
   }
 });
 
 document.addEventListener("change", (event) => {
-  if (event.target.matches("#plane-filter")) {
-    state.activePlane = event.target.value;
+  const target = event.target;
+  if (target instanceof HTMLSelectElement && target.matches("#plane-filter")) {
+    state.activePlane = target.value;
     renderComponents();
   }
 });
 
 init().catch((error) => {
-  document.body.innerHTML = `<main class="fatal"><h1>Console indisponible</h1><p>${error.message}</p></main>`;
+  document.body.replaceChildren(
+    element("main", { className: "fatal" }, [
+      element("h1", { textContent: "Console indisponible" }),
+      element("p", { textContent: error.message }),
+    ]),
+  );
 });
