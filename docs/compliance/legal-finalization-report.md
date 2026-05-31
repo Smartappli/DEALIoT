@@ -37,10 +37,10 @@ organisational roles, jurisdictions, contracts and signatures:
 | CRA product classification and conformity path | product security / legal | `cra.product.lifecycle` |
 | AI Act inventory and risk class | AI governance / legal | `compliance.legal.dossier` |
 | Competent authority contacts and reporting templates | legal / security | `compliance.reporting.channels` |
-| Third-party sharing contracts and Zenodo publication approval | legal / research governance | `compliance.legal.dossier` |
+| Third-party sharing, Zenodo publication and OpenAIRE discovery approval | legal / research governance | `compliance.legal.dossier` |
 
 ## Final Operating Position
 
 The repository is finalised as a compliance-ready architecture. Production, external sharing,
-regulated intermediation, AI deployment, product-market release and Zenodo publication remain
-blocked until the corresponding approval records are completed and approved.
+regulated intermediation, AI deployment, product-market release, Zenodo publication and OpenAIRE
+discovery remain blocked until the corresponding approval records are completed and approved.
