@@ -40,6 +40,8 @@ DEALIoT uses a dedicated governance plane for DGA evidence:
 | `governance.transfer.notices` | unauthorised access, transfer or use notifications |
 | `governance.research.projects` | research protocol, objective, ethics status and access model |
 | `governance.research.outputs` | publications, derived datasets, models and disclosure review |
+| `governance.dataset.catalog` | shareable dataset catalogue, classification, access mode and FAIR metadata |
+| `governance.data_management_plans` | Data Management Plan for datasets, retention, sharing and preservation |
 | `compliance.scope.decisions` | DGA role and notification scope decision |
 | `compliance.reporting.channels` | competent authority, notification template and owner |
 
@@ -81,6 +83,7 @@ Default consumer policy:
   retrieval, conversion and withdrawal.
 - Register each research project before access, including principal investigator, institution,
   objective of general interest, data products, permission model and ethics status.
+- Register each shareable dataset and link it to a Data Management Plan before release.
 - Prefer derived, aggregated or pseudonymised research datasets over raw GPS, raw payloads and media.
 - Perform disclosure review before publishing datasets, reports, dashboards, models or derived
   features.

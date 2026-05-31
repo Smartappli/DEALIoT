@@ -94,6 +94,60 @@ function renderTopics() {
     .join("");
 }
 
+function renderDatasets() {
+  const datasets = document.querySelector("#dataset-table");
+  datasets.innerHTML = (state.architecture.datasets || [])
+    .map(
+      (dataset) => `
+        <tr>
+          <td>
+            <strong>${dataset.title}</strong>
+            <small>${dataset.dataset_id}</small>
+          </td>
+          <td>${dataset.dataset_type}</td>
+          <td>${dataset.classification}</td>
+          <td>${dataset.access_mode}</td>
+          <td>${dataset.dmp_id}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const dmps = document.querySelector("#dmp-table");
+  dmps.innerHTML = (state.architecture.data_management_plans || [])
+    .map(
+      (dmp) => `
+        <tr>
+          <td>
+            <strong>${dmp.dmp_id}</strong>
+            <small>${dmp.owner}</small>
+          </td>
+          <td>${dmp.project_id}</td>
+          <td>${pill(dmp.status, dmp.status)}</td>
+          <td>${dmp.access_policy}</td>
+          <td>${dmp.retention_policy}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const controls = document.querySelector("#dmp-control-list");
+  controls.innerHTML = (state.architecture.dmp_controls || [])
+    .map(
+      (control) => `
+        <article class="control">
+          <h3>${control.id}</h3>
+          <p>${control.control}</p>
+          <div class="meta">
+            ${pill(control.status, control.status)}
+            ${pill(control.evidence)}
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
 function renderIntermediation() {
   const flow = document.querySelector("#intermediation-flow");
   flow.innerHTML = state.architecture.intermediation_flow
@@ -446,6 +500,7 @@ function renderAll() {
   renderPlaneFilter();
   renderComponents();
   renderTopics();
+  renderDatasets();
   renderIntermediation();
   renderDataAct();
   renderResearch();
