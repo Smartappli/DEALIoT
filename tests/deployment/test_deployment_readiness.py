@@ -317,6 +317,17 @@ class DeploymentReadinessTests(unittest.TestCase):
             "AIRFLOW__API__SECRET_KEY",
         ):
             self.assertIn(required_secret, contract_text)
+        for required_evidence_topic in (
+            "security.incident.events",
+            "security.vulnerability.findings",
+            "security.sbom.attestations",
+            "resilience.backup.tests",
+            "resilience.operational.risk",
+            "resilience.third_party.risk",
+        ):
+            self.assertIn(required_evidence_topic, contract_text)
+        self.assertIn("required_security_resilience:", contract_text)
+        self.assertIn("dora_scope: required_if_financial_entity_or_ict_provider", contract_text)
 
     def test_kubernetes_production_wildfi_contract_is_explicit(self) -> None:
         contract = yaml.safe_load(
