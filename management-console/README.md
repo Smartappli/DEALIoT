@@ -8,6 +8,7 @@ It exposes:
 - HTTP/TCP health probes from inside the Compose or Kubernetes networks,
 - Kafka topic and data classification inventory,
 - DGA data products, access/permission evidence topics and readiness controls,
+- Data Act connected-product catalogue, user access and third-party sharing controls,
 - intermediation flow between raw data, applications and scientists,
 - research project, ethics and output disclosure controls,
 - runbook and operation catalogue,

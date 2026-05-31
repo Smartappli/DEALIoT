@@ -181,6 +181,11 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `governance.transfer.notices` | DGA unauthorised access/transfer/use notices | 6 | 3 |
 | `governance.research.projects` | Research project register and ethics status | 3 | 3 |
 | `governance.research.outputs` | Research outputs and disclosure review evidence | 6 | 3 |
+| `dataact.product.catalog` | Data Act connected-product and related-service catalogue | 3 | 3 |
+| `dataact.user.access.requests` | Data Act user access requests and decisions | 6 | 3 |
+| `dataact.third_party.sharing` | User-authorized third-party sharing evidence | 6 | 3 |
+| `dataact.user.exports` | User export and delivery evidence | 6 | 3 |
+| `dataact.safeguards` | Data Act security and trade-secret safeguards | 3 | 3 |
 | `kafkasql-journal-v3` | Apicurio KafkaSQL journal | 1 | 3 |
 | `kafkasql-snapshots-v3` | Apicurio KafkaSQL snapshots | 1 | 3 |
 | `registry-events-v3` | Apicurio registry events | 1 | 3 |
@@ -205,6 +210,11 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `governance.transfer.notices`
 - `governance.research.projects`
 - `governance.research.outputs`
+- `dataact.product.catalog`
+- `dataact.user.access.requests`
+- `dataact.third_party.sharing`
+- `dataact.user.exports`
+- `dataact.safeguards`
 
 ### WildFi ingestion
 
@@ -498,6 +508,7 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - [Backup and restore](docs/runbooks/backup-restore.md)
 - [Security hardening](docs/runbooks/security-hardening.md)
 - [Data Governance Act](docs/runbooks/data-governance-act.md)
+- [Data Act](docs/runbooks/data-act.md)
 
 ## 14. Recommended next steps
 
