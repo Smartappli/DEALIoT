@@ -6,7 +6,7 @@ import re
 from datetime import UTC, datetime
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib import error, request
 from urllib.parse import quote, urlparse
 
@@ -145,8 +145,7 @@ def build_zenodo_metadata(
         "upload_type": "dataset",
         "description": payload.get("description") or zenodo_description(dataset, dmp),
         "creators": default_creators(payload),
-        "publication_date": payload.get("publication_date")
-        or datetime.now(UTC).date().isoformat(),
+        "publication_date": payload.get("publication_date") or datetime.now(UTC).date().isoformat(),
         "access_right": access_right,
         "keywords": [
             "DEALIoT",
@@ -335,7 +334,8 @@ def export_dataset_to_zenodo(payload: dict[str, Any]) -> dict[str, Any]:
 
     deposition = _json_request("POST", f"{base_url}/deposit/depositions", token, {})
     deposition_id = deposition.get("id")
-    links = deposition.get("links") if isinstance(deposition.get("links"), dict) else {}
+    deposition_links = deposition.get("links")
+    links = cast(dict[str, Any], deposition_links) if isinstance(deposition_links, dict) else {}
     self_url = links.get("self") or f"{base_url}/deposit/depositions/{deposition_id}"
     bucket_url = links.get("bucket")
     if not bucket_url:
@@ -377,7 +377,10 @@ def export_dataset_to_zenodo(payload: dict[str, Any]) -> dict[str, Any]:
         published = _json_request("POST", publish_url, token)
 
     latest = published or updated
-    latest_links = latest.get("links") if isinstance(latest.get("links"), dict) else links
+    latest_links_value = latest.get("links")
+    latest_links = (
+        cast(dict[str, Any], latest_links_value) if isinstance(latest_links_value, dict) else links
+    )
     return {
         "status": "published" if published is not None else "draft_created",
         "repository": "Zenodo",

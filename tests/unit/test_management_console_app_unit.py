@@ -6,10 +6,11 @@ import sys
 import threading
 import unittest
 from contextlib import contextmanager
+from email.message import Message
 from http import HTTPStatus
 from http.server import ThreadingHTTPServer
 from pathlib import Path
-from typing import Self
+from typing import Self, cast
 from unittest.mock import Mock, patch
 from urllib import error, request
 
@@ -58,7 +59,10 @@ def running_console_server():
 
 def read_json(url: str) -> dict[str, object]:
     with request.urlopen(url, timeout=5) as response:  # noqa: S310
-        return json.loads(response.read().decode("utf-8"))
+        parsed = json.loads(response.read().decode("utf-8"))
+    if not isinstance(parsed, dict):
+        raise AssertionError("Expected JSON object response")
+    return cast(dict[str, object], parsed)
 
 
 class ManagementConsoleAppUnitTests(unittest.TestCase):
@@ -100,14 +104,14 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             "https://example.net",
             404,
             "not found",
-            hdrs=None,
+            hdrs=Message(),
             fp=io.BytesIO(b"missing"),
         )
         server_error = error.HTTPError(
             "https://example.net",
             500,
             "server error",
-            hdrs=None,
+            hdrs=Message(),
             fp=io.BytesIO(b"broken"),
         )
         with patch("management_console.app.request.urlopen", side_effect=not_found):
@@ -256,7 +260,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             "https://airflow.example",
             409,
             "conflict",
-            hdrs=None,
+            hdrs=Message(),
             fp=io.BytesIO(b"already exists"),
         )
         with (
@@ -305,8 +309,11 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             self.assertFalse(openaire_config["direct_upload_supported"])
 
             legal_compliance = read_json(f"{base_url}/api/legal-compliance")
+            default_policy = legal_compliance["default_policy"]
+            if not isinstance(default_policy, dict):
+                raise AssertionError("Expected default_policy to be a JSON object")
             self.assertEqual(
-                legal_compliance["default_policy"]["legal_verdict"],
+                default_policy["legal_verdict"],
                 "reviewable baseline, not legal certification",
             )
             self.assertIn("finalization_items", legal_compliance)
@@ -407,7 +414,10 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
 
 def read_json_from_request(req: request.Request) -> dict[str, object]:
     with request.urlopen(req, timeout=5) as response:  # noqa: S310
-        return json.loads(response.read().decode("utf-8"))
+        parsed = json.loads(response.read().decode("utf-8"))
+    if not isinstance(parsed, dict):
+        raise AssertionError("Expected JSON object response")
+    return cast(dict[str, object], parsed)
 
 
 if __name__ == "__main__":
