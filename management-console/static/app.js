@@ -108,9 +108,19 @@ function renderDatasets() {
           <td>${dataset.classification}</td>
           <td>${dataset.access_mode}</td>
           <td>${dataset.dmp_id}</td>
+          <td>
+            <button type="button" data-action="zenodo-export" data-dataset-id="${dataset.dataset_id}">
+              Draft
+            </button>
+          </td>
         </tr>
       `,
     )
+    .join("");
+
+  const zenodoPolicy = document.querySelector("#zenodo-export-policy");
+  zenodoPolicy.innerHTML = (state.architecture.zenodo_export_policy || [])
+    .map((control) => pill(control.id, control.status))
     .join("");
 
   const dmps = document.querySelector("#dmp-table");
@@ -535,6 +545,17 @@ async function refreshHealth() {
   renderComponents();
 }
 
+async function exportDatasetToZenodo(datasetId) {
+  const result = document.querySelector("#zenodo-export-result");
+  result.textContent = "Export Zenodo en cours...";
+  const payload = await fetchJson("/api/datasets/zenodo/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dataset_id: datasetId }),
+  });
+  result.textContent = `Draft Zenodo cree pour ${payload.dataset_id}: ${payload.record_url || "-"}`;
+}
+
 async function init() {
   state.architecture = await fetchJson("/api/architecture");
   renderAll();
@@ -544,6 +565,11 @@ async function init() {
 document.addEventListener("click", (event) => {
   if (event.target.matches("#refresh-health") || event.target.matches('[data-action="refresh"]')) {
     refreshHealth().catch((error) => console.error(error));
+  }
+  if (event.target.matches('[data-action="zenodo-export"]')) {
+    exportDatasetToZenodo(event.target.dataset.datasetId).catch((error) => {
+      document.querySelector("#zenodo-export-result").textContent = error.message;
+    });
   }
 });
 

@@ -8,6 +8,7 @@ It exposes:
 - HTTP/TCP health probes from inside the Compose or Kubernetes networks,
 - Kafka topic and data classification inventory,
 - dataset catalogue, FAIR metadata and Data Management Plan controls,
+- Zenodo dataset draft export with DMP manifest and publication gates,
 - DGA data products, access/permission evidence topics and readiness controls,
 - Data Act connected-product catalogue, user access and third-party sharing controls,
 - intermediation flow between raw data, applications and scientists,
