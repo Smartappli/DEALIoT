@@ -443,6 +443,21 @@ function renderRunbooks() {
 }
 
 function renderCompliance() {
+  const finalization = document.querySelector("#legal-finalization-table");
+  finalization.innerHTML = (state.architecture.legal_finalization_items || [])
+    .map(
+      (item) => `
+        <tr>
+          <td><strong>${item.id}</strong></td>
+          <td>${pill(item.status, item.status)}</td>
+          <td>${item.owner}</td>
+          <td>${item.decision}</td>
+          <td>${item.evidence}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
   const legalDossier = document.querySelector("#legal-dossier-table");
   legalDossier.innerHTML = (state.architecture.legal_compliance_dossier || [])
     .map(
