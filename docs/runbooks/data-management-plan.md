@@ -12,6 +12,7 @@ must still be recorded by the accountable owner.
 | `governance.data_management_plans` | project DMP, datasets, legal basis, access, sharing, retention and preservation plan |
 | `governance.research.projects` | research objective, investigator, ethics status and permission model |
 | `governance.research.outputs` | dataset publications, models, reports and disclosure review |
+| `governance.repository.exports` | repository and Zenodo export evidence, DOI and publication gate |
 
 Do not store raw data in these topics. They contain metadata and governance evidence only.
 
@@ -50,4 +51,5 @@ Before releasing a dataset to an application, third party, scientist or reposito
 3. Confirm legal basis and Data Act entitlement where applicable.
 4. Prefer derived, minimised or aggregated datasets over raw GPS, raw payloads and media.
 5. Complete disclosure review before publication.
-6. Log export or sharing evidence in the Data Act or DGA evidence topics.
+6. Create a Zenodo draft only after catalogue and DMP checks.
+7. Log export or sharing evidence in the Data Act, DGA or repository export topics.

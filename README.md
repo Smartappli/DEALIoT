@@ -544,6 +544,7 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - [Data Governance Act](docs/runbooks/data-governance-act.md)
 - [Data Act](docs/runbooks/data-act.md)
 - [Dataset catalogue and Data Management Plan](docs/runbooks/data-management-plan.md)
+- [Zenodo dataset export](docs/runbooks/zenodo-export.md)
 
 ## 14. Recommended next steps
 
