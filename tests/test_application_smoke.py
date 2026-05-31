@@ -45,13 +45,19 @@ class ApplicationSmokeTests(unittest.TestCase):
     def test_expected_workflows_are_present(self) -> None:
         workflow_dir = REPO_ROOT / ".github" / "workflows"
         expected_workflows = [
+            "bandit.yml",
+            "build-and-push-images.yml",
             "ci.yml",
-            "shellcheck.yml",
-            "compose-deployment-test.yml",
-            "production-deployment-test.yml",
-            "e2e-smoke.yml",
+            "codacy.yml",
             "codeql.yml",
+            "compose-deployment-test.yml",
+            "e2e-smoke.yml",
+            "ossar.yml",
+            "osv-scanner.yml",
+            "production-deployment-test.yml",
             "renovate.yml",
+            "shellcheck.yml",
+            "sonarqube.yml",
         ]
 
         for workflow in expected_workflows:
