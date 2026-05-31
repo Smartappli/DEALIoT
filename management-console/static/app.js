@@ -94,6 +94,38 @@ function renderTopics() {
     .join("");
 }
 
+function renderIntermediation() {
+  const flow = document.querySelector("#intermediation-flow");
+  flow.innerHTML = state.architecture.intermediation_flow
+    .map(
+      (step) => `
+        <article class="item">
+          <h3>${step.step}. ${step.name}</h3>
+          <p>${step.control}</p>
+          <div class="meta">${pill(step.source)}</div>
+        </article>
+      `,
+    )
+    .join("");
+
+  const profiles = document.querySelector("#consumer-profile-table");
+  profiles.innerHTML = state.architecture.consumer_profiles
+    .map(
+      (profile) => `
+        <tr>
+          <td>
+            <strong>${profile.name}</strong>
+            <small>${profile.profile_id}</small>
+          </td>
+          <td>${profile.consumer_type}</td>
+          <td>${profile.default_access.join(", ")}</td>
+          <td>${profile.raw_access}</td>
+        </tr>
+      `,
+    )
+    .join("");
+}
+
 function renderResearch() {
   const context = state.architecture.research_context;
   const contextContainer = document.querySelector("#research-context");
@@ -236,6 +268,7 @@ function renderAll() {
   renderPlaneFilter();
   renderComponents();
   renderTopics();
+  renderIntermediation();
   renderResearch();
   renderDga();
   renderOperations();

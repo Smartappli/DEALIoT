@@ -40,6 +40,15 @@ data:
           unauthorised_transfer_notice_log: governance.transfer.notices
           research_project_register: governance.research.projects
           research_output_register: governance.research.outputs
+          mediated_access_required_for:
+            - applications
+            - internal_scientists
+            - external_researchers
+          raw_access_default: denied
+          preferred_delivery:
+            - derived_topics
+            - minimised_exports
+            - controlled_object_access
       mqtt:
         endpoint_config_keys:
           - MQTT_HOST

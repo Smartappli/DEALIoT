@@ -9,7 +9,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "management-console"))
 
 from management_console.app import configured_probe, first_host_port  # noqa: E402
-from management_console.catalog import catalog_payload, dga_payload, research_payload  # noqa: E402
+from management_console.catalog import (  # noqa: E402
+    catalog_payload,
+    dga_payload,
+    intermediation_payload,
+    research_payload,
+)
 
 
 class ManagementConsoleUnitTests(unittest.TestCase):
@@ -20,6 +25,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         operation_ids = {operation["id"] for operation in payload["operations"]}
         data_product_ids = {product["product_id"] for product in payload["data_products"]}
         research_control_ids = {control["id"] for control in payload["research_controls"]}
+        profile_ids = {profile["profile_id"] for profile in payload["consumer_profiles"]}
 
         self.assertIn("kafka", component_ids)
         self.assertIn("airflow", component_ids)
@@ -32,8 +38,11 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.research.outputs", topic_names)
         self.assertIn("telemetry.raw.gps", data_product_ids)
         self.assertIn("research-protocol", research_control_ids)
+        self.assertIn("application.operational", profile_ids)
+        self.assertIn("researcher.external", profile_ids)
         self.assertIn("refresh-health", operation_ids)
         self.assertIn("review-dga-readiness", operation_ids)
+        self.assertIn("review-intermediation-flow", operation_ids)
         self.assertIn("review-research-readiness", operation_ids)
         self.assertIn("trigger-media-backfill", operation_ids)
 
@@ -59,6 +68,17 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.research.outputs", topic_names)
         self.assertIn("ethics-review", control_ids)
         self.assertIn("publication-review", control_ids)
+
+    def test_intermediation_payload_routes_consumers_through_mediated_access(self) -> None:
+        payload = intermediation_payload()
+        profile_ids = {profile["profile_id"] for profile in payload["consumer_profiles"]}
+        evidence = set(payload["default_policy"]["evidence"])
+
+        self.assertEqual(payload["default_policy"]["raw_topics"], "restricted")
+        self.assertIn("application.operational", profile_ids)
+        self.assertIn("researcher.internal", profile_ids)
+        self.assertIn("governance.access.requests", evidence)
+        self.assertIn("governance.intermediation.log", evidence)
 
     def test_first_host_port_accepts_common_kafka_listener_prefixes(self) -> None:
         self.assertEqual(
