@@ -280,7 +280,7 @@ def datacite_xml_bytes(metadata: dict[str, Any]) -> bytes:
                 relationType=item["relation_type"],
             )
 
-    return cast(bytes, tostring(resource, encoding="utf-8", xml_declaration=True))
+    return cast("bytes", tostring(resource, encoding="utf-8", xml_declaration=True))
 
 
 def build_openaire_manifest(

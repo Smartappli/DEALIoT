@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, BinaryIO, Protocol, cast
+from typing import Any, cast
 from urllib import error, request
 from urllib.parse import urlparse
 
@@ -42,15 +42,6 @@ from management_console.zenodo import (
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
 DEFAULT_TIMEOUT_SECONDS = 2.0
 MAX_REQUEST_BYTES = 65536
-
-
-class HeaderReader(Protocol):
-    def get(self, key: str, default: str | None = None) -> str | None: ...
-
-
-class JsonBodyReader(Protocol):
-    headers: HeaderReader
-    rfile: BinaryIO
 
 
 def now_iso() -> str:
@@ -263,7 +254,7 @@ def trigger_media_backfill(payload: dict[str, Any]) -> tuple[int, dict[str, Any]
         return HTTPStatus.BAD_GATEWAY, {"error": "airflow_unreachable", "detail": str(exc)}
 
 
-def read_json_body(handler: JsonBodyReader) -> dict[str, Any]:
+def read_json_body(handler: Any) -> dict[str, Any]:
     length = int(handler.headers.get("Content-Length", "0") or "0")
     if length > MAX_REQUEST_BYTES:
         raise ValueError("request body too large")
@@ -273,7 +264,7 @@ def read_json_body(handler: JsonBodyReader) -> dict[str, Any]:
     parsed = json.loads(body.decode("utf-8"))
     if not isinstance(parsed, dict):
         raise TypeError("request body must be a JSON object")
-    return cast(dict[str, Any], parsed)
+    return cast("dict[str, Any]", parsed)
 
 
 class ManagementConsoleHandler(BaseHTTPRequestHandler):
