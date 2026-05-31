@@ -240,14 +240,17 @@ button:hover,
 
 .in_scope,
 .configured,
-.tested {
+.tested,
+.active,
+.approved {
   background: #e7f6ed;
   color: var(--green);
 }
 
 .pending,
 .out_of_scope,
-.draft {
+.draft,
+.needs_review {
   background: #edf1f7;
   color: #475467;
 }
