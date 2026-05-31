@@ -6,7 +6,7 @@ import re
 from datetime import UTC, datetime
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlparse
 from xml.etree.ElementTree import Element, SubElement, register_namespace, tostring
 
@@ -210,8 +210,7 @@ def datacite_xml_bytes(metadata: dict[str, Any]) -> bytes:
         qname("resource"),
         {
             f"{{{XSI_NS}}}schemaLocation": (
-                f"{DATACITE_NS} "
-                "https://schema.datacite.org/meta/kernel-4/metadata.xsd"
+                f"{DATACITE_NS} https://schema.datacite.org/meta/kernel-4/metadata.xsd"
             )
         },
     )
@@ -281,7 +280,7 @@ def datacite_xml_bytes(metadata: dict[str, Any]) -> bytes:
                 relationType=item["relation_type"],
             )
 
-    return tostring(resource, encoding="utf-8", xml_declaration=True)
+    return cast(bytes, tostring(resource, encoding="utf-8", xml_declaration=True))
 
 
 def build_openaire_manifest(

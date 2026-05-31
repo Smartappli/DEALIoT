@@ -4,6 +4,7 @@ import io
 import sys
 import tempfile
 import unittest
+from email.message import Message
 from http import HTTPStatus
 from pathlib import Path
 from typing import Self
@@ -306,7 +307,7 @@ class ZenodoExportUnitTests(unittest.TestCase):
             "https://zenodo.example",
             400,
             "bad",
-            hdrs=None,
+            hdrs=Message(),
             fp=io.BytesIO(b"bad request"),
         )
         req = request.Request("https://zenodo.example", method="GET")

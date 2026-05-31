@@ -1,8 +1,10 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="keywords"
+          content="DEALIoT, IoT, gouvernance des donnees, Data Act, DGA, NIS2, DORA, CRA, RGPD" />
     <title>DEALIoT Management Console</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
@@ -29,7 +31,6 @@
         <a href="#compliance">Conformite</a>
       </nav>
     </aside>
-
     <main>
       <header class="topbar">
         <div>
@@ -38,7 +39,6 @@
         </div>
         <button id="refresh-health" type="button">Actualiser</button>
       </header>
-
       <section id="overview" class="metric-grid" aria-label="Synthese">
         <article class="metric">
           <span>Services</span>
@@ -57,7 +57,6 @@
           <strong id="metric-topics">0</strong>
         </article>
       </section>
-
       <section id="topology" class="panel">
         <div class="section-head">
           <h2>Architecture</h2>
@@ -67,7 +66,6 @@
         </div>
         <div id="component-grid" class="component-grid"></div>
       </section>
-
       <section id="topics" class="panel">
         <div class="section-head">
           <h2>Catalogue data</h2>
@@ -82,11 +80,11 @@
                 <th>Retention</th>
               </tr>
             </thead>
-            <tbody id="topic-table"></tbody>
+            <tbody id="topic-table">
+            </tbody>
           </table>
         </div>
       </section>
-
       <section id="datasets" class="panel">
         <div class="section-head">
           <h2>Datasets et DMP</h2>
@@ -104,7 +102,8 @@
                 <th>OpenAIRE</th>
               </tr>
             </thead>
-            <tbody id="dataset-table"></tbody>
+            <tbody id="dataset-table">
+            </tbody>
           </table>
         </div>
         <div id="zenodo-export-policy" class="principles"></div>
@@ -122,12 +121,12 @@
                 <th>Conservation</th>
               </tr>
             </thead>
-            <tbody id="dmp-table"></tbody>
+            <tbody id="dmp-table">
+            </tbody>
           </table>
         </div>
         <div id="dmp-control-list" class="compliance-grid"></div>
       </section>
-
       <section id="intermediation" class="panel">
         <div class="section-head">
           <h2>Intermediation</h2>
@@ -143,11 +142,11 @@
                 <th>Raw access</th>
               </tr>
             </thead>
-            <tbody id="consumer-profile-table"></tbody>
+            <tbody id="consumer-profile-table">
+            </tbody>
           </table>
         </div>
       </section>
-
       <section id="data-act" class="panel">
         <div class="section-head">
           <h2>Data Act</h2>
@@ -163,7 +162,8 @@
                 <th>Partage tiers</th>
               </tr>
             </thead>
-            <tbody id="data-act-product-table"></tbody>
+            <tbody id="data-act-product-table">
+            </tbody>
           </table>
         </div>
         <div class="table-wrap">
@@ -176,12 +176,12 @@
                 <th>Preuves</th>
               </tr>
             </thead>
-            <tbody id="data-act-channel-table"></tbody>
+            <tbody id="data-act-channel-table">
+            </tbody>
           </table>
         </div>
         <div id="data-act-obligation-list" class="compliance-grid"></div>
       </section>
-
       <section id="research" class="panel">
         <div class="section-head">
           <h2>Recherche</h2>
@@ -190,7 +190,6 @@
         <div id="research-project-list" class="component-grid"></div>
         <div id="research-control-list" class="compliance-grid"></div>
       </section>
-
       <section id="dga" class="panel">
         <div class="section-head">
           <h2>Data Governance Act</h2>
@@ -206,12 +205,12 @@
                 <th>Controle</th>
               </tr>
             </thead>
-            <tbody id="data-product-table"></tbody>
+            <tbody id="data-product-table">
+            </tbody>
           </table>
         </div>
         <div id="dga-obligation-list" class="compliance-grid"></div>
       </section>
-
       <section id="security-resilience" class="panel">
         <div class="section-head">
           <h2>Securite et resilience</h2>
@@ -228,7 +227,8 @@
                 <th>Preuve</th>
               </tr>
             </thead>
-            <tbody id="security-control-table"></tbody>
+            <tbody id="security-control-table">
+            </tbody>
           </table>
         </div>
         <div class="table-wrap">
@@ -241,11 +241,11 @@
                 <th>Retention</th>
               </tr>
             </thead>
-            <tbody id="security-topic-table"></tbody>
+            <tbody id="security-topic-table">
+            </tbody>
           </table>
         </div>
       </section>
-
       <section id="operations" class="panel two-col">
         <div>
           <div class="section-head">
@@ -260,7 +260,6 @@
           <div id="runbook-list" class="stack"></div>
         </div>
       </section>
-
       <section id="compliance" class="panel">
         <div class="section-head">
           <h2>Conformite</h2>
@@ -279,7 +278,8 @@
                 <th>Preuve</th>
               </tr>
             </thead>
-            <tbody id="legal-finalization-table"></tbody>
+            <tbody id="legal-finalization-table">
+            </tbody>
           </table>
         </div>
         <div class="section-head subhead">
@@ -296,7 +296,8 @@
                 <th>Obligatoire avant</th>
               </tr>
             </thead>
-            <tbody id="legal-dossier-table"></tbody>
+            <tbody id="legal-dossier-table">
+            </tbody>
           </table>
         </div>
         <div id="legal-release-gate-list" class="compliance-grid"></div>
@@ -310,7 +311,8 @@
                 <th>Chemin</th>
               </tr>
             </thead>
-            <tbody id="legal-template-table"></tbody>
+            <tbody id="legal-template-table">
+            </tbody>
           </table>
         </div>
         <div class="table-wrap">
@@ -323,7 +325,8 @@
                 <th>Action</th>
               </tr>
             </thead>
-            <tbody id="compliance-readiness-table"></tbody>
+            <tbody id="compliance-readiness-table">
+            </tbody>
           </table>
         </div>
         <div class="table-wrap">
@@ -336,7 +339,8 @@
                 <th>Preuve</th>
               </tr>
             </thead>
-            <tbody id="compliance-scope-table"></tbody>
+            <tbody id="compliance-scope-table">
+            </tbody>
           </table>
         </div>
         <div class="table-wrap">
@@ -349,7 +353,8 @@
                 <th>Preuve</th>
               </tr>
             </thead>
-            <tbody id="compliance-reporting-table"></tbody>
+            <tbody id="compliance-reporting-table">
+            </tbody>
           </table>
         </div>
         <div class="table-wrap">
@@ -362,13 +367,13 @@
                 <th>Action architecture</th>
               </tr>
             </thead>
-            <tbody id="additional-legislation-table"></tbody>
+            <tbody id="additional-legislation-table">
+            </tbody>
           </table>
         </div>
         <div id="compliance-list" class="compliance-grid"></div>
       </section>
     </main>
-
     <script src="/app.js" defer></script>
   </body>
 </html>
