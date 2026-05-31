@@ -83,6 +83,7 @@ class PlatformIntegrationTests(unittest.TestCase):
             "compliance.scope.decisions",
             "compliance.control.assessments",
             "compliance.reporting.channels",
+            "compliance.legal.dossier",
             "cra.product.lifecycle",
         ]
 

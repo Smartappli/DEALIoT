@@ -331,10 +331,12 @@ class DeploymentReadinessTests(unittest.TestCase):
             "compliance.scope.decisions",
             "compliance.control.assessments",
             "compliance.reporting.channels",
+            "compliance.legal.dossier",
             "cra.product.lifecycle",
         ):
             self.assertIn(required_evidence_topic, contract_text)
         self.assertIn("required_security_resilience:", contract_text)
+        self.assertIn("required_legal_compliance:", contract_text)
         self.assertIn("dataset_catalog: governance.dataset.catalog", contract_text)
         self.assertIn(
             "data_management_plan_register: governance.data_management_plans",
@@ -342,6 +344,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
         self.assertIn("repository_export_log: governance.repository.exports", contract_text)
         self.assertIn("repository_publication: requires_dmp_and_legal_review", contract_text)
+        self.assertIn("legal_dossier_register: compliance.legal.dossier", contract_text)
+        self.assertIn("zenodo_publication: requires_legal_review_approved", contract_text)
         self.assertIn("scope_decision_register: compliance.scope.decisions", contract_text)
         self.assertIn("dora_scope: required_if_financial_entity_or_ict_provider", contract_text)
         self.assertIn("required_legal_applicability:", contract_text)
