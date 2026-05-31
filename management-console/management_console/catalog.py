@@ -1512,6 +1512,10 @@ def catalog_payload() -> dict[str, Any]:
         "dga_obligations": DGA_OBLIGATIONS,
         "security_resilience_controls": SECURITY_RESILIENCE_CONTROLS,
         "security_resilience_gates": SECURITY_RESILIENCE_GATES,
+        "compliance_scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
+        "compliance_reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
+        "compliance_readiness": COMPLIANCE_READINESS,
+        "cra_product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "nis2_obligations": NIS2_OBLIGATIONS,
         "dora_obligations": DORA_OBLIGATIONS,
         "cra_obligations": CRA_OBLIGATIONS,
@@ -1536,7 +1540,13 @@ def security_resilience_payload() -> dict[str, Any]:
             for topic in TOPICS
             if topic["name"].startswith("security.")
             or topic["name"].startswith("resilience.")
+            or topic["name"].startswith("compliance.")
+            or topic["name"].startswith("cra.")
         ],
+        "scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
+        "reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
+        "readiness": COMPLIANCE_READINESS,
+        "cra_product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "scope_notes": [
             "NIS2 depends on sector, entity size and national transposition.",
             "DORA applies when financial entity or ICT third-party provider scope is confirmed.",
@@ -1549,6 +1559,26 @@ def security_resilience_payload() -> dict[str, Any]:
             "supply_chain": "SBOM, provenance and signature evidence required for releases",
             "resilience": "restore tests and supplier exit plans required before go-live",
         },
+    }
+
+
+def compliance_payload() -> dict[str, Any]:
+    return {
+        "readiness": COMPLIANCE_READINESS,
+        "controls": COMPLIANCE_CONTROLS,
+        "scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
+        "reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
+        "control_assessment_topic": "compliance.control.assessments",
+        "evidence_topics": [
+            topic
+            for topic in TOPICS
+            if topic["name"].startswith("compliance.")
+            or topic["name"] in {"dataact.legal_basis.checks", "cra.product.lifecycle"}
+        ],
+        "verdict": (
+            "technical evidence baseline only; legal compliance remains partial until "
+            "scope, procedures, contracts and operating evidence are recorded"
+        ),
     }
 
 
@@ -1584,6 +1614,7 @@ def cra_payload() -> dict[str, Any]:
     payload = security_resilience_payload()
     return {
         "obligations": CRA_OBLIGATIONS,
+        "product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "controls": [
             control
             for control in SECURITY_RESILIENCE_CONTROLS
@@ -1606,6 +1637,7 @@ def data_act_payload() -> dict[str, Any]:
             if topic["name"].startswith("dataact.")
             or topic["name"] in {"governance.intermediation.log", "governance.transfer.notices"}
         ],
+        "legal_basis_topic": "dataact.legal_basis.checks",
         "default_policy": {
             "raw_topics": "denied by default unless scope, entitlement and safeguards are approved",
             "preferred_delivery": [
@@ -1634,7 +1666,8 @@ def dga_payload() -> dict[str, Any]:
         "evidence_topics": [
             topic
             for topic in TOPICS
-            if topic["name"].startswith("governance.") or topic["name"] == "dlq.events"
+            if topic["name"].startswith("governance.")
+            or topic["name"] in {"dlq.events", "compliance.reporting.channels"}
         ],
         "architectural_principles": [
             "separate governance plane for intermediation metadata",
