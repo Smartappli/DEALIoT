@@ -68,6 +68,14 @@ class PlatformIntegrationTests(unittest.TestCase):
             "dataact.third_party.sharing",
             "dataact.user.exports",
             "dataact.safeguards",
+            "security.asset.inventory",
+            "security.incident.events",
+            "security.vulnerability.findings",
+            "security.sbom.attestations",
+            "security.patch.events",
+            "resilience.backup.tests",
+            "resilience.operational.risk",
+            "resilience.third_party.risk",
         ]
 
         for topic in expected_topics:
