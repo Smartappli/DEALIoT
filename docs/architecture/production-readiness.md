@@ -52,7 +52,7 @@ The repository currently enforces:
 - Swarm production stack render.
 - Swarm smoke deployment.
 - kind smoke deployment for the bridge image.
-- Python coverage threshold of 80% in the Sonar workflow.
+- Python coverage threshold of 90% in the Sonar workflow.
 
 ## Remaining Before Real Go-Live
 

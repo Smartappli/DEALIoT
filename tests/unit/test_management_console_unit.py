@@ -52,6 +52,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.research.outputs", topic_names)
         self.assertIn("governance.dataset.catalog", topic_names)
         self.assertIn("governance.data_management_plans", topic_names)
+        self.assertIn("governance.repository.exports", topic_names)
         self.assertIn("dataact.product.catalog", topic_names)
         self.assertIn("dataact.user.access.requests", topic_names)
         self.assertIn("dataact.third_party.sharing", topic_names)
@@ -70,6 +71,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("review-dga-readiness", operation_ids)
         self.assertIn("review-data-act-readiness", operation_ids)
         self.assertIn("review-dataset-dmp-readiness", operation_ids)
+        self.assertIn("export-dataset-zenodo", operation_ids)
         self.assertIn("review-intermediation-flow", operation_ids)
         self.assertIn("review-research-readiness", operation_ids)
         self.assertIn("review-security-resilience-readiness", operation_ids)
@@ -130,9 +132,18 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dmp-required", control_ids)
         self.assertIn("governance.dataset.catalog", evidence_topics)
         self.assertIn("governance.data_management_plans", evidence_topics)
+        self.assertIn("governance.repository.exports", evidence_topics)
         self.assertEqual(
             payload["default_policy"]["raw_dataset_access"],
             "restricted by default",
+        )
+        self.assertEqual(
+            payload["default_policy"]["zenodo_publish"],
+            "draft first; legal_review_approved required for publication",
+        )
+        self.assertIn(
+            "draft-first",
+            {control["id"] for control in payload["zenodo_export_policy"]},
         )
 
     def test_data_act_payload_exposes_user_access_and_third_party_sharing(self) -> None:
@@ -147,6 +158,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dataact.user.exports", evidence_topics)
         self.assertIn("dataact.legal_basis.checks", evidence_topics)
         self.assertIn("governance.dataset.catalog", evidence_topics)
+        self.assertIn("governance.repository.exports", evidence_topics)
         self.assertIn("dataact.direct-access", channel_ids)
         self.assertIn("dataact.third-party-transfer", channel_ids)
         self.assertIn("user-access", obligation_ids)
@@ -216,6 +228,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("gdpr-dpia-rights", control_ids)
         self.assertIn("eprivacy-terminal-access", control_ids)
         self.assertIn("product-market-scope", control_ids)
+        self.assertIn("zenodo-repository-export", control_ids)
         self.assertIn("technical evidence baseline only", payload["verdict"])
 
     def test_compliance_ui_exposes_additional_legislation_matrix(self) -> None:
@@ -229,6 +242,9 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn('id="additional-legislation-table"', html)
         self.assertIn("additional_legislation", javascript)
         self.assertIn("#additional-legislation-table", javascript)
+        self.assertIn('id="zenodo-export-policy"', html)
+        self.assertIn("zenodo_export_policy", javascript)
+        self.assertIn("zenodo-export", javascript)
 
     def test_research_payload_exposes_research_collection_context(self) -> None:
         payload = research_payload()
@@ -240,6 +256,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.research.outputs", topic_names)
         self.assertIn("governance.dataset.catalog", topic_names)
         self.assertIn("governance.data_management_plans", topic_names)
+        self.assertIn("governance.repository.exports", topic_names)
         self.assertIn("ethics-review", control_ids)
         self.assertIn("publication-review", control_ids)
         self.assertIn("data-management-plan", control_ids)

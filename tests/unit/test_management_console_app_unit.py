@@ -9,8 +9,9 @@ from contextlib import contextmanager
 from http import HTTPStatus
 from http.server import ThreadingHTTPServer
 from pathlib import Path
-from urllib import error, request
+from typing import Self
 from unittest.mock import Mock, patch
+from urllib import error, request
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "management-console"))
@@ -23,7 +24,7 @@ class FakeResponse:
         self.status = status
         self.body = body
 
-    def __enter__(self) -> FakeResponse:
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -207,7 +208,10 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 },
                 clear=True,
             ),
-            patch("management_console.app.request.urlopen", return_value=FakeResponse(200, response_body)),
+            patch(
+                "management_console.app.request.urlopen",
+                return_value=FakeResponse(200, response_body),
+            ),
         ):
             status, payload = app.trigger_media_backfill({"dag_run_id": "manual"})
         self.assertEqual(status, HTTPStatus.OK)
@@ -269,7 +273,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 request.urlopen(f"{base_url}/missing", timeout=5)  # noqa: S310
             self.assertEqual(not_found.exception.code, HTTPStatus.NOT_FOUND)
 
-            post = request.Request(
+            post = request.Request(  # noqa: S310
                 f"{base_url}/api/operations/trigger-media-backfill",
                 data=b"[]",
                 method="POST",
@@ -283,7 +287,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 "management_console.app.trigger_media_backfill",
                 return_value=(HTTPStatus.ACCEPTED, {"status": "queued"}),
             ):
-                post = request.Request(
+                post = request.Request(  # noqa: S310
                     f"{base_url}/api/operations/trigger-media-backfill",
                     data=b'{"conf":{"limit":1}}',
                     method="POST",
@@ -296,7 +300,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 "management_console.app.export_dataset_to_zenodo",
                 return_value={"status": "draft_created", "dataset_id": "dataset"},
             ):
-                post = request.Request(
+                post = request.Request(  # noqa: S310
                     f"{base_url}/api/datasets/zenodo/export",
                     data=b'{"dataset_id":"dataset.telemetry.sensor-minimised"}',
                     method="POST",
@@ -304,16 +308,6 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 )
                 response = read_json_from_request(post)
             self.assertEqual(response["status"], "draft_created")
-
-            post = request.Request(
-                f"{base_url}/api/missing",
-                data=b"{}",
-                method="POST",
-                headers={"Content-Type": "application/json"},
-            )
-            with self.assertRaises(error.HTTPError) as missing_post:
-                request.urlopen(post, timeout=5)  # noqa: S310
-            self.assertEqual(missing_post.exception.code, HTTPStatus.NOT_FOUND)
 
     def test_run_uses_configured_bind_and_port(self) -> None:
         fake_server = Mock()

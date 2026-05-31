@@ -320,6 +320,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         for required_evidence_topic in (
             "governance.dataset.catalog",
             "governance.data_management_plans",
+            "governance.repository.exports",
             "dataact.legal_basis.checks",
             "security.incident.events",
             "security.vulnerability.findings",
@@ -339,6 +340,8 @@ class DeploymentReadinessTests(unittest.TestCase):
             "data_management_plan_register: governance.data_management_plans",
             contract_text,
         )
+        self.assertIn("repository_export_log: governance.repository.exports", contract_text)
+        self.assertIn("repository_publication: requires_dmp_and_legal_review", contract_text)
         self.assertIn("scope_decision_register: compliance.scope.decisions", contract_text)
         self.assertIn("dora_scope: required_if_financial_entity_or_ict_provider", contract_text)
         self.assertIn("required_legal_applicability:", contract_text)

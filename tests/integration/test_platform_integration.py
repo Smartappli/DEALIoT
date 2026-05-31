@@ -65,6 +65,7 @@ class PlatformIntegrationTests(unittest.TestCase):
             "governance.research.outputs",
             "governance.dataset.catalog",
             "governance.data_management_plans",
+            "governance.repository.exports",
             "dataact.product.catalog",
             "dataact.user.access.requests",
             "dataact.third_party.sharing",
