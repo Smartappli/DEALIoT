@@ -14,6 +14,7 @@ from management_console.catalog import (  # noqa: E402
     compliance_payload,
     cra_payload,
     data_act_payload,
+    dataset_payload,
     dga_payload,
     dora_payload,
     intermediation_payload,
@@ -30,6 +31,8 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         topic_names = {topic["name"] for topic in payload["topics"]}
         operation_ids = {operation["id"] for operation in payload["operations"]}
         data_product_ids = {product["product_id"] for product in payload["data_products"]}
+        dataset_ids = {dataset["dataset_id"] for dataset in payload["datasets"]}
+        dmp_ids = {dmp["dmp_id"] for dmp in payload["data_management_plans"]}
         data_act_products = {
             product["product_id"] for product in payload["data_act_connected_products"]
         }
@@ -46,17 +49,23 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.intermediation.log", topic_names)
         self.assertIn("governance.research.projects", topic_names)
         self.assertIn("governance.research.outputs", topic_names)
+        self.assertIn("governance.dataset.catalog", topic_names)
+        self.assertIn("governance.data_management_plans", topic_names)
         self.assertIn("dataact.product.catalog", topic_names)
         self.assertIn("dataact.user.access.requests", topic_names)
         self.assertIn("dataact.third_party.sharing", topic_names)
         self.assertIn("telemetry.raw.gps", data_product_ids)
+        self.assertIn("dataset.telemetry.raw-gps-restricted", dataset_ids)
+        self.assertIn("dmp.livestock-behaviour.template", dmp_ids)
         self.assertIn("connected-device.telemetry", data_act_products)
         self.assertIn("research-protocol", research_control_ids)
+        self.assertIn("data-management-plan", research_control_ids)
         self.assertIn("application.operational", profile_ids)
         self.assertIn("researcher.external", profile_ids)
         self.assertIn("refresh-health", operation_ids)
         self.assertIn("review-dga-readiness", operation_ids)
         self.assertIn("review-data-act-readiness", operation_ids)
+        self.assertIn("review-dataset-dmp-readiness", operation_ids)
         self.assertIn("review-intermediation-flow", operation_ids)
         self.assertIn("review-research-readiness", operation_ids)
         self.assertIn("review-security-resilience-readiness", operation_ids)
@@ -96,8 +105,29 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.permission.events", evidence_topics)
         self.assertIn("governance.intermediation.log", evidence_topics)
         self.assertIn("governance.research.projects", evidence_topics)
+        self.assertIn("governance.dataset.catalog", evidence_topics)
+        self.assertIn("governance.data_management_plans", evidence_topics)
         self.assertIn("neutrality", obligation_ids)
+        self.assertIn("dataset-catalog-dmp", obligation_ids)
         self.assertIn("intermediation-log", obligation_ids)
+
+    def test_dataset_payload_exposes_catalog_and_dmp_controls(self) -> None:
+        payload = dataset_payload()
+        dataset_ids = {dataset["dataset_id"] for dataset in payload["datasets"]}
+        dmp_ids = {dmp["dmp_id"] for dmp in payload["data_management_plans"]}
+        control_ids = {control["id"] for control in payload["controls"]}
+        evidence_topics = {topic["name"] for topic in payload["evidence_topics"]}
+
+        self.assertIn("dataset.telemetry.sensor-minimised", dataset_ids)
+        self.assertIn("dmp.precision-agriculture.template", dmp_ids)
+        self.assertIn("dataset-catalog", control_ids)
+        self.assertIn("dmp-required", control_ids)
+        self.assertIn("governance.dataset.catalog", evidence_topics)
+        self.assertIn("governance.data_management_plans", evidence_topics)
+        self.assertEqual(
+            payload["default_policy"]["raw_dataset_access"],
+            "restricted by default",
+        )
 
     def test_data_act_payload_exposes_user_access_and_third_party_sharing(self) -> None:
         payload = data_act_payload()
@@ -110,6 +140,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dataact.third_party.sharing", evidence_topics)
         self.assertIn("dataact.user.exports", evidence_topics)
         self.assertIn("dataact.legal_basis.checks", evidence_topics)
+        self.assertIn("governance.dataset.catalog", evidence_topics)
         self.assertIn("dataact.direct-access", channel_ids)
         self.assertIn("dataact.third-party-transfer", channel_ids)
         self.assertIn("user-access", obligation_ids)
@@ -173,8 +204,11 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertEqual(payload["research_context"]["primary_purpose"], "scientific research")
         self.assertIn("governance.research.projects", topic_names)
         self.assertIn("governance.research.outputs", topic_names)
+        self.assertIn("governance.dataset.catalog", topic_names)
+        self.assertIn("governance.data_management_plans", topic_names)
         self.assertIn("ethics-review", control_ids)
         self.assertIn("publication-review", control_ids)
+        self.assertIn("data-management-plan", control_ids)
 
     def test_intermediation_payload_routes_consumers_through_mediated_access(self) -> None:
         payload = intermediation_payload()
