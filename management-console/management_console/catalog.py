@@ -581,7 +581,9 @@ DATA_ACT_OBLIGATIONS: list[dict[str, str]] = [
         "id": "personal-data-legal-basis",
         "article": "Data Act and GDPR interface",
         "status": "partial",
-        "control": "Check GDPR legal basis before releasing personal data to users or third parties.",
+        "control": (
+            "Check GDPR legal basis before releasing personal data to users or third parties."
+        ),
     },
     {
         "id": "no-dark-pattern-release",
@@ -1214,7 +1216,9 @@ CRA_PRODUCT_LIFECYCLE: list[dict[str, str]] = [
         "product_id": "dealiot-platform",
         "support_status": "planned",
         "evidence_topic": "cra.product.lifecycle",
-        "control": "Define support period, security update channel and vulnerability disclosure URL.",
+        "control": (
+            "Define support period, security update channel and vulnerability disclosure URL."
+        ),
     },
     {
         "product_id": "wildfi-decoder-wrapper",
@@ -1487,7 +1491,9 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "id": "cra-product-lifecycle",
         "status": "todo",
         "regulation": "CRA",
-        "control": "Define product support period, update channel and vulnerability disclosure URL.",
+        "control": (
+            "Define product support period, update channel and vulnerability disclosure URL."
+        ),
     },
     {
         "id": "ai-governance",

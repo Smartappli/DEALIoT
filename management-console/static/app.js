@@ -320,7 +320,13 @@ function renderSecurityResilience() {
 
   const topics = document.querySelector("#security-topic-table");
   topics.innerHTML = (state.architecture.topics || [])
-    .filter((topic) => topic.name.startsWith("security.") || topic.name.startsWith("resilience."))
+    .filter(
+      (topic) =>
+        topic.name.startsWith("security.") ||
+        topic.name.startsWith("resilience.") ||
+        topic.name.startsWith("compliance.") ||
+        topic.name.startsWith("cra."),
+    )
     .map(
       (topic) => `
         <tr>

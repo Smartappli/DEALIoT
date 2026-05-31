@@ -34,10 +34,6 @@ class ManagementConsoleUnitTests(unittest.TestCase):
             product["product_id"] for product in payload["data_act_connected_products"]
         }
         research_control_ids = {control["id"] for control in payload["research_controls"]}
-        security_control_ids = {
-            control["id"] for control in payload["security_resilience_controls"]
-        }
-        readiness_regs = {item["regulation"] for item in payload["compliance_readiness"]}
         profile_ids = {profile["profile_id"] for profile in payload["consumer_profiles"]}
 
         self.assertIn("kafka", component_ids)
@@ -53,22 +49,9 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dataact.product.catalog", topic_names)
         self.assertIn("dataact.user.access.requests", topic_names)
         self.assertIn("dataact.third_party.sharing", topic_names)
-        self.assertIn("dataact.legal_basis.checks", topic_names)
-        self.assertIn("security.incident.events", topic_names)
-        self.assertIn("security.vulnerability.findings", topic_names)
-        self.assertIn("security.sbom.attestations", topic_names)
-        self.assertIn("resilience.backup.tests", topic_names)
-        self.assertIn("compliance.scope.decisions", topic_names)
-        self.assertIn("compliance.reporting.channels", topic_names)
-        self.assertIn("cra.product.lifecycle", topic_names)
         self.assertIn("telemetry.raw.gps", data_product_ids)
         self.assertIn("connected-device.telemetry", data_act_products)
         self.assertIn("research-protocol", research_control_ids)
-        self.assertIn("incident-reporting", security_control_ids)
-        self.assertIn("scope-decisions", security_control_ids)
-        self.assertIn("third-party-ict-risk", security_control_ids)
-        self.assertIn("DGA", readiness_regs)
-        self.assertIn("CRA", readiness_regs)
         self.assertIn("application.operational", profile_ids)
         self.assertIn("researcher.external", profile_ids)
         self.assertIn("refresh-health", operation_ids)
@@ -81,6 +64,28 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("review-dora-readiness", operation_ids)
         self.assertIn("review-cra-readiness", operation_ids)
         self.assertIn("trigger-media-backfill", operation_ids)
+
+    def test_catalog_payload_contains_security_and_compliance_surfaces(self) -> None:
+        payload = catalog_payload()
+        topic_names = {topic["name"] for topic in payload["topics"]}
+        security_control_ids = {
+            control["id"] for control in payload["security_resilience_controls"]
+        }
+        readiness_regs = {item["regulation"] for item in payload["compliance_readiness"]}
+
+        self.assertIn("dataact.legal_basis.checks", topic_names)
+        self.assertIn("security.incident.events", topic_names)
+        self.assertIn("security.vulnerability.findings", topic_names)
+        self.assertIn("security.sbom.attestations", topic_names)
+        self.assertIn("resilience.backup.tests", topic_names)
+        self.assertIn("compliance.scope.decisions", topic_names)
+        self.assertIn("compliance.reporting.channels", topic_names)
+        self.assertIn("cra.product.lifecycle", topic_names)
+        self.assertIn("incident-reporting", security_control_ids)
+        self.assertIn("scope-decisions", security_control_ids)
+        self.assertIn("third-party-ict-risk", security_control_ids)
+        self.assertIn("DGA", readiness_regs)
+        self.assertIn("CRA", readiness_regs)
 
     def test_dga_payload_exposes_evidence_topics_and_obligations(self) -> None:
         payload = dga_payload()
