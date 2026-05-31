@@ -213,6 +213,35 @@ services:
           cpus: "2.0"
           memory: 3G
 
+  management-console:
+    image: "${DEALIOT_MANAGEMENT_CONSOLE_IMAGE:?set DEALIOT_MANAGEMENT_CONSOLE_IMAGE}"
+    environment:
+      MANAGEMENT_CONSOLE_PORT: "8080"
+      MANAGEMENT_CONSOLE_PROBE_TIMEOUT_SECONDS: "2"
+      KAFKA_BOOTSTRAP_SERVERS: "${KAFKA_BOOTSTRAP_SERVERS:?set KAFKA_BOOTSTRAP_SERVERS}"
+      MQTT_HOST: "${MQTT_HOST:?set MQTT_HOST}"
+      MQTT_PORT: "${MQTT_PORT:-1883}"
+      S3_ENDPOINT_URL: "${S3_ENDPOINT_URL:?set S3_ENDPOINT_URL}"
+      AIRFLOW_API_URL: "http://airflow-apiserver:8080/api/v2"
+      APICURIO_REGISTRY_URL: "http://apicurio-registry:8080/apis/registry/v3"
+      FLINK_REST_URL: "http://flink-jobmanager:8081"
+    networks:
+      - ingest
+      - backbone
+      - control
+    deploy:
+      <<: *default-deploy
+      replicas: 2
+      placement:
+        max_replicas_per_node: 1
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+        reservations:
+          cpus: "0.10"
+          memory: 128M
+
   airflow-scheduler:
     image: "${DEALIOT_ORCHESTRATION_IMAGE:?set DEALIOT_ORCHESTRATION_IMAGE}"
     command: "scheduler"

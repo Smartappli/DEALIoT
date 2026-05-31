@@ -18,6 +18,7 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: dealiot-mqtt-kafka-bridge:ci
+  DEALIOT_MANAGEMENT_CONSOLE_IMAGE: ghcr.io/smartappli/dealiot-management-console:local-placeholder
   DEALIOT_FLINK_PYFLINK_IMAGE: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
   DEALIOT_ORCHESTRATION_IMAGE: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
   KAFKA_BOOTSTRAP_SERVERS: kafka1.example.net:9092,kafka2.example.net:9092

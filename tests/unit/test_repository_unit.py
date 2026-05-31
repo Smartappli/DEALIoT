@@ -20,6 +20,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "operations.md",
             REPO_ROOT / "docs" / "runbooks" / "backup-restore.md",
             REPO_ROOT / "docs" / "runbooks" / "security-hardening.md",
+            REPO_ROOT / "docs" / "runbooks" / "data-governance-act.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
@@ -27,6 +28,8 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "bandit.yaml",
             REPO_ROOT / "wildfi-decoder" / "Dockerfile",
             REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
+            REPO_ROOT / "management-console" / "Dockerfile",
+            REPO_ROOT / "management-console" / "management_console" / "app.py",
         ]
 
         for file_path in required_files:
@@ -37,6 +40,9 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "dlq.events.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "raw.sensor.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "media.object.events.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "governance.data.products.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "governance.permission.events.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "governance.intermediation.log.json",
         ]
 
         for file_path in bootstrap_files:
@@ -72,6 +78,16 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("curl --connect-timeout 5 --max-time 30 -fsS -X POST", compose_text)
         self.assertNotIn("apicurio-registry:8080/health/ready", compose_text)
         self.assertIn("post_artifact platform dlq.events /bootstrap/dlq.events.json", compose_text)
+        self.assertIn(
+            "post_artifact governance governance.data.products "
+            "/bootstrap/governance.data.products.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact governance governance.intermediation.log "
+            "/bootstrap/governance.intermediation.log.json",
+            compose_text,
+        )
 
     def test_local_secrets_are_excluded_from_git_and_docker_contexts(self) -> None:
         gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
@@ -115,12 +131,19 @@ class RepositoryUnitTests(unittest.TestCase):
         dev_text = (REPO_ROOT / "docker-compose.dev.yml").read_text(encoding="utf-8")
         prod_text = (REPO_ROOT / "docker-compose.prod.yml").read_text(encoding="utf-8")
 
-        for port in ['"8088:8080"', '"19092:19092"', '"3000:3000"', '"1883:1883"']:
+        for port in [
+            '"8088:8080"',
+            '"19092:19092"',
+            '"3000:3000"',
+            '"1883:1883"',
+            '"8090:8080"',
+        ]:
             self.assertIn(port, dev_text)
 
         self.assertIn('"80:80"', prod_text)
         self.assertIn('"443:443"', prod_text)
         self.assertNotIn('"8088:8080"', prod_text)
+        self.assertNotIn('"8090:8080"', prod_text)
         self.assertNotIn('"19092:19092"', prod_text)
 
     def test_e2e_smoke_script_checks_runtime_contracts(self) -> None:

@@ -14,6 +14,7 @@ Replace the placeholder tags before deployment:
 RELEASE_SHA="$(git rev-parse HEAD)"
 kustomize edit set image \
   ghcr.io/smartappli/dealiot-mqtt-kafka-bridge=ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-"$RELEASE_SHA" \
+  ghcr.io/smartappli/dealiot-management-console=ghcr.io/smartappli/dealiot-management-console:sha-"$RELEASE_SHA" \
   ghcr.io/smartappli/dealiot-flink-pyflink=ghcr.io/smartappli/dealiot-flink-pyflink:sha-"$RELEASE_SHA" \
   ghcr.io/smartappli/dealiot-orchestration=ghcr.io/smartappli/dealiot-orchestration:sha-"$RELEASE_SHA"
 ```
@@ -57,5 +58,6 @@ The overlay applies default deny ingress/egress, then opens:
 - DNS egress,
 - production dependency ports for Kafka, MQTT over TLS, S3 over TLS, PostgreSQL, Redis,
 - Airflow API ingress only from namespaces labeled `dealiot.io/ingress=allowed`.
+- Management Console ingress only from namespaces labeled `dealiot.io/ingress=allowed`.
 
 Patch `network-policies.yaml` with narrower `ipBlock` ranges for your actual private networks.

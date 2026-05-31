@@ -32,6 +32,9 @@ jobs:
           - image_name: mqtt-kafka-bridge
             context: .
             dockerfile: ./mqtt-kafka-bridge/Dockerfile
+          - image_name: management-console
+            context: .
+            dockerfile: ./management-console/Dockerfile
           - image_name: flink-pyflink
             context: .
             dockerfile: ./flink/Dockerfile.pyflink

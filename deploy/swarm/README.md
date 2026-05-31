@@ -21,6 +21,7 @@ Render and deploy:
 
 ```bash
 export DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE=ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-REPLACE_WITH_RELEASE_SHA
+export DEALIOT_MANAGEMENT_CONSOLE_IMAGE=ghcr.io/smartappli/dealiot-management-console:sha-REPLACE_WITH_RELEASE_SHA
 export DEALIOT_FLINK_PYFLINK_IMAGE=ghcr.io/smartappli/dealiot-flink-pyflink:sha-REPLACE_WITH_RELEASE_SHA
 export DEALIOT_ORCHESTRATION_IMAGE=ghcr.io/smartappli/dealiot-orchestration:sha-REPLACE_WITH_RELEASE_SHA
 export KAFKA_BOOTSTRAP_SERVERS=kafka1.example.net:9092,kafka2.example.net:9092

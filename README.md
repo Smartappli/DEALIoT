@@ -118,6 +118,7 @@ grafana/                  Dashboards and provisioning
 haproxy/                  Read-write / read-only routing
 kafka-connect/            Debezium connector definitions
 mqtt-kafka-bridge/        MQTT to Kafka bridge
+management-console/       Internal architecture management console
 orchestration/            Airflow image build
 patroni/                  Patroni templates
 pgadmin/                  pgAdmin preconfigured servers
@@ -173,6 +174,11 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `alerts.events` | Alerts | 12 | 3 |
 | `state.latest` | Compacted latest state | 12 | 3 |
 | `dlq.events` | Dead-letter events | 12 | 3 |
+| `governance.data.products` | DGA data product catalogue | 3 | 3 |
+| `governance.access.requests` | DGA access requests and decisions | 6 | 3 |
+| `governance.permission.events` | DGA consent/permission lifecycle | 6 | 3 |
+| `governance.intermediation.log` | DGA intermediation activity log | 12 | 3 |
+| `governance.transfer.notices` | DGA unauthorised access/transfer/use notices | 6 | 3 |
 | `kafkasql-journal-v3` | Apicurio KafkaSQL journal | 1 | 3 |
 | `kafkasql-snapshots-v3` | Apicurio KafkaSQL snapshots | 1 | 3 |
 | `registry-events-v3` | Apicurio registry events | 1 | 3 |
@@ -190,6 +196,11 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `raw.video3d.meta`
 - `media.object.events`
 - `dlq.events`
+- `governance.data.products`
+- `governance.access.requests`
+- `governance.permission.events`
+- `governance.intermediation.log`
+- `governance.transfer.notices`
 
 ### WildFi ingestion
 
@@ -393,6 +404,7 @@ These endpoints are available when the development overlay is active.
 | SeaweedFS Filer UI | `http://localhost:8889` |
 | pgAdmin | `http://localhost:5050` |
 | Grafana | `http://localhost:3000` |
+| Management Console | `http://localhost:8090` |
 | Prometheus | `http://localhost:9090` |
 | HAProxy stats | `http://localhost:7000` |
 | PostgreSQL RW | `localhost:5432` |
@@ -481,6 +493,7 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - [Operations](docs/runbooks/operations.md)
 - [Backup and restore](docs/runbooks/backup-restore.md)
 - [Security hardening](docs/runbooks/security-hardening.md)
+- [Data Governance Act](docs/runbooks/data-governance-act.md)
 
 ## 14. Recommended next steps
 
@@ -505,6 +518,7 @@ This finalized package contains:
 - a new `README.md`
 - a new `.env.example`
 - a corrected MQTT bridge
+- a management console for architecture health, data catalogue, runbooks, and compliance controls
 - a corrected media backfill utility
 - a new `raw.gps` Apicurio schema
 - Docker Swarm and Kubernetes production deployment targets with CI smoke workflows
