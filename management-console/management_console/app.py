@@ -58,6 +58,14 @@ def timeout_seconds() -> float:
         return DEFAULT_TIMEOUT_SECONDS
 
 
+def open_http_request(req: request.Request, timeout: float) -> Any:
+    parsed = urlparse(req.full_url)
+    if parsed.scheme not in {"http", "https"}:
+        raise ValueError("HTTP request URL must use http or https")
+    # URL scheme is validated immediately above; urllib is kept to avoid an extra dependency.
+    return request.urlopen(req, timeout=timeout)  # noqa: S310, B310
+
+
 def probe_tcp(endpoint: str, timeout: float) -> dict[str, Any]:
     parsed = urlparse(endpoint)
     host = parsed.hostname
@@ -79,7 +87,7 @@ def probe_http(endpoint: str, timeout: float) -> dict[str, Any]:
 
     try:
         req = request.Request(endpoint, method="GET")  # noqa: S310
-        with request.urlopen(req, timeout=timeout) as response:  # noqa: S310
+        with open_http_request(req, timeout=timeout) as response:
             status = response.getcode()
     except error.HTTPError as exc:
         if exc.code < HTTPStatus.INTERNAL_SERVER_ERROR:
@@ -243,7 +251,7 @@ def trigger_media_backfill(payload: dict[str, Any]) -> tuple[int, dict[str, Any]
         },
     )
     try:
-        with request.urlopen(req, timeout=timeout_seconds()) as response:  # noqa: S310
+        with open_http_request(req, timeout=timeout_seconds()) as response:
             response_body = response.read().decode("utf-8")
             parsed = json.loads(response_body) if response_body else {}
             return response.getcode(), {"status": "submitted", "airflow_response": parsed}
@@ -364,7 +372,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def log_message(self, message_format: str, *args: Any) -> None:
+    def log_message(self, message_format: str, *args: Any) -> None:  # pylint: disable=arguments-differ
         print(
             json.dumps(
                 {
@@ -378,7 +386,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
 
 
 def run() -> None:
-    host = os.getenv("MANAGEMENT_CONSOLE_BIND", "0.0.0.0")  # noqa: S104
+    host = os.getenv("MANAGEMENT_CONSOLE_BIND", "127.0.0.1")
     port = int(os.getenv("MANAGEMENT_CONSOLE_PORT", "8080"))
     with ThreadingHTTPServer((host, port), ManagementConsoleHandler) as server:
         print(f"management-console listening on {host}:{port}")
