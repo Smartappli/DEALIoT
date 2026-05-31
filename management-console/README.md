@@ -15,6 +15,7 @@ It exposes:
 - research project, ethics and output disclosure controls,
 - NIS2, DORA and CRA security/resilience evidence gates,
 - regulatory scope decisions, control assessments and reporting channels,
+- legal compliance dossier artefacts, templates and release gates,
 - adjacent-legislation matrix for GDPR, ePrivacy, AI Act, product, open-data and EHDS scope,
 - runbook and operation catalogue,
 - compliance-control tracking for GDPR, Data Act, DGA, AI Act, CRA and NIS2.
