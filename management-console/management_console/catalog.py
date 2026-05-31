@@ -1592,6 +1592,11 @@ RUNBOOKS: list[dict[str, str]] = [
         "scope": "NIS2, DORA and CRA evidence, incident, vulnerability and recovery controls.",
     },
     {
+        "name": "Legal applicability",
+        "path": "docs/runbooks/legal-applicability.md",
+        "scope": "GDPR, ePrivacy, AI Act, product, open-data and EHDS scope matrix.",
+    },
+    {
         "name": "Data Governance Act",
         "path": "docs/runbooks/data-governance-act.md",
         "scope": "DGA role decision, intermediation evidence and data-sharing controls.",
@@ -1789,6 +1794,18 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "control": "Check personal-data legal basis before user or third-party release.",
     },
     {
+        "id": "gdpr-dpia-rights",
+        "status": "partial",
+        "regulation": "GDPR",
+        "control": "Maintain DPIA, rights handling, processor terms and breach evidence.",
+    },
+    {
+        "id": "eprivacy-terminal-access",
+        "status": "conditional",
+        "regulation": "ePrivacy",
+        "control": "Assess terminal access, telemetry metadata and national consent rules.",
+    },
+    {
         "id": "retention",
         "status": "todo",
         "regulation": "GDPR, Data Act",
@@ -1837,6 +1854,18 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "control": "Assess providers, subcontracting, criticality and exit plans.",
     },
     {
+        "id": "trade-secret-safeguards",
+        "status": "partial",
+        "regulation": "Data Act, Trade Secrets Directive",
+        "control": "Preserve confidentiality and purpose limits for sensitive shared data.",
+    },
+    {
+        "id": "product-market-scope",
+        "status": "conditional",
+        "regulation": "CRA, RED, GPSR, Product Liability Directive",
+        "control": "Record product-market role, conformity file, support and defect handling.",
+    },
+    {
         "id": "dora-scope",
         "status": "conditional",
         "regulation": "DORA",
@@ -1858,9 +1887,15 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
     },
     {
         "id": "ai-governance",
-        "status": "todo",
+        "status": "conditional",
         "regulation": "AI Act",
-        "control": "Classify and document future AI use cases before model deployment.",
+        "control": "Inventory, classify and document AI systems before model deployment.",
+    },
+    {
+        "id": "open-health-data-scope",
+        "status": "conditional",
+        "regulation": "Open Data Directive, EHDS",
+        "control": "Classify public-sector, public-funded research and health-data datasets.",
     },
 ]
 
@@ -1885,6 +1920,7 @@ def catalog_payload() -> dict[str, Any]:
         "compliance_scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
         "compliance_reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
         "compliance_readiness": COMPLIANCE_READINESS,
+        "additional_legislation": ADDITIONAL_LEGISLATION,
         "cra_product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "nis2_obligations": NIS2_OBLIGATIONS,
         "dora_obligations": DORA_OBLIGATIONS,
@@ -1916,11 +1952,14 @@ def security_resilience_payload() -> dict[str, Any]:
         "scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
         "reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
         "readiness": COMPLIANCE_READINESS,
+        "additional_legislation": ADDITIONAL_LEGISLATION,
         "cra_product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "scope_notes": [
             "NIS2 depends on sector, entity size and national transposition.",
             "DORA applies when financial entity or ICT third-party provider scope is confirmed.",
             "CRA applies to products with digital elements made available on the EU market.",
+            "GDPR is in scope when telemetry or datasets identify people or operators.",
+            "AI Act, ePrivacy, RED, product safety, EHDS and open-data rules are conditional.",
         ],
         "default_policy": {
             "plaintext_production_protocols": "not allowed",
@@ -1938,6 +1977,7 @@ def compliance_payload() -> dict[str, Any]:
         "controls": COMPLIANCE_CONTROLS,
         "scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
         "reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
+        "additional_legislation": ADDITIONAL_LEGISLATION,
         "control_assessment_topic": "compliance.control.assessments",
         "evidence_topics": [
             topic
