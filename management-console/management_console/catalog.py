@@ -955,6 +955,12 @@ DGA_OBLIGATIONS: list[dict[str, str]] = [
         "control": "Track access requests, decisions and reasons in governance.access.requests.",
     },
     {
+        "id": "dataset-catalog-dmp",
+        "article": "DGA, FAIR research governance",
+        "status": "partial",
+        "control": "Link mediated datasets to catalogue records and Data Management Plans.",
+    },
+    {
         "id": "abuse-prevention",
         "article": "DGA Art. 12(g)",
         "status": "todo",
@@ -1533,6 +1539,12 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "control": "Require research protocol, ethics status and disclosure review.",
     },
     {
+        "id": "dataset-catalog-dmp",
+        "status": "partial",
+        "regulation": "DGA, Data Act, GDPR",
+        "control": "Maintain dataset catalogue and DMP before research or third-party release.",
+    },
+    {
         "id": "dga-activity-log",
         "status": "implemented",
         "regulation": "DGA",
@@ -1646,6 +1658,9 @@ def catalog_payload() -> dict[str, Any]:
         "components": COMPONENTS,
         "topics": TOPICS,
         "data_products": DATA_PRODUCTS,
+        "datasets": DATASETS,
+        "data_management_plans": DATA_MANAGEMENT_PLANS,
+        "dmp_controls": DMP_CONTROLS,
         "data_act_connected_products": DATA_ACT_CONNECTED_PRODUCTS,
         "data_act_access_channels": DATA_ACT_ACCESS_CHANNELS,
         "data_act_obligations": DATA_ACT_OBLIGATIONS,
@@ -1722,6 +1737,26 @@ def compliance_payload() -> dict[str, Any]:
             "technical evidence baseline only; legal compliance remains partial until "
             "scope, procedures, contracts and operating evidence are recorded"
         ),
+    }
+
+
+def dataset_payload() -> dict[str, Any]:
+    return {
+        "datasets": DATASETS,
+        "data_management_plans": DATA_MANAGEMENT_PLANS,
+        "controls": DMP_CONTROLS,
+        "evidence_topics": [
+            topic
+            for topic in TOPICS
+            if topic["name"]
+            in {"governance.dataset.catalog", "governance.data_management_plans"}
+        ],
+        "default_policy": {
+            "dataset_release": "requires catalogue entry, DMP, access policy and review",
+            "raw_dataset_access": "restricted by default",
+            "preferred_publication": "derived, minimised or aggregated datasets",
+            "fair_metadata": "schema, provenance, steward, access and preservation fields required",
+        },
     }
 
 
