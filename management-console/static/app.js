@@ -373,6 +373,54 @@ function renderRunbooks() {
 }
 
 function renderCompliance() {
+  const readiness = document.querySelector("#compliance-readiness-table");
+  readiness.innerHTML = (state.architecture.compliance_readiness || [])
+    .map(
+      (item) => `
+        <tr>
+          <td>
+            <strong>${item.regulation}</strong>
+            <small>${item.technical_status}</small>
+          </td>
+          <td>${pill(item.readiness, item.readiness)}</td>
+          <td>${item.blocking_gap}</td>
+          <td>${item.next_action}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const scope = document.querySelector("#compliance-scope-table");
+  scope.innerHTML = (state.architecture.compliance_scope_decisions || [])
+    .map(
+      (item) => `
+        <tr>
+          <td>
+            <strong>${item.regulation}</strong>
+            <small>${item.basis}</small>
+          </td>
+          <td>${pill(item.scope_status, item.scope_status)}</td>
+          <td>${item.owner}</td>
+          <td>${item.evidence_topic}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const reporting = document.querySelector("#compliance-reporting-table");
+  reporting.innerHTML = (state.architecture.compliance_reporting_channels || [])
+    .map(
+      (item) => `
+        <tr>
+          <td><strong>${item.regulation}</strong></td>
+          <td>${item.trigger}</td>
+          <td>${pill(item.channel_status, item.channel_status)}</td>
+          <td>${item.evidence_topic}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
   const container = document.querySelector("#compliance-list");
   container.innerHTML = state.architecture.compliance_controls
     .map(
