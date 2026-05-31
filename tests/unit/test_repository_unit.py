@@ -52,6 +52,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.third_party.sharing.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.user.exports.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.safeguards.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "dataact.legal_basis.checks.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "security.asset.inventory.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "security.incident.events.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "security.vulnerability.findings.json",
@@ -60,6 +61,10 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "resilience.backup.tests.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "resilience.operational.risk.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "resilience.third_party.risk.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "compliance.scope.decisions.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "compliance.control.assessments.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "compliance.reporting.channels.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "cra.product.lifecycle.json",
         ]
 
         for file_path in bootstrap_files:
@@ -121,6 +126,11 @@ class RepositoryUnitTests(unittest.TestCase):
             compose_text,
         )
         self.assertIn(
+            "post_artifact dataact dataact.legal_basis.checks "
+            "/bootstrap/dataact.legal_basis.checks.json",
+            compose_text,
+        )
+        self.assertIn(
             "post_artifact security security.incident.events "
             "/bootstrap/security.incident.events.json",
             compose_text,
@@ -133,6 +143,20 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn(
             "post_artifact resilience resilience.operational.risk "
             "/bootstrap/resilience.operational.risk.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact compliance compliance.scope.decisions "
+            "/bootstrap/compliance.scope.decisions.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact compliance compliance.reporting.channels "
+            "/bootstrap/compliance.reporting.channels.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact cra cra.product.lifecycle /bootstrap/cra.product.lifecycle.json",
             compose_text,
         )
 

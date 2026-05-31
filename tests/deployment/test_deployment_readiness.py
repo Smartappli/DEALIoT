@@ -318,15 +318,21 @@ class DeploymentReadinessTests(unittest.TestCase):
         ):
             self.assertIn(required_secret, contract_text)
         for required_evidence_topic in (
+            "dataact.legal_basis.checks",
             "security.incident.events",
             "security.vulnerability.findings",
             "security.sbom.attestations",
             "resilience.backup.tests",
             "resilience.operational.risk",
             "resilience.third_party.risk",
+            "compliance.scope.decisions",
+            "compliance.control.assessments",
+            "compliance.reporting.channels",
+            "cra.product.lifecycle",
         ):
             self.assertIn(required_evidence_topic, contract_text)
         self.assertIn("required_security_resilience:", contract_text)
+        self.assertIn("scope_decision_register: compliance.scope.decisions", contract_text)
         self.assertIn("dora_scope: required_if_financial_entity_or_ict_provider", contract_text)
 
     def test_kubernetes_production_wildfi_contract_is_explicit(self) -> None:

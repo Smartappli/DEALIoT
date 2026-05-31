@@ -68,6 +68,7 @@ class PlatformIntegrationTests(unittest.TestCase):
             "dataact.third_party.sharing",
             "dataact.user.exports",
             "dataact.safeguards",
+            "dataact.legal_basis.checks",
             "security.asset.inventory",
             "security.incident.events",
             "security.vulnerability.findings",
@@ -76,6 +77,10 @@ class PlatformIntegrationTests(unittest.TestCase):
             "resilience.backup.tests",
             "resilience.operational.risk",
             "resilience.third_party.risk",
+            "compliance.scope.decisions",
+            "compliance.control.assessments",
+            "compliance.reporting.channels",
+            "cra.product.lifecycle",
         ]
 
         for topic in expected_topics:
