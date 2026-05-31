@@ -181,6 +181,8 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `governance.transfer.notices` | DGA unauthorised access/transfer/use notices | 6 | 3 |
 | `governance.research.projects` | Research project register and ethics status | 3 | 3 |
 | `governance.research.outputs` | Research outputs and disclosure review evidence | 6 | 3 |
+| `governance.dataset.catalog` | Dataset catalogue, FAIR metadata and access policy | 3 | 3 |
+| `governance.data_management_plans` | Data Management Plans for research and releases | 3 | 3 |
 | `dataact.product.catalog` | Data Act connected-product and related-service catalogue | 3 | 3 |
 | `dataact.user.access.requests` | Data Act user access requests and decisions | 6 | 3 |
 | `dataact.third_party.sharing` | User-authorized third-party sharing evidence | 6 | 3 |
@@ -223,6 +225,8 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `governance.transfer.notices`
 - `governance.research.projects`
 - `governance.research.outputs`
+- `governance.dataset.catalog`
+- `governance.data_management_plans`
 - `dataact.product.catalog`
 - `dataact.user.access.requests`
 - `dataact.third_party.sharing`
@@ -536,6 +540,7 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - [Security resilience compliance](docs/runbooks/security-resilience-compliance.md)
 - [Data Governance Act](docs/runbooks/data-governance-act.md)
 - [Data Act](docs/runbooks/data-act.md)
+- [Dataset catalogue and Data Management Plan](docs/runbooks/data-management-plan.md)
 
 ## 14. Recommended next steps
 
