@@ -335,6 +335,12 @@ th {
   margin-bottom: 12px;
 }
 
+.status-line {
+  color: var(--muted);
+  min-height: 20px;
+  margin-top: 10px;
+}
+
 td small {
   display: block;
   margin-top: 4px;
