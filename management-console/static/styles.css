@@ -248,6 +248,16 @@ button:hover,
   color: var(--green);
 }
 
+.finalized {
+  background: #e7f6ed;
+  color: var(--green);
+}
+
+.approval_required {
+  background: #fff2d6;
+  color: var(--amber);
+}
+
 .in_scope,
 .applicable,
 .configured,

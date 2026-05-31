@@ -1762,6 +1762,54 @@ LEGAL_TEMPLATES: list[dict[str, str]] = [
         "purpose": "Recipient, purpose, safeguards and onward-use contract checklist.",
     },
     {
+        "id": "processor-dpa-checklist",
+        "regulation": "GDPR",
+        "path": "docs/compliance/templates/processor-dpa-checklist.md",
+        "purpose": "Processor, joint-controller and sub-processor contract review.",
+    },
+    {
+        "id": "data-subject-rights-procedure",
+        "regulation": "GDPR",
+        "path": "docs/compliance/templates/data-subject-rights-procedure.md",
+        "purpose": "Request intake, triage, deadline and fulfilment workflow.",
+    },
+    {
+        "id": "dga-role-notification-template",
+        "regulation": "DGA",
+        "path": "docs/compliance/templates/dga-role-notification-template.md",
+        "purpose": "DGA intermediation, altruism or internal-platform role decision.",
+    },
+    {
+        "id": "scope-decision-template",
+        "regulation": "DGA, Data Act, NIS2, DORA, CRA, AI Act, ePrivacy",
+        "path": "docs/compliance/templates/scope-decision-template.md",
+        "purpose": "In-scope, out-of-scope or conditional legal scope record.",
+    },
+    {
+        "id": "reporting-channel-template",
+        "regulation": "GDPR, DGA, NIS2, DORA, CRA",
+        "path": "docs/compliance/templates/reporting-channel-template.md",
+        "purpose": "Authority, trigger, deadline, template and notification owner.",
+    },
+    {
+        "id": "cra-conformity-file-template",
+        "regulation": "CRA",
+        "path": "docs/compliance/templates/cra-conformity-file-template.md",
+        "purpose": "Product classification, support period and vulnerability channel.",
+    },
+    {
+        "id": "ai-system-inventory-template",
+        "regulation": "AI Act",
+        "path": "docs/compliance/templates/ai-system-inventory-template.md",
+        "purpose": "AI system purpose, risk class, data lineage and oversight.",
+    },
+    {
+        "id": "eprivacy-assessment-template",
+        "regulation": "ePrivacy",
+        "path": "docs/compliance/templates/eprivacy-assessment-template.md",
+        "purpose": "Terminal access, communications metadata and national rules.",
+    },
+    {
         "id": "retention-schedule-template",
         "regulation": "GDPR, DGA, Data Act",
         "path": "docs/compliance/templates/retention-schedule-template.md",
@@ -1778,6 +1826,63 @@ LEGAL_TEMPLATES: list[dict[str, str]] = [
         "regulation": "GDPR, DGA, Data Act, Open Data Directive",
         "path": "docs/compliance/templates/zenodo-publication-approval.md",
         "purpose": "Legal approval checklist before publishing a Zenodo record.",
+    },
+]
+
+LEGAL_FINALIZATION_ITEMS: list[dict[str, str]] = [
+    {
+        "id": "architecture-controls",
+        "status": "finalized",
+        "owner": "platform",
+        "decision": (
+            "Evidence topics, schemas, release gates, API surfaces and UI management views "
+            "are implemented."
+        ),
+        "evidence": "catalog_payload, /api/legal-compliance, compliance.legal.dossier",
+    },
+    {
+        "id": "dataset-dmp-repository",
+        "status": "finalized",
+        "owner": "research-governance",
+        "decision": "Dataset catalogue, DMP controls and Zenodo draft export are integrated.",
+        "evidence": (
+            "governance.dataset.catalog, governance.data_management_plans, "
+            "governance.repository.exports"
+        ),
+    },
+    {
+        "id": "legal-template-pack",
+        "status": "finalized",
+        "owner": "legal-compliance",
+        "decision": "Templates exist for every dossier artefact required by the release gates.",
+        "evidence": "docs/compliance/templates",
+    },
+    {
+        "id": "production-approval",
+        "status": "approval_required",
+        "owner": "DPO/legal/security/product owners",
+        "decision": "Real organisation details, signatures and authority contacts are required.",
+        "evidence": "compliance.legal.dossier",
+    },
+    {
+        "id": "national-scope-approval",
+        "status": "approval_required",
+        "owner": "legal-compliance",
+        "decision": (
+            "Member State scope decisions for NIS2, ePrivacy and authority reporting "
+            "channels must be recorded."
+        ),
+        "evidence": "compliance.scope.decisions, compliance.reporting.channels",
+    },
+    {
+        "id": "external-release-approval",
+        "status": "approval_required",
+        "owner": "data-governance/research-governance",
+        "decision": (
+            "Third-party sharing and Zenodo publication require signed terms and "
+            "legal_review_approved=true."
+        ),
+        "evidence": "dataact.third_party.sharing, governance.repository.exports",
     },
 ]
 
@@ -1932,6 +2037,11 @@ RUNBOOKS: list[dict[str, str]] = [
         "name": "Legal compliance dossier",
         "path": "docs/compliance/legal-compliance-dossier.md",
         "scope": "Legal artefacts, release gates and evidence topics before go-live.",
+    },
+    {
+        "name": "Legal finalization report",
+        "path": "docs/compliance/legal-finalization-report.md",
+        "scope": "Repository-side completion status and human approval requirements.",
     },
     {
         "name": "Data Governance Act",
@@ -2297,6 +2407,7 @@ def catalog_payload() -> dict[str, Any]:
         "legal_compliance_dossier": LEGAL_COMPLIANCE_DOSSIER,
         "legal_release_gates": LEGAL_RELEASE_GATES,
         "legal_templates": LEGAL_TEMPLATES,
+        "legal_finalization_items": LEGAL_FINALIZATION_ITEMS,
         "additional_legislation": ADDITIONAL_LEGISLATION,
         "cra_product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "nis2_obligations": NIS2_OBLIGATIONS,
@@ -2357,6 +2468,7 @@ def compliance_payload() -> dict[str, Any]:
         "legal_dossier": LEGAL_COMPLIANCE_DOSSIER,
         "release_gates": LEGAL_RELEASE_GATES,
         "templates": LEGAL_TEMPLATES,
+        "finalization_items": LEGAL_FINALIZATION_ITEMS,
         "additional_legislation": ADDITIONAL_LEGISLATION,
         "legal_dossier_topic": "compliance.legal.dossier",
         "control_assessment_topic": "compliance.control.assessments",
@@ -2378,6 +2490,7 @@ def legal_compliance_payload() -> dict[str, Any]:
         "legal_dossier": LEGAL_COMPLIANCE_DOSSIER,
         "release_gates": LEGAL_RELEASE_GATES,
         "templates": LEGAL_TEMPLATES,
+        "finalization_items": LEGAL_FINALIZATION_ITEMS,
         "scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
         "reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
         "evidence_topics": [
