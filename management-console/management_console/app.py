@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import concurrent.futures
+import http.client
 import json
 import os
 import socket
@@ -10,7 +11,6 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, cast
-from urllib import error, request
 from urllib.parse import urlparse
 
 from management_console.catalog import (
@@ -44,6 +44,18 @@ DEFAULT_TIMEOUT_SECONDS = 2.0
 MAX_REQUEST_BYTES = 65536
 
 
+class SimpleHttpResponse:
+    def __init__(self, status: int, body: bytes) -> None:
+        self.status = status
+        self.body = body
+
+    def getcode(self) -> int:
+        return self.status
+
+    def read(self) -> bytes:
+        return self.body
+
+
 def now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
@@ -58,12 +70,34 @@ def timeout_seconds() -> float:
         return DEFAULT_TIMEOUT_SECONDS
 
 
-def open_http_request(req: request.Request, timeout: float) -> Any:
-    parsed = urlparse(req.full_url)
-    if parsed.scheme not in {"http", "https"}:
+def http_path(parsed_url: Any) -> str:
+    path = parsed_url.path or "/"
+    if parsed_url.query:
+        return f"{path}?{parsed_url.query}"
+    return path
+
+
+def open_http_request(
+    method: str,
+    url: str,
+    timeout: float,
+    headers: dict[str, str] | None = None,
+    body: bytes | None = None,
+) -> SimpleHttpResponse:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or parsed.hostname is None:
         raise ValueError("HTTP request URL must use http or https")
-    # URL scheme is validated immediately above; urllib is kept to avoid an extra dependency.
-    return request.urlopen(req, timeout=timeout)  # noqa: S310  # nosec B310
+
+    connection_cls = (
+        http.client.HTTPSConnection if parsed.scheme == "https" else http.client.HTTPConnection
+    )
+    connection = connection_cls(parsed.hostname, port=parsed.port, timeout=timeout)
+    try:
+        connection.request(method, http_path(parsed), body=body, headers=headers or {})
+        response = connection.getresponse()
+        return SimpleHttpResponse(response.status, response.read())
+    finally:
+        connection.close()
 
 
 def probe_tcp(endpoint: str, timeout: float) -> dict[str, Any]:
@@ -86,13 +120,7 @@ def probe_http(endpoint: str, timeout: float) -> dict[str, Any]:
         return {"status": "unknown", "detail": "invalid http probe scheme"}
 
     try:
-        req = request.Request(endpoint, method="GET")  # noqa: S310
-        with open_http_request(req, timeout=timeout) as response:
-            status = response.getcode()
-    except error.HTTPError as exc:
-        if exc.code < HTTPStatus.INTERNAL_SERVER_ERROR:
-            return {"status": "healthy", "detail": f"http {exc.code}"}
-        return {"status": "degraded", "detail": f"http {exc.code}"}
+        status = open_http_request("GET", endpoint, timeout=timeout).getcode()
     except OSError as exc:
         return {"status": "unreachable", "detail": str(exc)}
     else:
@@ -240,26 +268,26 @@ def trigger_media_backfill(payload: dict[str, Any]) -> tuple[int, dict[str, Any]
         }
     ).encode("utf-8")
 
-    req = request.Request(  # noqa: S310
-        dag_run_url,
-        data=body,
-        method="POST",
-        headers={
-            "Authorization": auth_header,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
-    )
     try:
-        with open_http_request(req, timeout=timeout_seconds()) as response:
-            response_body = response.read().decode("utf-8")
-            parsed = json.loads(response_body) if response_body else {}
-            return response.getcode(), {"status": "submitted", "airflow_response": parsed}
-    except error.HTTPError as exc:
-        body_text = exc.read().decode("utf-8", errors="replace")
-        return exc.code, {"error": "airflow_rejected_request", "detail": body_text}
+        response = open_http_request(
+            "POST",
+            dag_run_url,
+            timeout=timeout_seconds(),
+            body=body,
+            headers={
+                "Authorization": auth_header,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        )
     except OSError as exc:
         return HTTPStatus.BAD_GATEWAY, {"error": "airflow_unreachable", "detail": str(exc)}
+
+    response_body = response.read().decode("utf-8", errors="replace")
+    if response.getcode() >= HTTPStatus.BAD_REQUEST:
+        return response.getcode(), {"error": "airflow_rejected_request", "detail": response_body}
+    parsed = json.loads(response_body) if response_body else {}
+    return response.getcode(), {"status": "submitted", "airflow_response": parsed}
 
 
 def read_json_body(handler: Any) -> dict[str, Any]:
@@ -372,13 +400,13 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def log_message(self, message_format: str, *args: Any) -> None:  # pylint: disable=arguments-differ
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
         print(
             json.dumps(
                 {
                     "time": now_iso(),
                     "client": self.client_address[0],
-                    "message": message_format % args,
+                    "message": format % args,
                 },
                 separators=(",", ":"),
             )
