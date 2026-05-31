@@ -186,6 +186,14 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `dataact.third_party.sharing` | User-authorized third-party sharing evidence | 6 | 3 |
 | `dataact.user.exports` | User export and delivery evidence | 6 | 3 |
 | `dataact.safeguards` | Data Act security and trade-secret safeguards | 3 | 3 |
+| `security.asset.inventory` | Security asset inventory and ownership | 3 | 3 |
+| `security.incident.events` | NIS2/DORA/CRA incident evidence | 6 | 3 |
+| `security.vulnerability.findings` | Vulnerability and remediation register | 6 | 3 |
+| `security.sbom.attestations` | SBOM, provenance and signature evidence | 3 | 3 |
+| `security.patch.events` | Security update and rollback evidence | 6 | 3 |
+| `resilience.backup.tests` | Restore test, RPO and RTO evidence | 3 | 3 |
+| `resilience.operational.risk` | ICT and operational risk register | 3 | 3 |
+| `resilience.third_party.risk` | ICT supplier and exit-plan register | 3 | 3 |
 | `kafkasql-journal-v3` | Apicurio KafkaSQL journal | 1 | 3 |
 | `kafkasql-snapshots-v3` | Apicurio KafkaSQL snapshots | 1 | 3 |
 | `registry-events-v3` | Apicurio registry events | 1 | 3 |
@@ -215,6 +223,14 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `dataact.third_party.sharing`
 - `dataact.user.exports`
 - `dataact.safeguards`
+- `security.asset.inventory`
+- `security.incident.events`
+- `security.vulnerability.findings`
+- `security.sbom.attestations`
+- `security.patch.events`
+- `resilience.backup.tests`
+- `resilience.operational.risk`
+- `resilience.third_party.risk`
 
 ### WildFi ingestion
 
@@ -507,6 +523,7 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - [Operations](docs/runbooks/operations.md)
 - [Backup and restore](docs/runbooks/backup-restore.md)
 - [Security hardening](docs/runbooks/security-hardening.md)
+- [Security resilience compliance](docs/runbooks/security-resilience-compliance.md)
 - [Data Governance Act](docs/runbooks/data-governance-act.md)
 - [Data Act](docs/runbooks/data-act.md)
 
