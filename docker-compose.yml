@@ -549,6 +549,8 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.transfer.notices --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.research.projects --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.research.outputs --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.dataset.catalog --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.data_management_plans --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dataact.product.catalog --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dataact.user.access.requests --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dataact.third_party.sharing --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
@@ -1886,6 +1888,8 @@ services:
         post_artifact governance governance.transfer.notices /bootstrap/governance.transfer.notices.json
         post_artifact governance governance.research.projects /bootstrap/governance.research.projects.json
         post_artifact governance governance.research.outputs /bootstrap/governance.research.outputs.json
+        post_artifact governance governance.dataset.catalog /bootstrap/governance.dataset.catalog.json
+        post_artifact governance governance.data_management_plans /bootstrap/governance.data_management_plans.json
         post_artifact dataact dataact.product.catalog /bootstrap/dataact.product.catalog.json
         post_artifact dataact dataact.user.access.requests /bootstrap/dataact.user.access.requests.json
         post_artifact dataact dataact.third_party.sharing /bootstrap/dataact.third_party.sharing.json

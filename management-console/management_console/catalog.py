@@ -289,6 +289,20 @@ TOPICS: list[dict[str, str]] = [
         "retention": "one year minimum, site policy required",
     },
     {
+        "name": "governance.dataset.catalog",
+        "plane": "governance",
+        "owner": "data-stewardship",
+        "classification": "dataset-catalog-record",
+        "retention": "compacted dataset register",
+    },
+    {
+        "name": "governance.data_management_plans",
+        "plane": "governance",
+        "owner": "research-governance",
+        "classification": "data-management-plan-record",
+        "retention": "compacted DMP register",
+    },
+    {
         "name": "dataact.product.catalog",
         "plane": "governance",
         "owner": "data-act-governance",
