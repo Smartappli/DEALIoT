@@ -88,6 +88,7 @@ class ApplicationSmokeTests(unittest.TestCase):
             "compliance.scope.decisions.json",
             "compliance.control.assessments.json",
             "compliance.reporting.channels.json",
+            "compliance.legal.dossier.json",
             "cra.product.lifecycle.json",
         ]
 

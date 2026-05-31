@@ -27,7 +27,40 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "data-management-plan.md",
             REPO_ROOT / "docs" / "runbooks" / "zenodo-export.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
+            REPO_ROOT / "docs" / "compliance" / "legal-compliance-dossier.md",
             REPO_ROOT / "docs" / "compliance" / "legal-readiness-review.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "ropa-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "dpia-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "privacy-notice-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "data-act-notice-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "data-sharing-agreement-checklist.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "retention-schedule-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "incident-notification-playbook.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "zenodo-publication-approval.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
@@ -71,6 +104,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "compliance.scope.decisions.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "compliance.control.assessments.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "compliance.reporting.channels.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "compliance.legal.dossier.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "cra.product.lifecycle.json",
         ]
 
@@ -175,6 +209,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn(
             "post_artifact compliance compliance.reporting.channels "
             "/bootstrap/compliance.reporting.channels.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact compliance compliance.legal.dossier "
+            "/bootstrap/compliance.legal.dossier.json",
             compose_text,
         )
         self.assertIn(
