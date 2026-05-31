@@ -31,6 +31,11 @@ data:
           - governance.transfer.notices
           - governance.research.projects
           - governance.research.outputs
+          - dataact.product.catalog
+          - dataact.user.access.requests
+          - dataact.third_party.sharing
+          - dataact.user.exports
+          - dataact.safeguards
         required_governance:
           notification_status: required_if_data_intermediation_service
           neutrality: separate_intermediation_context
@@ -49,6 +54,22 @@ data:
             - derived_topics
             - minimised_exports
             - controlled_object_access
+        required_data_act:
+          connected_product_catalog: dataact.product.catalog
+          user_access_requests: dataact.user.access.requests
+          third_party_sharing_authorizations: dataact.third_party.sharing
+          user_export_log: dataact.user.exports
+          safeguard_register: dataact.safeguards
+          raw_access_default: denied
+          required_access_channels:
+            - direct_secure_user_access
+            - minimised_export
+            - controlled_object_access
+            - user_authorized_third_party_transfer
+          sharing_rules:
+            third_party_sharing: user_authorization_required
+            research_access: combine_data_act_entitlement_with_dga_governance
+            product_and_related_service_data: catalogue_before_release
       mqtt:
         endpoint_config_keys:
           - MQTT_HOST

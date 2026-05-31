@@ -126,6 +126,68 @@ function renderIntermediation() {
     .join("");
 }
 
+function renderDataAct() {
+  const journey = document.querySelector("#data-act-journey");
+  journey.innerHTML = (state.architecture.data_act_user_journey || [])
+    .map(
+      (step) => `
+        <article class="item">
+          <h3>${step.step}. ${step.name}</h3>
+          <p>${step.control}</p>
+          <div class="meta">${pill(step.evidence)}</div>
+        </article>
+      `,
+    )
+    .join("");
+
+  const products = document.querySelector("#data-act-product-table");
+  products.innerHTML = (state.architecture.data_act_connected_products || [])
+    .map(
+      (product) => `
+        <tr>
+          <td>
+            <strong>${product.connected_product}</strong>
+            <small>${product.product_id}</small>
+          </td>
+          <td>${product.generated_data.join(", ")}</td>
+          <td>${product.default_access}</td>
+          <td>${product.third_party_sharing}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const channels = document.querySelector("#data-act-channel-table");
+  channels.innerHTML = (state.architecture.data_act_access_channels || [])
+    .map(
+      (channel) => `
+        <tr>
+          <td>
+            <strong>${channel.name}</strong>
+            <small>${channel.channel_id}</small>
+          </td>
+          <td>${channel.consumer}</td>
+          <td>${channel.delivery}</td>
+          <td>${channel.evidence_topics.join(", ")}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const obligations = document.querySelector("#data-act-obligation-list");
+  obligations.innerHTML = (state.architecture.data_act_obligations || [])
+    .map(
+      (obligation) => `
+        <article class="control">
+          <h3>${obligation.article}</h3>
+          <p>${obligation.control}</p>
+          <div class="meta">${pill(obligation.status, obligation.status)}</div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
 function renderResearch() {
   const context = state.architecture.research_context;
   const contextContainer = document.querySelector("#research-context");
@@ -269,6 +331,7 @@ function renderAll() {
   renderComponents();
   renderTopics();
   renderIntermediation();
+  renderDataAct();
   renderResearch();
   renderDga();
   renderOperations();

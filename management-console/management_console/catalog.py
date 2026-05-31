@@ -276,6 +276,41 @@ TOPICS: list[dict[str, str]] = [
         "classification": "research-output-record",
         "retention": "one year minimum, site policy required",
     },
+    {
+        "name": "dataact.product.catalog",
+        "plane": "governance",
+        "owner": "data-act-governance",
+        "classification": "connected-product-metadata",
+        "retention": "compacted catalogue",
+    },
+    {
+        "name": "dataact.user.access.requests",
+        "plane": "governance",
+        "owner": "data-act-governance",
+        "classification": "user-access-request",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "dataact.third_party.sharing",
+        "plane": "governance",
+        "owner": "data-act-governance",
+        "classification": "third-party-sharing-authorization",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "dataact.user.exports",
+        "plane": "governance",
+        "owner": "data-act-governance",
+        "classification": "user-export-evidence",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "dataact.safeguards",
+        "plane": "governance",
+        "owner": "data-act-governance",
+        "classification": "trade-secret-security-safeguard",
+        "retention": "compacted control register",
+    },
 ]
 
 DATA_PRODUCTS: list[dict[str, Any]] = [
@@ -335,6 +370,142 @@ DATA_PRODUCTS: list[dict[str, Any]] = [
         "format": "JSON",
         "interoperability_standard": "DEALIoT normalized event contract",
         "dga_gate": "preferred research sharing layer over raw topics",
+    },
+]
+
+DATA_ACT_CONNECTED_PRODUCTS: list[dict[str, Any]] = [
+    {
+        "product_id": "connected-device.telemetry",
+        "connected_product": "DEALIoT connected telemetry devices",
+        "related_services": ["MQTT ingestion", "WildFi decoding", "media metadata ingestion"],
+        "generated_data": ["raw.gps", "raw.sensor", "media object metadata"],
+        "user_roles": ["device owner", "field operator", "research data holder"],
+        "access_channels": ["dataact.direct-access", "dataact.user-export"],
+        "default_access": "available through mediated access, not unrestricted raw topics",
+        "third_party_sharing": "allowed only after user authorization and scope review",
+        "contract_status": "terms and user notices required before production",
+    },
+    {
+        "product_id": "related-service.analytics",
+        "connected_product": "DEALIoT derived analytics service",
+        "related_services": ["Flink feature projection", "latest-state API consumers"],
+        "generated_data": ["features.events", "state.latest"],
+        "user_roles": ["service customer", "research sponsor"],
+        "access_channels": ["dataact.direct-access", "dataact.third-party-transfer"],
+        "default_access": "preferred Data Act release layer for applications and researchers",
+        "third_party_sharing": "supported through scoped application or research packages",
+        "contract_status": "recipient terms and misuse restrictions required",
+    },
+]
+
+DATA_ACT_ACCESS_CHANNELS: list[dict[str, Any]] = [
+    {
+        "channel_id": "dataact.direct-access",
+        "name": "User direct access",
+        "consumer": "user",
+        "delivery": "secure API, controlled object access or minimised export",
+        "default_policy": "grant access to generated data after identity and entitlement checks",
+        "evidence_topics": [
+            "dataact.user.access.requests",
+            "dataact.user.exports",
+            "governance.intermediation.log",
+        ],
+    },
+    {
+        "channel_id": "dataact.third-party-transfer",
+        "name": "Third-party sharing by user request",
+        "consumer": "third party selected by user",
+        "delivery": "purpose-bound service account, signed export or controlled data package",
+        "default_policy": "share only fields, time windows and purpose authorized by the user",
+        "evidence_topics": [
+            "dataact.third_party.sharing",
+            "dataact.safeguards",
+            "governance.transfer.notices",
+        ],
+    },
+    {
+        "channel_id": "dataact.research-mediated",
+        "name": "Research access package",
+        "consumer": "scientist or research organisation",
+        "delivery": "DGA-mediated data product with Data Act user entitlement evidence",
+        "default_policy": "prefer derived or pseudonymised datasets before raw generated data",
+        "evidence_topics": [
+            "governance.research.projects",
+            "governance.access.requests",
+            "dataact.user.access.requests",
+        ],
+    },
+]
+
+DATA_ACT_OBLIGATIONS: list[dict[str, str]] = [
+    {
+        "id": "user-access",
+        "article": "Data Act Ch. II",
+        "status": "partial",
+        "control": "Expose generated connected-product data to entitled users through clear channels.",
+    },
+    {
+        "id": "third-party-sharing",
+        "article": "Data Act Ch. II",
+        "status": "partial",
+        "control": "Enable user-authorized sharing to third parties with purpose and scope records.",
+    },
+    {
+        "id": "fair-contractual-terms",
+        "article": "Data Act Ch. IV",
+        "status": "todo",
+        "control": "Review data-sharing terms for unfair clauses and transparent restrictions.",
+    },
+    {
+        "id": "interoperability-export",
+        "article": "Data Act Ch. VIII",
+        "status": "implemented",
+        "control": "Use JSON schemas, explicit formats and logged exports for portability.",
+    },
+    {
+        "id": "trade-secret-safeguards",
+        "article": "Data Act Ch. II",
+        "status": "partial",
+        "control": "Record proportionate safeguards before sharing sensitive generated data.",
+    },
+    {
+        "id": "no-dark-pattern-release",
+        "article": "Data Act Ch. II",
+        "status": "todo",
+        "control": "Define SLA, UX copy and operational path so user access is not obstructed.",
+    },
+]
+
+DATA_ACT_USER_JOURNEY: list[dict[str, str]] = [
+    {
+        "step": "1",
+        "name": "Connected product inventory",
+        "control": "Register product, related service, generated data and user role.",
+        "evidence": "dataact.product.catalog",
+    },
+    {
+        "step": "2",
+        "name": "User request",
+        "control": "Capture entitlement, requested scope, time range, purpose and recipient.",
+        "evidence": "dataact.user.access.requests",
+    },
+    {
+        "step": "3",
+        "name": "Safeguard check",
+        "control": "Apply security, privacy, trade-secret and misuse controls before release.",
+        "evidence": "dataact.safeguards",
+    },
+    {
+        "step": "4",
+        "name": "Delivery or third-party share",
+        "control": "Deliver data in a transparent format or transfer it to the user-selected party.",
+        "evidence": "dataact.user.exports, dataact.third_party.sharing",
+    },
+    {
+        "step": "5",
+        "name": "Audit and withdrawal",
+        "control": "Log access, stop sharing on withdrawal and retain evidence under policy.",
+        "evidence": "governance.intermediation.log",
     },
 ]
 
@@ -583,6 +754,11 @@ RUNBOOKS: list[dict[str, str]] = [
         "scope": "DGA role decision, intermediation evidence and data-sharing controls.",
     },
     {
+        "name": "Data Act",
+        "path": "docs/runbooks/data-act.md",
+        "scope": "User access, third-party sharing and generated connected-product data.",
+    },
+    {
         "name": "WildFi ingestion",
         "path": "docs/runbooks/wildfi-ingestion.md",
         "scope": "WildFi topic mapping, decoder use and data contracts.",
@@ -624,6 +800,16 @@ OPERATIONS: list[dict[str, Any]] = [
         "endpoint": "/api/dga",
         "scope": "safe",
         "description": "Lists DGA data products, obligations, evidence topics and open gaps.",
+    },
+    {
+        "id": "review-data-act-readiness",
+        "name": "Review Data Act readiness",
+        "method": "GET",
+        "endpoint": "/api/data-act",
+        "scope": "safe",
+        "description": (
+            "Lists connected products, user access channels, sharing evidence and open gaps."
+        ),
     },
     {
         "id": "review-intermediation-flow",
@@ -683,6 +869,24 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "control": "Maintain a log record of data intermediation activity.",
     },
     {
+        "id": "data-act-user-access",
+        "status": "partial",
+        "regulation": "Data Act",
+        "control": "Provide user access to generated connected-product data through logged channels.",
+    },
+    {
+        "id": "data-act-third-party-sharing",
+        "status": "partial",
+        "regulation": "Data Act",
+        "control": "Share data with third parties only on user authorization and scoped evidence.",
+    },
+    {
+        "id": "data-act-portability",
+        "status": "implemented",
+        "regulation": "Data Act",
+        "control": "Publish portable JSON contracts and export logs for released datasets.",
+    },
+    {
         "id": "retention",
         "status": "todo",
         "regulation": "GDPR, Data Act",
@@ -720,6 +924,10 @@ def catalog_payload() -> dict[str, Any]:
         "components": COMPONENTS,
         "topics": TOPICS,
         "data_products": DATA_PRODUCTS,
+        "data_act_connected_products": DATA_ACT_CONNECTED_PRODUCTS,
+        "data_act_access_channels": DATA_ACT_ACCESS_CHANNELS,
+        "data_act_obligations": DATA_ACT_OBLIGATIONS,
+        "data_act_user_journey": DATA_ACT_USER_JOURNEY,
         "intermediation_flow": INTERMEDIATION_FLOW,
         "consumer_profiles": CONSUMER_PROFILES,
         "dga_obligations": DGA_OBLIGATIONS,
@@ -729,6 +937,32 @@ def catalog_payload() -> dict[str, Any]:
         "runbooks": RUNBOOKS,
         "operations": OPERATIONS,
         "compliance_controls": COMPLIANCE_CONTROLS,
+    }
+
+
+def data_act_payload() -> dict[str, Any]:
+    return {
+        "connected_products": DATA_ACT_CONNECTED_PRODUCTS,
+        "access_channels": DATA_ACT_ACCESS_CHANNELS,
+        "obligations": DATA_ACT_OBLIGATIONS,
+        "user_journey": DATA_ACT_USER_JOURNEY,
+        "evidence_topics": [
+            topic
+            for topic in TOPICS
+            if topic["name"].startswith("dataact.")
+            or topic["name"] in {"governance.intermediation.log", "governance.transfer.notices"}
+        ],
+        "default_policy": {
+            "raw_topics": "denied by default unless scope, entitlement and safeguards are approved",
+            "preferred_delivery": [
+                "direct secure API",
+                "minimised export",
+                "controlled object access",
+                "DGA-mediated research data product",
+            ],
+            "third_party_sharing": "requires user authorization, recipient identity and purpose scope",
+            "research_access": "combine Data Act user entitlement with DGA research governance",
+        },
     }
 
 
