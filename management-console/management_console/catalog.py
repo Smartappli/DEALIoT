@@ -829,7 +829,9 @@ SECURITY_RESILIENCE_CONTROLS: list[dict[str, str]] = [
         "status": "partial",
         "domain": "incident-management",
         "evidence_topic": "security.incident.events",
-        "control": "Log incidents with severity, affected assets, deadlines and reporting channels.",
+        "control": (
+            "Log incidents with severity, affected assets, deadlines and reporting channels."
+        ),
     },
     {
         "id": "vulnerability-handling",
@@ -837,7 +839,9 @@ SECURITY_RESILIENCE_CONTROLS: list[dict[str, str]] = [
         "status": "partial",
         "domain": "secure-development",
         "evidence_topic": "security.vulnerability.findings",
-        "control": "Track vulnerabilities, CVEs, affected assets, due dates and remediation status.",
+        "control": (
+            "Track vulnerabilities, CVEs, affected assets, due dates and remediation status."
+        ),
     },
     {
         "id": "sbom-provenance",
@@ -877,7 +881,9 @@ SECURITY_RESILIENCE_CONTROLS: list[dict[str, str]] = [
         "status": "conditional",
         "domain": "scope",
         "evidence_topic": "resilience.operational.risk",
-        "control": "Apply DORA controls when DEALIoT is used by a financial entity or ICT provider.",
+        "control": (
+            "Apply DORA controls when DEALIoT is used by a financial entity or ICT provider."
+        ),
     },
 ]
 
@@ -918,7 +924,9 @@ DORA_OBLIGATIONS: list[dict[str, str]] = [
     {
         "id": "scope-assessment",
         "status": "conditional",
-        "control": "Confirm whether deployment supports a financial entity or critical ICT service.",
+        "control": (
+            "Confirm whether deployment supports a financial entity or critical ICT service."
+        ),
         "evidence": "resilience.operational.risk",
     },
     {
