@@ -36,9 +36,11 @@ class ZenodoExportUnitTests(unittest.TestCase):
         with patch.dict("os.environ", {}, clear=True):
             self.assertEqual(zenodo.zenodo_api_base_url(), zenodo.ZENODO_SANDBOX_API)
             self.assertEqual(zenodo.request_timeout_seconds(), zenodo.DEFAULT_TIMEOUT_SECONDS)
+            self.assertTrue(zenodo.is_zenodo_sandbox(zenodo.zenodo_api_base_url()))
 
         with patch.dict("os.environ", {"ZENODO_USE_SANDBOX": "false"}, clear=True):
             self.assertEqual(zenodo.zenodo_api_base_url(), zenodo.ZENODO_PRODUCTION_API)
+            self.assertFalse(zenodo.is_zenodo_sandbox(zenodo.zenodo_api_base_url()))
 
         with patch.dict(
             "os.environ",
@@ -50,6 +52,9 @@ class ZenodoExportUnitTests(unittest.TestCase):
 
         with patch.dict("os.environ", {"ZENODO_TIMEOUT_SECONDS": "invalid"}, clear=True):
             self.assertEqual(zenodo.request_timeout_seconds(), zenodo.DEFAULT_TIMEOUT_SECONDS)
+
+        self.assertFalse(zenodo.is_zenodo_sandbox("https://sandbox.zenodo.org.evil.test/api"))
+        self.assertFalse(zenodo.is_zenodo_sandbox("https://repo.test/sandbox.zenodo.org/api"))
 
     def test_metadata_maps_restricted_and_blocks_unsafe_open_release(self) -> None:
         dataset = zenodo.find_dataset("dataset.telemetry.sensor-minimised")
@@ -256,6 +261,19 @@ class ZenodoExportUnitTests(unittest.TestCase):
             zenodo.export_dataset_to_zenodo({"dataset_id": "dataset.features.latest-state"})
 
         self.assertEqual(missing_bucket.exception.error_code, "missing_zenodo_bucket")
+
+    def test_export_rejects_malformed_zenodo_link_urls(self) -> None:
+        with (
+            patch.dict("os.environ", {"ZENODO_ACCESS_TOKEN": "token"}, clear=True),
+            patch(
+                "management_console.zenodo._json_request",
+                return_value={"id": 10, "links": {"bucket": "file:///tmp/zenodo-bucket"}},
+            ),
+            self.assertRaises(zenodo.ZenodoExportError) as invalid_url,
+        ):
+            zenodo.export_dataset_to_zenodo({"dataset_id": "dataset.features.latest-state"})
+
+        self.assertEqual(invalid_url.exception.error_code, "invalid_zenodo_response_url")
 
     def test_http_helpers_parse_success_http_error_and_network_error(self) -> None:
         with patch(

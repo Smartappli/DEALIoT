@@ -8,7 +8,7 @@ from http import HTTPStatus
 from pathlib import Path
 from typing import Any, cast
 from urllib.parse import urlparse
-from xml.etree.ElementTree import Element, SubElement, register_namespace, tostring
+from xml.etree.ElementTree import Element, SubElement, register_namespace, tostring  # nosec B405
 
 from management_console.catalog import DATA_MANAGEMENT_PLANS, DATASETS
 
