@@ -1403,6 +1403,11 @@ RUNBOOKS: list[dict[str, str]] = [
         "scope": "User access, third-party sharing and generated connected-product data.",
     },
     {
+        "name": "Dataset catalogue and DMP",
+        "path": "docs/runbooks/data-management-plan.md",
+        "scope": "Dataset catalogue, FAIR metadata and Data Management Plan release gates.",
+    },
+    {
         "name": "WildFi ingestion",
         "path": "docs/runbooks/wildfi-ingestion.md",
         "scope": "WildFi topic mapping, decoder use and data contracts.",
