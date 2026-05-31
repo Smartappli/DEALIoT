@@ -53,11 +53,20 @@ class ZenodoExportUnitTests(unittest.TestCase):
     def test_metadata_maps_restricted_and_blocks_unsafe_open_release(self) -> None:
         dataset = zenodo.find_dataset("dataset.telemetry.sensor-minimised")
         dmp = zenodo.linked_dmp(dataset)
-        metadata = zenodo.build_zenodo_metadata(dataset, dmp, {})
+        metadata = zenodo.build_zenodo_metadata(
+            dataset,
+            dmp,
+            {
+                "creators": [{"name": "Researcher", "affiliation": "Lab"}],
+                "communities": [{"identifier": "dealiot"}],
+            },
+        )
 
         self.assertEqual(metadata["metadata"]["upload_type"], "dataset")
         self.assertEqual(metadata["metadata"]["access_right"], "restricted")
         self.assertIn("access_conditions", metadata["metadata"])
+        self.assertEqual(metadata["metadata"]["creators"][0]["name"], "Researcher")
+        self.assertEqual(metadata["metadata"]["communities"][0]["identifier"], "dealiot")
 
         with self.assertRaises(zenodo.ZenodoExportError) as blocked:
             zenodo.build_zenodo_metadata(dataset, dmp, {"access_right": "open"})
@@ -66,6 +75,10 @@ class ZenodoExportUnitTests(unittest.TestCase):
         open_dataset = dict(dataset, classification="public", access_mode="open")
         metadata = zenodo.build_zenodo_metadata(open_dataset, dmp, {"access_right": "open"})
         self.assertEqual(metadata["metadata"]["license"], "cc-by-4.0")
+
+        embargoed = dict(dataset, access_mode="embargoed")
+        self.assertEqual(zenodo.access_right_for_dataset(embargoed, {}), "embargoed")
+        self.assertIsNone(zenodo.linked_dmp({"dmp_id": "missing"}))
 
     def test_publish_requires_legal_review_and_manifest_contains_release_gates(self) -> None:
         dataset = zenodo.find_dataset("dataset.features.latest-state")
@@ -85,6 +98,9 @@ class ZenodoExportUnitTests(unittest.TestCase):
         )
 
     def test_staged_files_are_restricted_to_configured_directory(self) -> None:
+        self.assertEqual(zenodo.staged_files_from_payload({"staged_files": None}), [])
+        self.assertEqual(zenodo.staged_files_from_payload({"staged_files": []}), [])
+
         with tempfile.TemporaryDirectory() as tmpdir:
             base = Path(tmpdir)
             allowed = base / "dataset.json"
@@ -97,6 +113,10 @@ class ZenodoExportUnitTests(unittest.TestCase):
                 with self.assertRaises(zenodo.ZenodoExportError) as blocked:
                     zenodo.staged_files_from_payload({"staged_files": ["../outside.json"]})
                 self.assertEqual(blocked.exception.error_code, "invalid_staged_file")
+
+                with self.assertRaises(zenodo.ZenodoExportError) as invalid_item:
+                    zenodo.staged_files_from_payload({"staged_files": [None]})
+                self.assertEqual(invalid_item.exception.error_code, "invalid_staged_file")
 
             with self.assertRaises(zenodo.ZenodoExportError):
                 zenodo.staged_files_from_payload({"staged_files": "dataset.json"})
@@ -113,6 +133,13 @@ class ZenodoExportUnitTests(unittest.TestCase):
         ):
             zenodo.export_dataset_to_zenodo({"dataset_id": "dataset.features.latest-state"})
         self.assertEqual(missing_token.exception.error_code, "missing_zenodo_token")
+
+        with (
+            patch.dict("os.environ", {"ZENODO_ACCESS_TOKEN": "token"}, clear=True),
+            self.assertRaises(zenodo.ZenodoExportError) as missing_id,
+        ):
+            zenodo.export_dataset_to_zenodo({})
+        self.assertEqual(missing_id.exception.error_code, "missing_dataset_id")
 
         with (
             patch.dict("os.environ", {"ZENODO_ACCESS_TOKEN": "token"}, clear=True),
@@ -216,6 +243,19 @@ class ZenodoExportUnitTests(unittest.TestCase):
         self.assertEqual(calls[-1][0], "POST")
         self.assertIn(b"dealiot.zenodo.dataset_export", uploads[0][2])
 
+    def test_export_rejects_zenodo_response_without_bucket(self) -> None:
+        with (
+            patch.dict("os.environ", {"ZENODO_ACCESS_TOKEN": "token"}, clear=True),
+            patch(
+                "management_console.zenodo._json_request",
+                return_value={"id": 10, "links": {}},
+            ),
+            self.assertRaises(zenodo.ZenodoExportError) as missing_bucket,
+        ):
+            zenodo.export_dataset_to_zenodo({"dataset_id": "dataset.features.latest-state"})
+
+        self.assertEqual(missing_bucket.exception.error_code, "missing_zenodo_bucket")
+
     def test_http_helpers_parse_success_http_error_and_network_error(self) -> None:
         with patch(
             "management_console.zenodo.request.urlopen",
@@ -227,6 +267,40 @@ class ZenodoExportUnitTests(unittest.TestCase):
                 "token",
             )
         self.assertEqual(result, {"ok": True})
+
+        with patch(
+            "management_console.zenodo.request.urlopen",
+            return_value=FakeResponse(b'{"file":"ok"}'),
+        ):
+            result = zenodo._bytes_request(  # noqa: SLF001
+                "PUT",
+                "https://zenodo.example/api/files/data.json",
+                "token",
+                b"{}",
+                "application/json",
+            )
+        self.assertEqual(result, {"file": "ok"})
+
+        uploaded: list[tuple[str, str, bytes, str]] = []
+
+        def fake_bytes_request(
+            method: str,
+            url: str,
+            _token: str,
+            body: bytes,
+            content_type: str,
+        ) -> dict[str, str]:
+            uploaded.append((method, url, body, content_type))
+            return {"url": url}
+
+        with patch("management_console.zenodo._bytes_request", side_effect=fake_bytes_request):
+            result = zenodo.upload_file_to_bucket(
+                "https://zenodo.example/api/files",
+                "token",
+                "data file.json",
+                b"{}",
+            )
+        self.assertIn("data%20file.json", result["url"])
 
         rejected = error.HTTPError(
             "https://zenodo.example",
