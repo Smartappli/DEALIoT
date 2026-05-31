@@ -186,6 +186,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `dataact.third_party.sharing` | User-authorized third-party sharing evidence | 6 | 3 |
 | `dataact.user.exports` | User export and delivery evidence | 6 | 3 |
 | `dataact.safeguards` | Data Act security and trade-secret safeguards | 3 | 3 |
+| `dataact.legal_basis.checks` | Data Act and personal-data release checks | 6 | 3 |
 | `security.asset.inventory` | Security asset inventory and ownership | 3 | 3 |
 | `security.incident.events` | NIS2/DORA/CRA incident evidence | 6 | 3 |
 | `security.vulnerability.findings` | Vulnerability and remediation register | 6 | 3 |
@@ -194,6 +195,10 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `resilience.backup.tests` | Restore test, RPO and RTO evidence | 3 | 3 |
 | `resilience.operational.risk` | ICT and operational risk register | 3 | 3 |
 | `resilience.third_party.risk` | ICT supplier and exit-plan register | 3 | 3 |
+| `compliance.scope.decisions` | Regulatory scope decision register | 3 | 3 |
+| `compliance.control.assessments` | Compliance control assessment evidence | 6 | 3 |
+| `compliance.reporting.channels` | Regulatory reporting channel register | 3 | 3 |
+| `cra.product.lifecycle` | CRA product support and update lifecycle | 3 | 3 |
 | `kafkasql-journal-v3` | Apicurio KafkaSQL journal | 1 | 3 |
 | `kafkasql-snapshots-v3` | Apicurio KafkaSQL snapshots | 1 | 3 |
 | `registry-events-v3` | Apicurio registry events | 1 | 3 |
@@ -223,6 +228,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `dataact.third_party.sharing`
 - `dataact.user.exports`
 - `dataact.safeguards`
+- `dataact.legal_basis.checks`
 - `security.asset.inventory`
 - `security.incident.events`
 - `security.vulnerability.findings`
@@ -231,6 +237,10 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `resilience.backup.tests`
 - `resilience.operational.risk`
 - `resilience.third_party.risk`
+- `compliance.scope.decisions`
+- `compliance.control.assessments`
+- `compliance.reporting.channels`
+- `cra.product.lifecycle`
 
 ### WildFi ingestion
 
