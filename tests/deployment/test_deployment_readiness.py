@@ -426,6 +426,49 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("image_name: wildfi-decoder", workflow_text)
         self.assertIn("WILDFI_DECODER_GIT_REF", workflow_text)
 
+    def test_security_workflows_cover_static_and_dependency_scanning(self) -> None:
+        bandit_text = (REPO_ROOT / ".github" / "workflows" / "bandit.yml").read_text(
+            encoding="utf-8"
+        )
+        ossar_text = (REPO_ROOT / ".github" / "workflows" / "ossar.yml").read_text(
+            encoding="utf-8"
+        )
+        osv_text = (REPO_ROOT / ".github" / "workflows" / "osv-scanner.yml").read_text(
+            encoding="utf-8"
+        )
+        codeql_text = (REPO_ROOT / ".github" / "workflows" / "codeql.yml").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("shundor/python-bandit-scan", bandit_text)
+        self.assertIn("excluded_paths: \".git,.venv,build,dist,grafana,secrets,tests\"", bandit_text)
+        self.assertIn("security-events: write", bandit_text)
+        self.assertIn("github/ossar-action", ossar_text)
+        self.assertIn("github/codeql-action/upload-sarif", ossar_text)
+        self.assertIn("google/osv-scanner-action/.github/workflows", osv_text)
+        self.assertIn("--skip-git", osv_text)
+        self.assertIn("github/codeql-action/init", codeql_text)
+        self.assertIn("github/codeql-action/analyze", codeql_text)
+
+    def test_quality_workflows_run_expected_validation_tools(self) -> None:
+        shellcheck_text = (REPO_ROOT / ".github" / "workflows" / "shellcheck.yml").read_text(
+            encoding="utf-8"
+        )
+        sonarqube_text = (REPO_ROOT / ".github" / "workflows" / "sonarqube.yml").read_text(
+            encoding="utf-8"
+        )
+        renovate_text = (REPO_ROOT / ".github" / "workflows" / "renovate.yml").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("find ./scripts ./flink/jobs ./beam", shellcheck_text)
+        self.assertIn("shellcheck -S warning", shellcheck_text)
+        self.assertIn("pytest --cov=. --cov-report=xml --cov-report=term-missing", sonarqube_text)
+        self.assertIn("--cov-fail-under=90", sonarqube_text)
+        self.assertIn("SonarSource/sonarqube-scan-action", sonarqube_text)
+        self.assertIn("python -m json.tool renovate.json", renovate_text)
+        self.assertIn("renovatebot/github-action", renovate_text)
+
     def test_github_actions_are_pinned_to_full_length_commit_sha(self) -> None:
         workflow_paths = sorted((REPO_ROOT / ".github" / "workflows").glob("*.yml"))
 
