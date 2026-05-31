@@ -34,6 +34,7 @@ DEALIoT uses dedicated Data Act evidence topics:
 | `dataact.legal_basis.checks` | GDPR legal-basis check for personal data in Data Act releases |
 | `governance.dataset.catalog` | dataset release metadata, access mode and reuse policy |
 | `governance.data_management_plans` | DMP for research or third-party dataset release |
+| `compliance.legal.dossier` | Data Act notice, sharing terms and release-gate approval |
 
 These topics hold governance metadata only. Raw telemetry, GPS, media or research payloads stay in
 the restricted ingestion, processing or object-storage planes.
@@ -93,3 +94,4 @@ Before enabling Data Act sharing:
 4. Confirm safeguards are documented and proportionate.
 5. Confirm research access also passes the DGA research project gate.
 6. Export the Data Act evidence topics and attach them to the release record.
+7. Approve Data Act notice and sharing artefacts in `compliance.legal.dossier`.

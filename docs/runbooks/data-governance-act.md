@@ -44,6 +44,7 @@ DEALIoT uses a dedicated governance plane for DGA evidence:
 | `governance.data_management_plans` | Data Management Plan for datasets, retention, sharing and preservation |
 | `compliance.scope.decisions` | DGA role and notification scope decision |
 | `compliance.reporting.channels` | competent authority, notification template and owner |
+| `compliance.legal.dossier` | DGA notification, neutrality and sharing-term approval evidence |
 
 These topics must not contain raw telemetry or media. Store only the minimum metadata required to
 prove governance decisions and operate the intermediation service.
@@ -104,3 +105,4 @@ Before production data sharing:
 6. Test permission grant, withdrawal and denial workflows.
 7. Test unauthorised transfer notice handling.
 8. Export the governance evidence topics and attach them to the release record.
+9. Approve DGA legal dossier artefacts in `compliance.legal.dossier`.
