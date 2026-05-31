@@ -53,5 +53,6 @@ Before releasing a dataset to an application, third party, scientist or reposito
 4. Prefer derived, minimised or aggregated datasets over raw GPS, raw payloads and media.
 5. Complete disclosure review before publication.
 6. Create a Zenodo draft only after catalogue and DMP checks.
-7. Log export or sharing evidence in the Data Act, DGA or repository export topics.
-8. Keep the legal dossier gate approved for the target release mode.
+7. Create OpenAIRE metadata packages only after catalogue, DMP and metadata rights checks.
+8. Log export or sharing evidence in the Data Act, DGA or repository export topics.
+9. Keep the legal dossier gate approved for the target release mode.

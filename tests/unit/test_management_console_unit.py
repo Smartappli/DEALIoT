@@ -127,6 +127,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         dmp_ids = {dmp["dmp_id"] for dmp in payload["data_management_plans"]}
         control_ids = {control["id"] for control in payload["controls"]}
         evidence_topics = {topic["name"] for topic in payload["evidence_topics"]}
+        operation_ids = {operation["id"] for operation in catalog_payload()["operations"]}
 
         self.assertIn("dataset.telemetry.sensor-minimised", dataset_ids)
         self.assertIn("dmp.precision-agriculture.template", dmp_ids)
@@ -146,6 +147,15 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn(
             "draft-first",
             {control["id"] for control in payload["zenodo_export_policy"]},
+        )
+        self.assertIn(
+            "metadata-first",
+            {control["id"] for control in payload["openaire_export_policy"]},
+        )
+        self.assertIn("export-dataset-openaire", operation_ids)
+        self.assertEqual(
+            payload["default_policy"]["openaire_export"],
+            "metadata package; OpenAIRE PROVIDE registration required",
         )
 
     def test_data_act_payload_exposes_user_access_and_third_party_sharing(self) -> None:
@@ -233,6 +243,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("eprivacy-terminal-access", control_ids)
         self.assertIn("product-market-scope", control_ids)
         self.assertIn("zenodo-repository-export", control_ids)
+        self.assertIn("openaire-discovery-export", control_ids)
         self.assertEqual(payload["legal_dossier_topic"], "compliance.legal.dossier")
         self.assertIn("technical evidence baseline only", payload["verdict"])
 
@@ -249,14 +260,17 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dpia-aipd", dossier_ids)
         self.assertIn("data-sharing-agreement", dossier_ids)
         self.assertIn("zenodo-publication-approval", dossier_ids)
+        self.assertIn("openaire-discovery-approval", dossier_ids)
         self.assertIn("production-go-live", gate_ids)
         self.assertIn("dataset-sharing", gate_ids)
         self.assertIn("zenodo-publication", gate_ids)
+        self.assertIn("external-catalog-discovery", gate_ids)
         self.assertIn("ropa-template", template_ids)
         self.assertIn("data-act-notice-template", template_ids)
         self.assertIn("processor-dpa-checklist", template_ids)
         self.assertIn("dga-role-notification-template", template_ids)
         self.assertIn("cra-conformity-file-template", template_ids)
+        self.assertIn("openaire-discovery-approval", template_ids)
         self.assertEqual(finalization["architecture-controls"], "finalized")
         self.assertEqual(finalization["production-approval"], "approval_required")
         self.assertIn("compliance.legal.dossier", evidence_topics)
@@ -286,8 +300,11 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("legal_templates", javascript)
         self.assertIn("legal_finalization_items", javascript)
         self.assertIn('id="zenodo-export-policy"', html)
+        self.assertIn('id="openaire-export-policy"', html)
         self.assertIn("zenodo_export_policy", javascript)
+        self.assertIn("openaire_export_policy", javascript)
         self.assertIn("zenodo-export", javascript)
+        self.assertIn("openaire-export", javascript)
 
     def test_research_payload_exposes_research_collection_context(self) -> None:
         payload = research_payload()

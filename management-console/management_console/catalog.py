@@ -660,6 +660,39 @@ ZENODO_EXPORT_POLICY: list[dict[str, str]] = [
     },
 ]
 
+OPENAIRE_EXPORT_POLICY: list[dict[str, str]] = [
+    {
+        "id": "metadata-first",
+        "status": "implemented",
+        "control": "OpenAIRE export creates metadata packages, not raw dataset uploads.",
+        "evidence": "governance.repository.exports",
+    },
+    {
+        "id": "datacite-profile",
+        "status": "implemented",
+        "control": "Export uses DataCite XML aligned with OpenAIRE Data Archive guidelines.",
+        "evidence": "governance.repository.exports",
+    },
+    {
+        "id": "provide-registration",
+        "status": "partial",
+        "control": "OpenAIRE discovery requires a repository or OAI-PMH source in PROVIDE.",
+        "evidence": "compliance.legal.dossier",
+    },
+    {
+        "id": "classification-gate",
+        "status": "implemented",
+        "control": "Open access metadata is blocked for non-public datasets.",
+        "evidence": "dataact.legal_basis.checks",
+    },
+    {
+        "id": "legal-discovery-gate",
+        "status": "partial",
+        "control": "Discovery export requires catalogue, DMP and legal dossier approval.",
+        "evidence": "compliance.legal.dossier",
+    },
+]
+
 DATA_ACT_CONNECTED_PRODUCTS: list[dict[str, Any]] = [
     {
         "product_id": "connected-device.telemetry",
@@ -1667,6 +1700,16 @@ LEGAL_COMPLIANCE_DOSSIER: list[dict[str, str]] = [
         "evidence_topic": "governance.repository.exports",
         "required_before": "repository-publication",
     },
+    {
+        "id": "openaire-discovery-approval",
+        "regulation": "GDPR, DGA, Data Act, Open Data Directive",
+        "owner": "research-governance",
+        "status": "partial",
+        "artifact": "OpenAIRE discovery approval bound to catalogue, DMP and metadata rights.",
+        "control": "Block external discovery metadata until access rights and legal gates match.",
+        "evidence_topic": "governance.repository.exports",
+        "required_before": "external-catalog-discovery",
+    },
 ]
 
 LEGAL_RELEASE_GATES: list[dict[str, str]] = [
@@ -1699,6 +1742,16 @@ LEGAL_RELEASE_GATES: list[dict[str, str]] = [
             "decision"
         ),
         "block_rule": "Only draft creation is allowed until legal_review_approved is true.",
+    },
+    {
+        "id": "external-catalog-discovery",
+        "status": "blocked",
+        "before": "OpenAIRE or external catalogue discovery exposure.",
+        "required_artifacts": (
+            "openaire-discovery-approval, dataset catalogue, DMP, landing page and "
+            "metadata rights decision"
+        ),
+        "block_rule": "No public discovery metadata until access right matches classification.",
     },
     {
         "id": "third-party-sharing",
@@ -1826,6 +1879,12 @@ LEGAL_TEMPLATES: list[dict[str, str]] = [
         "regulation": "GDPR, DGA, Data Act, Open Data Directive",
         "path": "docs/compliance/templates/zenodo-publication-approval.md",
         "purpose": "Legal approval checklist before publishing a Zenodo record.",
+    },
+    {
+        "id": "openaire-discovery-approval",
+        "regulation": "GDPR, DGA, Data Act, Open Data Directive",
+        "path": "docs/compliance/templates/openaire-discovery-approval.md",
+        "purpose": "Legal approval checklist before exposing metadata to OpenAIRE.",
     },
 ]
 
@@ -2134,6 +2193,16 @@ OPERATIONS: list[dict[str, Any]] = [
         "requires": ["ZENODO_ACCESS_TOKEN"],
     },
     {
+        "id": "export-dataset-openaire",
+        "name": "Create OpenAIRE metadata package",
+        "method": "POST",
+        "endpoint": "/api/datasets/openaire/export",
+        "scope": "controlled",
+        "description": (
+            "Creates OpenAIRE/DataCite metadata package for PROVIDE or OAI-PMH exposure."
+        ),
+    },
+    {
         "id": "review-intermediation-flow",
         "name": "Review intermediation flow",
         "method": "GET",
@@ -2235,6 +2304,14 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "status": "partial",
         "regulation": "DGA, Data Act, GDPR, Open Data Directive",
         "control": "Export datasets to Zenodo as draft records with DMP and legal release gates.",
+    },
+    {
+        "id": "openaire-discovery-export",
+        "status": "partial",
+        "regulation": "DGA, Data Act, GDPR, Open Data Directive",
+        "control": (
+            "Export OpenAIRE-compatible metadata packages for discovery without raw upload."
+        ),
     },
     {
         "id": "dga-activity-log",
@@ -2392,6 +2469,7 @@ def catalog_payload() -> dict[str, Any]:
         "data_management_plans": DATA_MANAGEMENT_PLANS,
         "dmp_controls": DMP_CONTROLS,
         "zenodo_export_policy": ZENODO_EXPORT_POLICY,
+        "openaire_export_policy": OPENAIRE_EXPORT_POLICY,
         "data_act_connected_products": DATA_ACT_CONNECTED_PRODUCTS,
         "data_act_access_channels": DATA_ACT_ACCESS_CHANNELS,
         "data_act_obligations": DATA_ACT_OBLIGATIONS,
@@ -2520,6 +2598,7 @@ def dataset_payload() -> dict[str, Any]:
         "data_management_plans": DATA_MANAGEMENT_PLANS,
         "controls": DMP_CONTROLS,
         "zenodo_export_policy": ZENODO_EXPORT_POLICY,
+        "openaire_export_policy": OPENAIRE_EXPORT_POLICY,
         "evidence_topics": [
             topic
             for topic in TOPICS
@@ -2536,6 +2615,7 @@ def dataset_payload() -> dict[str, Any]:
             "preferred_publication": "derived, minimised or aggregated datasets",
             "fair_metadata": "schema, provenance, steward, access and preservation fields required",
             "zenodo_publish": "draft first; legal_review_approved required for publication",
+            "openaire_export": "metadata package; OpenAIRE PROVIDE registration required",
         },
     }
 
@@ -2664,6 +2744,7 @@ def research_payload() -> dict[str, Any]:
         "data_management_plans": DATA_MANAGEMENT_PLANS,
         "dmp_controls": DMP_CONTROLS,
         "zenodo_export_policy": ZENODO_EXPORT_POLICY,
+        "openaire_export_policy": OPENAIRE_EXPORT_POLICY,
         "research_topics": [
             topic
             for topic in TOPICS

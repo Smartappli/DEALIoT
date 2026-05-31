@@ -13,6 +13,7 @@ what still requires real organisational approval.
 | Dataset catalogue | finalised | `governance.dataset.catalog` and management console dataset view |
 | Data Management Plan | finalised | `governance.data_management_plans` and DMP controls |
 | Zenodo export | finalised | draft-first export, manifest upload and legal publication gate |
+| OpenAIRE export | finalised | DataCite/OpenAIRE metadata package and external discovery gate |
 | DGA/Data Act intermediation | finalised | access, permission, intermediation, research and sharing evidence topics |
 | NIS2/DORA/CRA evidence plane | finalised | security, resilience, incident, vulnerability, SBOM and reporting topics |
 | Legal dossier | finalised | `compliance.legal.dossier` schema, templates and UI |

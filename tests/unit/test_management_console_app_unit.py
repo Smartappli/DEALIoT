@@ -300,6 +300,10 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             zenodo_config = read_json(f"{base_url}/api/datasets/zenodo")
             self.assertEqual(zenodo_config["repository"], "Zenodo")
 
+            openaire_config = read_json(f"{base_url}/api/datasets/openaire")
+            self.assertEqual(openaire_config["catalogue"], "OpenAIRE")
+            self.assertFalse(openaire_config["direct_upload_supported"])
+
             legal_compliance = read_json(f"{base_url}/api/legal-compliance")
             self.assertEqual(
                 legal_compliance["default_policy"]["legal_verdict"],
@@ -350,6 +354,19 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 )
                 response = read_json_from_request(post)
             self.assertEqual(response["status"], "draft_created")
+
+            with patch(
+                "management_console.app.export_dataset_to_openaire",
+                return_value={"status": "metadata_package_created", "dataset_id": "dataset"},
+            ):
+                post = request.Request(  # noqa: S310
+                    f"{base_url}/api/datasets/openaire/export",
+                    data=b'{"dataset_id":"dataset.telemetry.sensor-minimised"}',
+                    method="POST",
+                    headers={"Content-Type": "application/json"},
+                )
+                response = read_json_from_request(post)
+            self.assertEqual(response["status"], "metadata_package_created")
 
             with patch(
                 "management_console.app.export_dataset_to_zenodo",

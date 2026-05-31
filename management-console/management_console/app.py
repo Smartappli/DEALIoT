@@ -28,6 +28,11 @@ from management_console.catalog import (
     research_payload,
     security_resilience_payload,
 )
+from management_console.openaire import (
+    OpenAIREExportError,
+    export_dataset_to_openaire,
+    openaire_export_payload,
+)
 from management_console.zenodo import (
     ZenodoExportError,
     export_dataset_to_zenodo,
@@ -272,6 +277,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
             "/api/cra": lambda: self.respond_json(cra_payload()),
             "/api/data-act": lambda: self.respond_json(data_act_payload()),
             "/api/datasets": lambda: self.respond_json(dataset_payload()),
+            "/api/datasets/openaire": lambda: self.respond_json(openaire_export_payload()),
             "/api/datasets/zenodo": lambda: self.respond_json(zenodo_export_payload()),
             "/api/dga": lambda: self.respond_json(dga_payload()),
             "/api/dora": lambda: self.respond_json(dora_payload()),
@@ -296,6 +302,10 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:
         actions = {
             "/api/operations/trigger-media-backfill": trigger_media_backfill,
+            "/api/datasets/openaire/export": lambda payload: (
+                HTTPStatus.CREATED,
+                export_dataset_to_openaire(payload),
+            ),
             "/api/datasets/zenodo/export": lambda payload: (
                 HTTPStatus.CREATED,
                 export_dataset_to_zenodo(payload),
@@ -317,7 +327,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
 
         try:
             status, response_payload = action(payload)
-        except ZenodoExportError as exc:
+        except (OpenAIREExportError, ZenodoExportError) as exc:
             self.respond_json(
                 {"error": exc.error_code, "detail": exc.detail},
                 status=exc.status,
