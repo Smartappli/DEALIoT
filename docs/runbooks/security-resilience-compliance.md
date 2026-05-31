@@ -30,6 +30,7 @@ If the scope is uncertain, keep the controls enabled and mark the legal scope de
 | `compliance.scope.decisions` | in-scope, out-of-scope or conditional regulatory decisions |
 | `compliance.control.assessments` | control status, evidence, gaps, owner and next action |
 | `compliance.reporting.channels` | authority, trigger, deadline, template and owner |
+| `compliance.legal.dossier` | legal artefacts, approvals and release-gate status |
 | `cra.product.lifecycle` | support period, update channel and vulnerability disclosure |
 
 These topics store control evidence only. Do not place secrets, exploit details, raw telemetry or
@@ -52,6 +53,7 @@ Before a production release:
    product with digital elements.
 9. Adjacent legal scope is recorded for GDPR, ePrivacy, AI Act, trade secrets, product legislation,
    open-data rules and EHDS where relevant.
+10. Mandatory legal dossier artefacts are approved in `compliance.legal.dossier`.
 
 ## NIS2 Controls
 
