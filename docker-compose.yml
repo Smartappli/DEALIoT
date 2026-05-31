@@ -547,6 +547,8 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.permission.events --partitions 6 --replication-factor 3 --config cleanup.policy=compact --config delete.retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.intermediation.log --partitions 12 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.transfer.notices --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.research.projects --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.research.outputs --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-journal-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-snapshots-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic registry-events-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
@@ -1864,6 +1866,8 @@ services:
         post_artifact governance governance.permission.events /bootstrap/governance.permission.events.json
         post_artifact governance governance.intermediation.log /bootstrap/governance.intermediation.log.json
         post_artifact governance governance.transfer.notices /bootstrap/governance.transfer.notices.json
+        post_artifact governance governance.research.projects /bootstrap/governance.research.projects.json
+        post_artifact governance governance.research.outputs /bootstrap/governance.research.outputs.json
 
         echo "Apicurio bootstrap done."
     networks:

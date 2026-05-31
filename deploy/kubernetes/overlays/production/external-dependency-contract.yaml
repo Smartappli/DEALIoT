@@ -29,6 +29,8 @@ data:
           - governance.permission.events
           - governance.intermediation.log
           - governance.transfer.notices
+          - governance.research.projects
+          - governance.research.outputs
         required_governance:
           notification_status: required_if_data_intermediation_service
           neutrality: separate_intermediation_context
@@ -36,6 +38,8 @@ data:
           intermediation_activity_log: governance.intermediation.log
           data_product_catalog: governance.data.products
           unauthorised_transfer_notice_log: governance.transfer.notices
+          research_project_register: governance.research.projects
+          research_output_register: governance.research.outputs
       mqtt:
         endpoint_config_keys:
           - MQTT_HOST
