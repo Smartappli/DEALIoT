@@ -11,10 +11,14 @@ sys.path.insert(0, str(REPO_ROOT / "management-console"))
 from management_console.app import configured_probe, first_host_port  # noqa: E402
 from management_console.catalog import (  # noqa: E402
     catalog_payload,
+    cra_payload,
     data_act_payload,
     dga_payload,
+    dora_payload,
     intermediation_payload,
+    nis2_payload,
     research_payload,
+    security_resilience_payload,
 )
 
 
@@ -29,12 +33,16 @@ class ManagementConsoleUnitTests(unittest.TestCase):
             product["product_id"] for product in payload["data_act_connected_products"]
         }
         research_control_ids = {control["id"] for control in payload["research_controls"]}
+        security_control_ids = {
+            control["id"] for control in payload["security_resilience_controls"]
+        }
         profile_ids = {profile["profile_id"] for profile in payload["consumer_profiles"]}
 
         self.assertIn("kafka", component_ids)
         self.assertIn("airflow", component_ids)
         self.assertIn("flink", component_ids)
         self.assertIn("data-governance", component_ids)
+        self.assertIn("security-resilience", component_ids)
         self.assertIn("raw.gps", topic_names)
         self.assertIn("dlq.events", topic_names)
         self.assertIn("governance.intermediation.log", topic_names)
@@ -43,9 +51,15 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dataact.product.catalog", topic_names)
         self.assertIn("dataact.user.access.requests", topic_names)
         self.assertIn("dataact.third_party.sharing", topic_names)
+        self.assertIn("security.incident.events", topic_names)
+        self.assertIn("security.vulnerability.findings", topic_names)
+        self.assertIn("security.sbom.attestations", topic_names)
+        self.assertIn("resilience.backup.tests", topic_names)
         self.assertIn("telemetry.raw.gps", data_product_ids)
         self.assertIn("connected-device.telemetry", data_act_products)
         self.assertIn("research-protocol", research_control_ids)
+        self.assertIn("incident-reporting", security_control_ids)
+        self.assertIn("third-party-ict-risk", security_control_ids)
         self.assertIn("application.operational", profile_ids)
         self.assertIn("researcher.external", profile_ids)
         self.assertIn("refresh-health", operation_ids)
@@ -53,6 +67,10 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("review-data-act-readiness", operation_ids)
         self.assertIn("review-intermediation-flow", operation_ids)
         self.assertIn("review-research-readiness", operation_ids)
+        self.assertIn("review-security-resilience-readiness", operation_ids)
+        self.assertIn("review-nis2-readiness", operation_ids)
+        self.assertIn("review-dora-readiness", operation_ids)
+        self.assertIn("review-cra-readiness", operation_ids)
         self.assertIn("trigger-media-backfill", operation_ids)
 
     def test_dga_payload_exposes_evidence_topics_and_obligations(self) -> None:
@@ -85,6 +103,34 @@ class ManagementConsoleUnitTests(unittest.TestCase):
             payload["default_policy"]["third_party_sharing"],
             "requires user authorization, recipient identity and purpose scope",
         )
+
+    def test_security_resilience_payload_exposes_nis2_dora_and_cra_controls(self) -> None:
+        payload = security_resilience_payload()
+        evidence_topics = {topic["name"] for topic in payload["evidence_topics"]}
+        control_ids = {control["id"] for control in payload["controls"]}
+        gate_ids = {gate["gate"] for gate in payload["release_gates"]}
+
+        self.assertIn("security.asset.inventory", evidence_topics)
+        self.assertIn("security.incident.events", evidence_topics)
+        self.assertIn("security.vulnerability.findings", evidence_topics)
+        self.assertIn("security.sbom.attestations", evidence_topics)
+        self.assertIn("resilience.operational.risk", evidence_topics)
+        self.assertIn("incident-reporting", control_ids)
+        self.assertIn("dora-scope", control_ids)
+        self.assertIn("release-supply-chain", gate_ids)
+        self.assertEqual(
+            payload["default_policy"]["plaintext_production_protocols"],
+            "not allowed",
+        )
+
+    def test_regulation_specific_payloads_are_filtered(self) -> None:
+        nis2_controls = {control["id"] for control in nis2_payload()["controls"]}
+        dora_controls = {control["id"] for control in dora_payload()["controls"]}
+        cra_controls = {control["id"] for control in cra_payload()["controls"]}
+
+        self.assertIn("continuity-testing", nis2_controls)
+        self.assertIn("dora-scope", dora_controls)
+        self.assertIn("vulnerability-handling", cra_controls)
 
     def test_research_payload_exposes_research_collection_context(self) -> None:
         payload = research_payload()

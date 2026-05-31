@@ -20,6 +20,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "operations.md",
             REPO_ROOT / "docs" / "runbooks" / "backup-restore.md",
             REPO_ROOT / "docs" / "runbooks" / "security-hardening.md",
+            REPO_ROOT / "docs" / "runbooks" / "security-resilience-compliance.md",
             REPO_ROOT / "docs" / "runbooks" / "data-governance-act.md",
             REPO_ROOT / "docs" / "runbooks" / "data-act.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
@@ -51,6 +52,14 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.third_party.sharing.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.user.exports.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.safeguards.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "security.asset.inventory.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "security.incident.events.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "security.vulnerability.findings.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "security.sbom.attestations.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "security.patch.events.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "resilience.backup.tests.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "resilience.operational.risk.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "resilience.third_party.risk.json",
         ]
 
         for file_path in bootstrap_files:
@@ -109,6 +118,21 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn(
             "post_artifact dataact dataact.third_party.sharing "
             "/bootstrap/dataact.third_party.sharing.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact security security.incident.events "
+            "/bootstrap/security.incident.events.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact security security.sbom.attestations "
+            "/bootstrap/security.sbom.attestations.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact resilience resilience.operational.risk "
+            "/bootstrap/resilience.operational.risk.json",
             compose_text,
         )
 
