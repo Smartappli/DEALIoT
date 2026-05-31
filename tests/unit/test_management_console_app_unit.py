@@ -300,6 +300,12 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             zenodo_config = read_json(f"{base_url}/api/datasets/zenodo")
             self.assertEqual(zenodo_config["repository"], "Zenodo")
 
+            legal_compliance = read_json(f"{base_url}/api/legal-compliance")
+            self.assertEqual(
+                legal_compliance["default_policy"]["legal_verdict"],
+                "reviewable baseline, not legal certification",
+            )
+
             with request.urlopen(f"{base_url}/", timeout=5) as response:  # noqa: S310
                 html = response.read().decode("utf-8")
             self.assertIn("DEALIoT Management Console", html)

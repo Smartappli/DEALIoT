@@ -18,6 +18,7 @@ from management_console.catalog import (  # noqa: E402
     dga_payload,
     dora_payload,
     intermediation_payload,
+    legal_compliance_payload,
     nis2_payload,
     research_payload,
     security_resilience_payload,
@@ -78,6 +79,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("review-nis2-readiness", operation_ids)
         self.assertIn("review-dora-readiness", operation_ids)
         self.assertIn("review-cra-readiness", operation_ids)
+        self.assertIn("review-legal-compliance", operation_ids)
         self.assertIn("trigger-media-backfill", operation_ids)
 
     def test_catalog_payload_contains_security_and_compliance_surfaces(self) -> None:
@@ -95,6 +97,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("resilience.backup.tests", topic_names)
         self.assertIn("compliance.scope.decisions", topic_names)
         self.assertIn("compliance.reporting.channels", topic_names)
+        self.assertIn("compliance.legal.dossier", topic_names)
         self.assertIn("cra.product.lifecycle", topic_names)
         self.assertIn("incident-reporting", security_control_ids)
         self.assertIn("scope-decisions", security_control_ids)
@@ -218,6 +221,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("compliance.scope.decisions", topic_names)
         self.assertIn("compliance.control.assessments", topic_names)
         self.assertIn("compliance.reporting.channels", topic_names)
+        self.assertIn("compliance.legal.dossier", topic_names)
         self.assertIn("dataact.legal_basis.checks", topic_names)
         self.assertIn("CRA", channels)
         self.assertIn("GDPR", channels)
@@ -226,10 +230,34 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertEqual(additional["AI Act"], "conditional")
         self.assertEqual(additional["EHDS"], "conditional")
         self.assertIn("gdpr-dpia-rights", control_ids)
+        self.assertIn("legal-dossier", control_ids)
         self.assertIn("eprivacy-terminal-access", control_ids)
         self.assertIn("product-market-scope", control_ids)
         self.assertIn("zenodo-repository-export", control_ids)
+        self.assertEqual(payload["legal_dossier_topic"], "compliance.legal.dossier")
         self.assertIn("technical evidence baseline only", payload["verdict"])
+
+    def test_legal_compliance_payload_exposes_dossier_gates_and_templates(self) -> None:
+        payload = legal_compliance_payload()
+        dossier_ids = {item["id"] for item in payload["legal_dossier"]}
+        gate_ids = {gate["id"] for gate in payload["release_gates"]}
+        template_ids = {template["id"] for template in payload["templates"]}
+        evidence_topics = {topic["name"] for topic in payload["evidence_topics"]}
+
+        self.assertIn("ropa-register", dossier_ids)
+        self.assertIn("dpia-aipd", dossier_ids)
+        self.assertIn("data-sharing-agreement", dossier_ids)
+        self.assertIn("zenodo-publication-approval", dossier_ids)
+        self.assertIn("production-go-live", gate_ids)
+        self.assertIn("dataset-sharing", gate_ids)
+        self.assertIn("zenodo-publication", gate_ids)
+        self.assertIn("ropa-template", template_ids)
+        self.assertIn("data-act-notice-template", template_ids)
+        self.assertIn("compliance.legal.dossier", evidence_topics)
+        self.assertEqual(
+            payload["default_policy"]["legal_verdict"],
+            "reviewable baseline, not legal certification",
+        )
 
     def test_compliance_ui_exposes_additional_legislation_matrix(self) -> None:
         html = (REPO_ROOT / "management-console" / "static" / "index.html").read_text(
@@ -242,6 +270,12 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn('id="additional-legislation-table"', html)
         self.assertIn("additional_legislation", javascript)
         self.assertIn("#additional-legislation-table", javascript)
+        self.assertIn('id="legal-dossier-table"', html)
+        self.assertIn('id="legal-release-gate-list"', html)
+        self.assertIn('id="legal-template-table"', html)
+        self.assertIn("legal_compliance_dossier", javascript)
+        self.assertIn("legal_release_gates", javascript)
+        self.assertIn("legal_templates", javascript)
         self.assertIn('id="zenodo-export-policy"', html)
         self.assertIn("zenodo_export_policy", javascript)
         self.assertIn("zenodo-export", javascript)
