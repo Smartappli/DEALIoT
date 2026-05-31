@@ -1660,6 +1660,11 @@ RUNBOOKS: list[dict[str, str]] = [
         "scope": "Dataset catalogue, FAIR metadata and Data Management Plan release gates.",
     },
     {
+        "name": "Zenodo dataset export",
+        "path": "docs/runbooks/zenodo-export.md",
+        "scope": "Zenodo draft, manifest upload, staging directory and publication gates.",
+    },
+    {
         "name": "WildFi ingestion",
         "path": "docs/runbooks/wildfi-ingestion.md",
         "scope": "WildFi topic mapping, decoder use and data contracts.",
