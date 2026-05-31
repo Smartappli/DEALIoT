@@ -156,7 +156,9 @@ COMPONENTS: list[dict[str, Any]] = [
         "probe": "http://management-console:8080/healthz",
         "ui": "http://localhost:8090",
         "depends_on": ["kafka", "apicurio", "flink"],
-        "data_scope": "data product catalogue, access decisions, permissions and activity evidence.",
+        "data_scope": (
+            "data product catalogue, access decisions, permissions and activity evidence."
+        ),
         "risk": "high",
     },
 ]

@@ -6,6 +6,9 @@ intermediation service.
 
 DEALIoT's default data collection purpose is scientific research. External access must therefore be
 project-bound, purpose-bound, and backed by research governance evidence before data is shared.
+There may also be an intermediation role between collected data and the applications or scientists
+that process it. In that mode, applications and researchers must consume mediated data products,
+not unrestricted raw topics or buckets.
 
 ## Scope Decision
 
@@ -41,10 +44,32 @@ DEALIoT uses a dedicated governance plane for DGA evidence:
 These topics must not contain raw telemetry or media. Store only the minimum metadata required to
 prove governance decisions and operate the intermediation service.
 
+## Intermediation Model
+
+The intermediation gateway sits between collected data and consumers:
+
+1. Raw MQTT, media and database-derived data lands in restricted ingestion/storage zones.
+2. Data products are registered in `governance.data.products`.
+3. Applications, pipelines or scientists submit access requests in `governance.access.requests`.
+4. The governance layer checks permissions, consent, research protocol and ethics status.
+5. Delivery uses derived topics, minimised exports or controlled object access by default.
+6. Every access, share, conversion, withdrawal and publication review is logged.
+
+Default consumer policy:
+
+| Consumer | Default access | Raw access |
+|---|---|---|
+| Operational applications | derived features and latest state | denied by default |
+| Analytics applications | derived data, minimised sensor fields | exceptional and scoped |
+| Internal scientists | project-bound derived or minimised datasets | requires protocol and ethics status |
+| External researchers | approved research access package | restricted and contract-bound |
+
 ## Operating Rules
 
 - Do not use mediated data for the platform operator's own purposes.
 - Keep research data product access mediated through documented access requests.
+- Do not allow applications or scientists to subscribe directly to raw topics unless an explicit
+  exception is approved and logged.
 - Publish clear allowed purposes, prohibited purposes, formats, retention and third-country rules.
 - Share data in the received format by default; only convert data for interoperability, legal
   requirements, or explicit request/approval.
