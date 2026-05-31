@@ -183,6 +183,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `governance.research.outputs` | Research outputs and disclosure review evidence | 6 | 3 |
 | `governance.dataset.catalog` | Dataset catalogue, FAIR metadata and access policy | 3 | 3 |
 | `governance.data_management_plans` | Data Management Plans for research and releases | 3 | 3 |
+| `governance.repository.exports` | Repository and Zenodo export evidence | 6 | 3 |
 | `dataact.product.catalog` | Data Act connected-product and related-service catalogue | 3 | 3 |
 | `dataact.user.access.requests` | Data Act user access requests and decisions | 6 | 3 |
 | `dataact.third_party.sharing` | User-authorized third-party sharing evidence | 6 | 3 |
@@ -227,6 +228,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `governance.research.outputs`
 - `governance.dataset.catalog`
 - `governance.data_management_plans`
+- `governance.repository.exports`
 - `dataact.product.catalog`
 - `dataact.user.access.requests`
 - `dataact.third_party.sharing`

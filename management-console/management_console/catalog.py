@@ -303,6 +303,13 @@ TOPICS: list[dict[str, str]] = [
         "retention": "compacted DMP register",
     },
     {
+        "name": "governance.repository.exports",
+        "plane": "governance",
+        "owner": "research-governance",
+        "classification": "repository-export-evidence",
+        "retention": "one year minimum, site policy required",
+    },
+    {
         "name": "dataact.product.catalog",
         "plane": "governance",
         "owner": "data-act-governance",
@@ -604,6 +611,45 @@ DMP_CONTROLS: list[dict[str, str]] = [
         "status": "partial",
         "control": "Review license, disclosure risk and reuse limits before publication.",
         "evidence": "governance.research.outputs",
+    },
+    {
+        "id": "zenodo-export",
+        "status": "partial",
+        "control": "Create Zenodo drafts only after dataset catalogue and DMP checks.",
+        "evidence": "governance.repository.exports",
+    },
+]
+
+ZENODO_EXPORT_POLICY: list[dict[str, str]] = [
+    {
+        "id": "draft-first",
+        "status": "implemented",
+        "control": "Zenodo exports create a draft record by default; publication is opt-in.",
+        "evidence": "governance.repository.exports",
+    },
+    {
+        "id": "manifest-upload",
+        "status": "implemented",
+        "control": "Each export uploads a dataset/DMP manifest for reproducibility.",
+        "evidence": "governance.repository.exports",
+    },
+    {
+        "id": "staged-files-only",
+        "status": "implemented",
+        "control": "Dataset files can be uploaded only from ZENODO_EXPORT_STAGING_DIR.",
+        "evidence": "governance.repository.exports",
+    },
+    {
+        "id": "legal-publication-gate",
+        "status": "implemented",
+        "control": "Publication requires legal_review_approved=true.",
+        "evidence": "compliance.control.assessments",
+    },
+    {
+        "id": "non-public-open-release-block",
+        "status": "implemented",
+        "control": "Open release is blocked for internal, restricted or personal datasets.",
+        "evidence": "dataact.legal_basis.checks",
     },
 ]
 
@@ -1675,6 +1721,15 @@ OPERATIONS: list[dict[str, Any]] = [
         "description": "Lists datasets, Data Management Plans and FAIR/release controls.",
     },
     {
+        "id": "export-dataset-zenodo",
+        "name": "Create Zenodo dataset draft",
+        "method": "POST",
+        "endpoint": "/api/datasets/zenodo/export",
+        "scope": "controlled",
+        "description": "Creates a Zenodo draft and uploads the dataset/DMP manifest.",
+        "requires": ["ZENODO_ACCESS_TOKEN"],
+    },
+    {
         "id": "review-intermediation-flow",
         "name": "Review intermediation flow",
         "method": "GET",
@@ -1762,6 +1817,12 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "status": "partial",
         "regulation": "DGA, Data Act, GDPR",
         "control": "Maintain dataset catalogue and DMP before research or third-party release.",
+    },
+    {
+        "id": "zenodo-repository-export",
+        "status": "partial",
+        "regulation": "DGA, Data Act, GDPR, Open Data Directive",
+        "control": "Export datasets to Zenodo as draft records with DMP and legal release gates.",
     },
     {
         "id": "dga-activity-log",
@@ -1910,6 +1971,7 @@ def catalog_payload() -> dict[str, Any]:
         "datasets": DATASETS,
         "data_management_plans": DATA_MANAGEMENT_PLANS,
         "dmp_controls": DMP_CONTROLS,
+        "zenodo_export_policy": ZENODO_EXPORT_POLICY,
         "data_act_connected_products": DATA_ACT_CONNECTED_PRODUCTS,
         "data_act_access_channels": DATA_ACT_ACCESS_CHANNELS,
         "data_act_obligations": DATA_ACT_OBLIGATIONS,
@@ -1999,17 +2061,23 @@ def dataset_payload() -> dict[str, Any]:
         "datasets": DATASETS,
         "data_management_plans": DATA_MANAGEMENT_PLANS,
         "controls": DMP_CONTROLS,
+        "zenodo_export_policy": ZENODO_EXPORT_POLICY,
         "evidence_topics": [
             topic
             for topic in TOPICS
             if topic["name"]
-            in {"governance.dataset.catalog", "governance.data_management_plans"}
+            in {
+                "governance.dataset.catalog",
+                "governance.data_management_plans",
+                "governance.repository.exports",
+            }
         ],
         "default_policy": {
             "dataset_release": "requires catalogue entry, DMP, access policy and review",
             "raw_dataset_access": "restricted by default",
             "preferred_publication": "derived, minimised or aggregated datasets",
             "fair_metadata": "schema, provenance, steward, access and preservation fields required",
+            "zenodo_publish": "draft first; legal_review_approved required for publication",
         },
     }
 
@@ -2074,6 +2142,7 @@ def data_act_payload() -> dict[str, Any]:
                 "governance.dataset.catalog",
                 "governance.data_management_plans",
                 "governance.intermediation.log",
+                "governance.repository.exports",
                 "governance.transfer.notices",
             }
         ],
@@ -2136,11 +2205,17 @@ def research_payload() -> dict[str, Any]:
         "datasets": DATASETS,
         "data_management_plans": DATA_MANAGEMENT_PLANS,
         "dmp_controls": DMP_CONTROLS,
+        "zenodo_export_policy": ZENODO_EXPORT_POLICY,
         "research_topics": [
             topic
             for topic in TOPICS
             if topic["name"].startswith("governance.research.")
-            or topic["name"] in {"governance.dataset.catalog", "governance.data_management_plans"}
+            or topic["name"]
+            in {
+                "governance.dataset.catalog",
+                "governance.data_management_plans",
+                "governance.repository.exports",
+            }
         ],
         "recommended_default": (
             "share derived or pseudonymised research datasets before raw GPS, raw payloads or media"
