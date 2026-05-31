@@ -490,6 +490,123 @@ DATA_PRODUCTS: list[dict[str, Any]] = [
     },
 ]
 
+DATASETS: list[dict[str, Any]] = [
+    {
+        "dataset_id": "dataset.telemetry.raw-gps-restricted",
+        "title": "Restricted raw GPS telemetry dataset",
+        "dataset_type": "raw",
+        "classification": "personal",
+        "data_products": ["telemetry.raw.gps"],
+        "source_topics": ["raw.gps"],
+        "access_mode": "restricted",
+        "license_policy": "research agreement required",
+        "retention_policy": "site policy required before production",
+        "fair_status": "metadata template defined; persistent identifier pending",
+        "dmp_id": "dmp.livestock-behaviour.template",
+    },
+    {
+        "dataset_id": "dataset.telemetry.sensor-minimised",
+        "title": "Minimised sensor telemetry research dataset",
+        "dataset_type": "derived",
+        "classification": "mixed",
+        "data_products": ["telemetry.raw.sensor", "features.latest-state"],
+        "source_topics": ["raw.sensor", "features.events"],
+        "access_mode": "mediated",
+        "license_policy": "research purpose and recipient terms required",
+        "retention_policy": "project DMP retention schedule",
+        "fair_status": "schema and provenance available; repository target pending",
+        "dmp_id": "dmp.precision-agriculture.template",
+    },
+    {
+        "dataset_id": "dataset.features.latest-state",
+        "title": "Derived latest-state and feature dataset",
+        "dataset_type": "aggregate",
+        "classification": "mixed",
+        "data_products": ["features.latest-state"],
+        "source_topics": ["features.events", "state.latest"],
+        "access_mode": "mediated",
+        "license_policy": "Data Act or research access package required",
+        "retention_policy": "short operational retention plus approved exports",
+        "fair_status": "preferred publication layer for research and third-party access",
+        "dmp_id": "dmp.platform-derived-data.template",
+    },
+]
+
+DATA_MANAGEMENT_PLANS: list[dict[str, Any]] = [
+    {
+        "dmp_id": "dmp.livestock-behaviour.template",
+        "project_id": "research.template.livestock-behaviour",
+        "status": "draft",
+        "owner": "research-governance",
+        "datasets": ["dataset.telemetry.raw-gps-restricted"],
+        "metadata_standard": "Apicurio JSON Schema plus project metadata",
+        "legal_basis": "data holder permission or data subject consent where applicable",
+        "access_policy": "raw GPS restricted; derived and pseudonymised access preferred",
+        "retention_policy": "define before production release",
+        "preservation_plan": "approved exports only; repository target pending",
+        "security_controls": ["pseudonymisation", "least privilege", "publication review"],
+    },
+    {
+        "dmp_id": "dmp.precision-agriculture.template",
+        "project_id": "research.template.precision-agriculture",
+        "status": "draft",
+        "owner": "research-governance",
+        "datasets": ["dataset.telemetry.sensor-minimised"],
+        "metadata_standard": "Apicurio JSON Schema plus FAIR project metadata",
+        "legal_basis": "data holder permission and research protocol",
+        "access_policy": "mediated dataset package; no direct raw topic subscriptions",
+        "retention_policy": "project DMP retention schedule",
+        "preservation_plan": "curated derived dataset with disclosure review",
+        "security_controls": ["field minimisation", "access logging", "supplier review"],
+    },
+    {
+        "dmp_id": "dmp.platform-derived-data.template",
+        "project_id": "platform.data-sharing",
+        "status": "draft",
+        "owner": "data-governance",
+        "datasets": ["dataset.features.latest-state"],
+        "metadata_standard": "DEALIoT normalized event contract",
+        "legal_basis": "Data Act entitlement or approved research governance",
+        "access_policy": "direct secure API, minimised export or DGA-mediated package",
+        "retention_policy": "align with user request, project protocol and backup policy",
+        "preservation_plan": "export evidence in dataact.user.exports",
+        "security_controls": ["legal-basis check", "scope review", "export expiry"],
+    },
+]
+
+DMP_CONTROLS: list[dict[str, str]] = [
+    {
+        "id": "dataset-catalog",
+        "status": "implemented",
+        "control": "Register every shareable dataset before access or publication.",
+        "evidence": "governance.dataset.catalog",
+    },
+    {
+        "id": "dmp-required",
+        "status": "partial",
+        "control": "Link every research dataset to a project Data Management Plan.",
+        "evidence": "governance.data_management_plans",
+    },
+    {
+        "id": "fair-metadata",
+        "status": "partial",
+        "control": "Record metadata standard, schema references, provenance and access policy.",
+        "evidence": "governance.dataset.catalog",
+    },
+    {
+        "id": "preservation-retention",
+        "status": "todo",
+        "control": "Define retention, preservation location and disposal schedule per dataset.",
+        "evidence": "governance.data_management_plans",
+    },
+    {
+        "id": "publication-reuse",
+        "status": "partial",
+        "control": "Review license, disclosure risk and reuse limits before publication.",
+        "evidence": "governance.research.outputs",
+    },
+]
+
 DATA_ACT_CONNECTED_PRODUCTS: list[dict[str, Any]] = [
     {
         "product_id": "connected-device.telemetry",
@@ -731,6 +848,7 @@ RESEARCH_CONTEXT: dict[str, Any] = {
     ],
     "required_release_gates": [
         "documented research protocol",
+        "approved Data Management Plan for each released dataset",
         "ethics review decision or documented exemption",
         "DPIA or risk assessment for GPS, media and linked identifiers",
         "data holder permission or data subject consent where applicable",
@@ -789,6 +907,11 @@ RESEARCH_CONTROLS: list[dict[str, str]] = [
         "id": "publication-review",
         "status": "todo",
         "control": "Review outputs for re-identification risk before publication or sharing.",
+    },
+    {
+        "id": "data-management-plan",
+        "status": "partial",
+        "control": "Maintain a DMP with FAIR metadata, access, retention and preservation rules.",
     },
 ]
 
