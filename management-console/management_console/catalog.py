@@ -149,14 +149,14 @@ COMPONENTS: list[dict[str, Any]] = [
     },
     {
         "id": "data-governance",
-        "name": "DGA governance control plane",
+        "name": "DGA intermediation gateway",
         "service": "management-console",
         "plane": "governance",
-        "role": "Tracks research data products, permissions, projects and outputs.",
+        "role": "Mediates access between collected data, applications and researchers.",
         "probe": "http://management-console:8080/healthz",
         "ui": "http://localhost:8090",
-        "depends_on": ["kafka", "apicurio"],
-        "data_scope": "DGA metadata, data-sharing decisions and activity evidence.",
+        "depends_on": ["kafka", "apicurio", "flink"],
+        "data_scope": "data product catalogue, access decisions, permissions and activity evidence.",
         "risk": "high",
     },
 ]
@@ -336,6 +336,85 @@ DATA_PRODUCTS: list[dict[str, Any]] = [
     },
 ]
 
+INTERMEDIATION_FLOW: list[dict[str, Any]] = [
+    {
+        "step": 1,
+        "name": "Collected data landing",
+        "source": "MQTT, media object storage, Kafka raw topics",
+        "control": "raw data is retained in restricted ingestion/storage zones",
+    },
+    {
+        "step": 2,
+        "name": "Data product registration",
+        "source": "governance.data.products",
+        "control": "purpose, format, category, source topics and sharing mode are declared",
+    },
+    {
+        "step": 3,
+        "name": "Access request and review",
+        "source": "governance.access.requests",
+        "control": "application or researcher requests are reviewed against purpose and policy",
+    },
+    {
+        "step": 4,
+        "name": "Permission and project checks",
+        "source": "governance.permission.events, governance.research.projects",
+        "control": "permission, consent, protocol and ethics status are verified",
+    },
+    {
+        "step": 5,
+        "name": "Mediated delivery",
+        "source": "derived topics, minimised exports, controlled object access",
+        "control": "raw access is exceptional; derived or pseudonymised datasets are preferred",
+    },
+    {
+        "step": 6,
+        "name": "Activity and output logging",
+        "source": "governance.intermediation.log, governance.research.outputs",
+        "control": "retrieval, sharing, conversion, withdrawal and publication review are logged",
+    },
+]
+
+CONSUMER_PROFILES: list[dict[str, Any]] = [
+    {
+        "profile_id": "application.operational",
+        "name": "Operational application",
+        "consumer_type": "application",
+        "default_access": ["features.latest-state"],
+        "raw_access": "denied by default",
+        "required_evidence": ["access request", "service purpose", "least privilege scope"],
+    },
+    {
+        "profile_id": "application.analytics",
+        "name": "Analytics or decision-support application",
+        "consumer_type": "application",
+        "default_access": ["features.latest-state", "telemetry.raw.sensor"],
+        "raw_access": "exceptional and field-minimised",
+        "required_evidence": ["access request", "data protection review", "retention scope"],
+    },
+    {
+        "profile_id": "researcher.internal",
+        "name": "Internal scientist",
+        "consumer_type": "researcher",
+        "default_access": ["features.latest-state", "telemetry.raw.sensor"],
+        "raw_access": "requires protocol and ethics status",
+        "required_evidence": ["research project", "permission model", "publication review"],
+    },
+    {
+        "profile_id": "researcher.external",
+        "name": "External researcher or research organisation",
+        "consumer_type": "researcher",
+        "default_access": ["features.latest-state"],
+        "raw_access": "restricted and contract-bound",
+        "required_evidence": [
+            "research project",
+            "data sharing agreement",
+            "permission or consent",
+            "third-country check if applicable",
+        ],
+    },
+]
+
 RESEARCH_CONTEXT: dict[str, Any] = {
     "primary_purpose": "scientific research",
     "dga_mode": "research collection with possible data altruism workflow",
@@ -352,6 +431,10 @@ RESEARCH_CONTEXT: dict[str, Any] = {
         "pseudonymisation before researcher access",
         "publication disclosure review before external release",
     ],
+    "intermediation_position": (
+        "applications and scientists consume data through mediated data products, not direct raw "
+        "topic access"
+    ),
 }
 
 RESEARCH_PROJECTS: list[dict[str, Any]] = [
@@ -439,7 +522,7 @@ DGA_OBLIGATIONS: list[dict[str, str]] = [
     {
         "id": "fair-access",
         "article": "DGA Art. 12(f)",
-        "status": "partial",
+        "status": "implemented",
         "control": "Track access requests, decisions and reasons in governance.access.requests.",
     },
     {
@@ -458,7 +541,7 @@ DGA_OBLIGATIONS: list[dict[str, str]] = [
         "id": "security",
         "article": "DGA Art. 12(j)-(l)",
         "status": "partial",
-        "control": "Require TLS/SASL/mTLS, least privilege and unauthorised transfer notices.",
+        "control": "Require mediated delivery, TLS/SASL/mTLS and least privilege scopes.",
     },
     {
         "id": "consent-permission",
@@ -541,6 +624,14 @@ OPERATIONS: list[dict[str, Any]] = [
         "description": "Lists DGA data products, obligations, evidence topics and open gaps.",
     },
     {
+        "id": "review-intermediation-flow",
+        "name": "Review intermediation flow",
+        "method": "GET",
+        "endpoint": "/api/intermediation",
+        "scope": "safe",
+        "description": "Lists consumer profiles, mediated delivery steps and required evidence.",
+    },
+    {
         "id": "review-research-readiness",
         "name": "Review research readiness",
         "method": "GET",
@@ -564,6 +655,12 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "status": "partial",
         "regulation": "DGA",
         "control": "Operate data intermediation as a separated governance plane with no own reuse.",
+    },
+    {
+        "id": "mediated-access",
+        "status": "implemented",
+        "regulation": "DGA",
+        "control": "Route applications and researchers through mediated data products.",
     },
     {
         "id": "dga-permissions",
@@ -621,6 +718,8 @@ def catalog_payload() -> dict[str, Any]:
         "components": COMPONENTS,
         "topics": TOPICS,
         "data_products": DATA_PRODUCTS,
+        "intermediation_flow": INTERMEDIATION_FLOW,
+        "consumer_profiles": CONSUMER_PROFILES,
         "dga_obligations": DGA_OBLIGATIONS,
         "research_context": RESEARCH_CONTEXT,
         "research_projects": RESEARCH_PROJECTS,
@@ -634,6 +733,8 @@ def catalog_payload() -> dict[str, Any]:
 def dga_payload() -> dict[str, Any]:
     return {
         "data_products": DATA_PRODUCTS,
+        "intermediation_flow": INTERMEDIATION_FLOW,
+        "consumer_profiles": CONSUMER_PROFILES,
         "obligations": DGA_OBLIGATIONS,
         "research_context": RESEARCH_CONTEXT,
         "research_projects": RESEARCH_PROJECTS,
@@ -647,6 +748,8 @@ def dga_payload() -> dict[str, Any]:
             "separate governance plane for intermediation metadata",
             "no own reuse of mediated data by the intermediation layer",
             "purpose-bound access requests and decisions",
+            "consumer profiles for applications and scientists",
+            "mediated delivery before raw access",
             "consent and permission withdrawal evidence",
             "activity logging for every data-sharing action",
             "research protocol and ethics status before project access",
@@ -670,4 +773,24 @@ def research_payload() -> dict[str, Any]:
         "recommended_default": (
             "share derived or pseudonymised research datasets before raw GPS, raw payloads or media"
         ),
+    }
+
+
+def intermediation_payload() -> dict[str, Any]:
+    return {
+        "flow": INTERMEDIATION_FLOW,
+        "consumer_profiles": CONSUMER_PROFILES,
+        "default_policy": {
+            "raw_topics": "restricted",
+            "derived_topics": "preferred",
+            "applications": "purpose-bound service accounts",
+            "scientists": "project-bound access packages",
+            "evidence": [
+                "governance.access.requests",
+                "governance.permission.events",
+                "governance.intermediation.log",
+                "governance.research.projects",
+                "governance.research.outputs",
+            ],
+        },
     }
