@@ -152,7 +152,7 @@ COMPONENTS: list[dict[str, Any]] = [
         "name": "DGA governance control plane",
         "service": "management-console",
         "plane": "governance",
-        "role": "Tracks data products, permissions, access requests and intermediation logs.",
+        "role": "Tracks research data products, permissions, projects and outputs.",
         "probe": "http://management-console:8080/healthz",
         "ui": "http://localhost:8090",
         "depends_on": ["kafka", "apicurio"],
@@ -260,6 +260,20 @@ TOPICS: list[dict[str, str]] = [
         "classification": "incident-notice-record",
         "retention": "one year minimum, site policy required",
     },
+    {
+        "name": "governance.research.projects",
+        "plane": "governance",
+        "owner": "research-governance",
+        "classification": "research-project-record",
+        "retention": "compacted project register",
+    },
+    {
+        "name": "governance.research.outputs",
+        "plane": "governance",
+        "owner": "research-governance",
+        "classification": "research-output-record",
+        "retention": "one year minimum, site policy required",
+    },
 ]
 
 DATA_PRODUCTS: list[dict[str, Any]] = [
@@ -268,22 +282,30 @@ DATA_PRODUCTS: list[dict[str, Any]] = [
         "title": "Raw GPS telemetry",
         "data_category": "personal",
         "source_topics": ["raw.gps"],
-        "allowed_purposes": ["livestock monitoring", "agronomic analysis"],
+        "allowed_purposes": [
+            "scientific research",
+            "livestock behaviour research",
+            "agronomic research",
+        ],
         "access_mode": "mediated",
         "format": "JSON",
         "interoperability_standard": "Apicurio JSON Schema",
-        "dga_gate": "requires permission and purpose review",
+        "dga_gate": "requires approved research project, permission and GPS minimisation",
     },
     {
         "product_id": "telemetry.raw.sensor",
         "title": "Raw sensor telemetry",
         "data_category": "mixed",
         "source_topics": ["raw.sensor"],
-        "allowed_purposes": ["device monitoring", "research with approved purpose"],
+        "allowed_purposes": [
+            "scientific research",
+            "device reliability research",
+            "environmental research",
+        ],
         "access_mode": "mediated",
         "format": "JSON",
         "interoperability_standard": "Apicurio JSON Schema",
-        "dga_gate": "requires field minimisation before sharing",
+        "dga_gate": "requires approved research project and field minimisation",
     },
     {
         "product_id": "media.metadata",
@@ -295,22 +317,89 @@ DATA_PRODUCTS: list[dict[str, Any]] = [
             "raw.video2d.meta",
             "raw.video3d.meta",
         ],
-        "allowed_purposes": ["media processing", "quality analysis"],
+        "allowed_purposes": ["scientific research", "computer vision research"],
         "access_mode": "restricted",
         "format": "JSON",
         "interoperability_standard": "Apicurio JSON Schema",
-        "dga_gate": "requires object-level access controls",
+        "dga_gate": "requires ethics review and object-level access controls",
     },
     {
         "product_id": "features.latest-state",
         "title": "Derived features and latest state",
         "data_category": "mixed",
         "source_topics": ["features.events", "state.latest"],
-        "allowed_purposes": ["operational monitoring", "analytics"],
+        "allowed_purposes": ["scientific research", "aggregate analytics"],
         "access_mode": "mediated",
         "format": "JSON",
         "interoperability_standard": "DEALIoT normalized event contract",
-        "dga_gate": "preferred sharing layer over raw topics",
+        "dga_gate": "preferred research sharing layer over raw topics",
+    },
+]
+
+RESEARCH_CONTEXT: dict[str, Any] = {
+    "primary_purpose": "scientific research",
+    "dga_mode": "research collection with possible data altruism workflow",
+    "general_interest_objectives": [
+        "livestock welfare research",
+        "precision agriculture research",
+        "environmental monitoring research",
+    ],
+    "required_release_gates": [
+        "documented research protocol",
+        "ethics review decision or documented exemption",
+        "DPIA or risk assessment for GPS, media and linked identifiers",
+        "data holder permission or data subject consent where applicable",
+        "pseudonymisation before researcher access",
+        "publication disclosure review before external release",
+    ],
+}
+
+RESEARCH_PROJECTS: list[dict[str, Any]] = [
+    {
+        "project_id": "research.template.livestock-behaviour",
+        "title": "Livestock behaviour and welfare research",
+        "objective": "Analyse telemetry and derived movement patterns for animal welfare research.",
+        "data_products": ["telemetry.raw.gps", "telemetry.raw.sensor", "features.latest-state"],
+        "permission_model": "data_holder_permission",
+        "ethics_review_status": "pending",
+        "sharing_layer": "derived data preferred; raw GPS restricted",
+    },
+    {
+        "project_id": "research.template.precision-agriculture",
+        "title": "Precision agriculture and environmental research",
+        "objective": "Study environmental telemetry and field context for agronomic research.",
+        "data_products": ["telemetry.raw.sensor", "features.latest-state"],
+        "permission_model": "data_holder_permission",
+        "ethics_review_status": "pending",
+        "sharing_layer": "minimised sensor fields and aggregated outputs",
+    },
+]
+
+RESEARCH_CONTROLS: list[dict[str, str]] = [
+    {
+        "id": "research-protocol",
+        "status": "todo",
+        "control": "Register each research protocol before data access.",
+    },
+    {
+        "id": "ethics-review",
+        "status": "todo",
+        "control": "Record ethics approval, rejection or exemption for each project.",
+    },
+    {
+        "id": "research-permission",
+        "status": "partial",
+        "control": "Link project access to data holder permission or data subject consent.",
+    },
+    {
+        "id": "research-minimisation",
+        "status": "partial",
+        "control": "Prefer derived, pseudonymised and aggregated data over raw GPS/media.",
+    },
+    {
+        "id": "publication-review",
+        "status": "todo",
+        "control": "Review outputs for re-identification risk before publication or sharing.",
     },
 ]
 
@@ -320,7 +409,7 @@ DGA_OBLIGATIONS: list[dict[str, str]] = [
         "article": "DGA Art. 11",
         "status": "organisational",
         "control": (
-            "Notify the competent authority before operating as a data intermediation service."
+            "Notify the competent authority if research sharing becomes data intermediation."
         ),
     },
     {
@@ -375,7 +464,7 @@ DGA_OBLIGATIONS: list[dict[str, str]] = [
         "id": "consent-permission",
         "article": "DGA Art. 12(n), Art. 21, Art. 25",
         "status": "partial",
-        "control": "Provide tools to give and withdraw consent or permission before data sharing.",
+        "control": "Provide tools to give and withdraw research consent or permission.",
     },
     {
         "id": "intermediation-log",
@@ -451,6 +540,14 @@ OPERATIONS: list[dict[str, Any]] = [
         "scope": "safe",
         "description": "Lists DGA data products, obligations, evidence topics and open gaps.",
     },
+    {
+        "id": "review-research-readiness",
+        "name": "Review research readiness",
+        "method": "GET",
+        "endpoint": "/api/research",
+        "scope": "safe",
+        "description": "Lists research purpose, project templates, gates and publication controls.",
+    },
 ]
 
 COMPLIANCE_CONTROLS: list[dict[str, str]] = [
@@ -472,7 +569,13 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "id": "dga-permissions",
         "status": "partial",
         "regulation": "DGA",
-        "control": "Track data-holder permissions, data-subject consent and withdrawals.",
+        "control": "Track research permissions, consent and withdrawals.",
+    },
+    {
+        "id": "research-governance",
+        "status": "partial",
+        "regulation": "DGA, GDPR",
+        "control": "Require research protocol, ethics status and disclosure review.",
     },
     {
         "id": "dga-activity-log",
@@ -519,6 +622,9 @@ def catalog_payload() -> dict[str, Any]:
         "topics": TOPICS,
         "data_products": DATA_PRODUCTS,
         "dga_obligations": DGA_OBLIGATIONS,
+        "research_context": RESEARCH_CONTEXT,
+        "research_projects": RESEARCH_PROJECTS,
+        "research_controls": RESEARCH_CONTROLS,
         "runbooks": RUNBOOKS,
         "operations": OPERATIONS,
         "compliance_controls": COMPLIANCE_CONTROLS,
@@ -529,6 +635,9 @@ def dga_payload() -> dict[str, Any]:
     return {
         "data_products": DATA_PRODUCTS,
         "obligations": DGA_OBLIGATIONS,
+        "research_context": RESEARCH_CONTEXT,
+        "research_projects": RESEARCH_PROJECTS,
+        "research_controls": RESEARCH_CONTROLS,
         "evidence_topics": [
             topic
             for topic in TOPICS
@@ -540,7 +649,25 @@ def dga_payload() -> dict[str, Any]:
             "purpose-bound access requests and decisions",
             "consent and permission withdrawal evidence",
             "activity logging for every data-sharing action",
+            "research protocol and ethics status before project access",
+            "publication disclosure review before external release",
             "schema-based interoperability and transparent formats",
             "unauthorised access, transfer and use notice trail",
         ],
+    }
+
+
+def research_payload() -> dict[str, Any]:
+    return {
+        "research_context": RESEARCH_CONTEXT,
+        "projects": RESEARCH_PROJECTS,
+        "controls": RESEARCH_CONTROLS,
+        "research_topics": [
+            topic
+            for topic in TOPICS
+            if topic["name"].startswith("governance.research.")
+        ],
+        "recommended_default": (
+            "share derived or pseudonymised research datasets before raw GPS, raw payloads or media"
+        ),
     }

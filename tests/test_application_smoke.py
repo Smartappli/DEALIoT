@@ -66,6 +66,8 @@ class ApplicationSmokeTests(unittest.TestCase):
             "raw.video2d.meta.json",
             "governance.data.products.json",
             "governance.access.requests.json",
+            "governance.research.projects.json",
+            "governance.research.outputs.json",
         ]
 
         for json_file in json_files:
