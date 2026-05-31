@@ -79,7 +79,6 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("review-nis2-readiness", operation_ids)
         self.assertIn("review-dora-readiness", operation_ids)
         self.assertIn("review-cra-readiness", operation_ids)
-        self.assertIn("review-legal-compliance", operation_ids)
         self.assertIn("trigger-media-backfill", operation_ids)
 
     def test_catalog_payload_contains_security_and_compliance_surfaces(self) -> None:
@@ -243,6 +242,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         gate_ids = {gate["id"] for gate in payload["release_gates"]}
         template_ids = {template["id"] for template in payload["templates"]}
         evidence_topics = {topic["name"] for topic in payload["evidence_topics"]}
+        operation_ids = {operation["id"] for operation in catalog_payload()["operations"]}
 
         self.assertIn("ropa-register", dossier_ids)
         self.assertIn("dpia-aipd", dossier_ids)
@@ -254,6 +254,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("ropa-template", template_ids)
         self.assertIn("data-act-notice-template", template_ids)
         self.assertIn("compliance.legal.dossier", evidence_topics)
+        self.assertIn("review-legal-compliance", operation_ids)
         self.assertEqual(
             payload["default_policy"]["legal_verdict"],
             "reviewable baseline, not legal certification",

@@ -1540,7 +1540,9 @@ LEGAL_COMPLIANCE_DOSSIER: list[dict[str, str]] = [
         "regulation": "GDPR",
         "owner": "privacy",
         "status": "todo",
-        "artifact": "Procedure for access, erasure, objection, restriction and portability requests.",
+        "artifact": (
+            "Procedure for access, erasure, objection, restriction and portability requests."
+        ),
         "control": "Route requests to owners and record fulfilment or refusal evidence.",
         "evidence_topic": "compliance.legal.dossier",
         "required_before": "production-go-live",

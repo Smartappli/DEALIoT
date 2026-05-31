@@ -13,6 +13,7 @@ must still be recorded by the accountable owner.
 | `governance.research.projects` | research objective, investigator, ethics status and permission model |
 | `governance.research.outputs` | dataset publications, models, reports and disclosure review |
 | `governance.repository.exports` | repository and Zenodo export evidence, DOI and publication gate |
+| `compliance.legal.dossier` | legal release artefacts, retention schedule and publication approval |
 
 Do not store raw data in these topics. They contain metadata and governance evidence only.
 
@@ -53,3 +54,4 @@ Before releasing a dataset to an application, third party, scientist or reposito
 5. Complete disclosure review before publication.
 6. Create a Zenodo draft only after catalogue and DMP checks.
 7. Log export or sharing evidence in the Data Act, DGA or repository export topics.
+8. Keep the legal dossier gate approved for the target release mode.
