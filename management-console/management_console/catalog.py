@@ -510,6 +510,7 @@ DATA_ACT_ACCESS_CHANNELS: list[dict[str, Any]] = [
         "default_policy": "grant access to generated data after identity and entitlement checks",
         "evidence_topics": [
             "dataact.user.access.requests",
+            "dataact.legal_basis.checks",
             "dataact.user.exports",
             "governance.intermediation.log",
         ],
@@ -536,6 +537,7 @@ DATA_ACT_ACCESS_CHANNELS: list[dict[str, Any]] = [
             "governance.research.projects",
             "governance.access.requests",
             "dataact.user.access.requests",
+            "dataact.legal_basis.checks",
         ],
     },
 ]
@@ -574,6 +576,12 @@ DATA_ACT_OBLIGATIONS: list[dict[str, str]] = [
         "article": "Data Act Ch. II",
         "status": "partial",
         "control": "Record proportionate safeguards before sharing sensitive generated data.",
+    },
+    {
+        "id": "personal-data-legal-basis",
+        "article": "Data Act and GDPR interface",
+        "status": "partial",
+        "control": "Check GDPR legal basis before releasing personal data to users or third parties.",
     },
     {
         "id": "no-dark-pattern-release",
@@ -920,6 +928,38 @@ SECURITY_RESILIENCE_CONTROLS: list[dict[str, str]] = [
             "Apply DORA controls when DEALIoT is used by a financial entity or ICT provider."
         ),
     },
+    {
+        "id": "scope-decisions",
+        "regulation": "DGA, Data Act, NIS2, DORA, CRA",
+        "status": "partial",
+        "domain": "scope",
+        "evidence_topic": "compliance.scope.decisions",
+        "control": "Record in-scope, out-of-scope or conditional decisions with owner and basis.",
+    },
+    {
+        "id": "control-assessments",
+        "regulation": "DGA, Data Act, NIS2, DORA, CRA",
+        "status": "partial",
+        "domain": "assurance",
+        "evidence_topic": "compliance.control.assessments",
+        "control": "Assess each control with evidence, gap, next action and due date.",
+    },
+    {
+        "id": "reporting-channels",
+        "regulation": "DGA, NIS2, DORA, CRA",
+        "status": "todo",
+        "domain": "regulatory-reporting",
+        "evidence_topic": "compliance.reporting.channels",
+        "control": "Record competent authority, reporting trigger, deadline, template and owner.",
+    },
+    {
+        "id": "cra-product-lifecycle",
+        "regulation": "CRA",
+        "status": "todo",
+        "domain": "product-security",
+        "evidence_topic": "cra.product.lifecycle",
+        "control": "Record support period, update channel and vulnerability disclosure details.",
+    },
 ]
 
 NIS2_OBLIGATIONS: list[dict[str, str]] = [
@@ -1016,6 +1056,12 @@ CRA_OBLIGATIONS: list[dict[str, str]] = [
         "evidence": "security.patch.events",
     },
     {
+        "id": "support-period",
+        "status": "todo",
+        "control": "Define product support period, update channel and security documentation.",
+        "evidence": "cra.product.lifecycle",
+    },
+    {
         "id": "incident-notification",
         "status": "todo",
         "control": "Define external notification workflow for exploited vulnerabilities/incidents.",
@@ -1053,6 +1099,128 @@ SECURITY_RESILIENCE_GATES: list[dict[str, str]] = [
         "status": "partial",
         "evidence": "resilience.backup.tests",
         "control": "Restore tests prove target RPO/RTO before production sharing.",
+    },
+]
+
+COMPLIANCE_SCOPE_DECISIONS: list[dict[str, str]] = [
+    {
+        "regulation": "DGA",
+        "scope_status": "conditional",
+        "owner": "legal-compliance",
+        "basis": "Triggered if DEALIoT offers regulated data intermediation or altruism services.",
+        "evidence_topic": "compliance.scope.decisions",
+    },
+    {
+        "regulation": "Data Act",
+        "scope_status": "conditional",
+        "owner": "data-governance",
+        "basis": "Triggered for connected-product or related-service generated data.",
+        "evidence_topic": "compliance.scope.decisions",
+    },
+    {
+        "regulation": "NIS2",
+        "scope_status": "pending",
+        "owner": "security",
+        "basis": "Depends on sector, size, Member State transposition and entity classification.",
+        "evidence_topic": "compliance.scope.decisions",
+    },
+    {
+        "regulation": "DORA",
+        "scope_status": "conditional",
+        "owner": "platform-risk",
+        "basis": "Triggered for financial entities or ICT third-party provider use cases.",
+        "evidence_topic": "compliance.scope.decisions",
+    },
+    {
+        "regulation": "CRA",
+        "scope_status": "conditional",
+        "owner": "product-security",
+        "basis": "Triggered when DEALIoT is made available as a product with digital elements.",
+        "evidence_topic": "compliance.scope.decisions",
+    },
+]
+
+COMPLIANCE_REPORTING_CHANNELS: list[dict[str, str]] = [
+    {
+        "regulation": "DGA",
+        "trigger": "data intermediation notification or unauthorised data use notice",
+        "channel_status": "todo",
+        "evidence_topic": "compliance.reporting.channels",
+        "control": "Record competent authority, template, owner and notification evidence.",
+    },
+    {
+        "regulation": "NIS2",
+        "trigger": "significant cyber incident",
+        "channel_status": "todo",
+        "evidence_topic": "compliance.reporting.channels",
+        "control": "Configure CSIRT/competent authority contact path and reporting deadline.",
+    },
+    {
+        "regulation": "DORA",
+        "trigger": "major ICT-related incident or financial-sector customer requirement",
+        "channel_status": "conditional",
+        "evidence_topic": "compliance.reporting.channels",
+        "control": "Configure financial supervisory reporting when DORA scope is confirmed.",
+    },
+    {
+        "regulation": "CRA",
+        "trigger": "actively exploited vulnerability or severe product-security incident",
+        "channel_status": "todo",
+        "evidence_topic": "compliance.reporting.channels",
+        "control": "Configure CSIRT/ENISA reporting path for in-scope product releases.",
+    },
+]
+
+COMPLIANCE_READINESS: list[dict[str, str]] = [
+    {
+        "regulation": "DGA",
+        "readiness": "partial",
+        "technical_status": "evidence plane implemented",
+        "blocking_gap": "legal role decision, notification evidence and operating procedures.",
+        "next_action": "Record DGA scope decision and competent authority channel.",
+    },
+    {
+        "regulation": "Data Act",
+        "readiness": "partial",
+        "technical_status": "connected-product access and sharing evidence implemented",
+        "blocking_gap": "production access workflow, notices, terms and personal-data legal basis.",
+        "next_action": "Record legal-basis checks and test user/third-party release workflow.",
+    },
+    {
+        "regulation": "NIS2",
+        "readiness": "partial",
+        "technical_status": "risk, incident, vulnerability and continuity topics implemented",
+        "blocking_gap": "entity classification and national reporting channel not recorded.",
+        "next_action": "Record NIS2 scope decision and incident reporting contact path.",
+    },
+    {
+        "regulation": "DORA",
+        "readiness": "conditional",
+        "technical_status": "ICT-risk, resilience and third-party evidence implemented",
+        "blocking_gap": "DORA scope depends on financial-sector use or ICT provider role.",
+        "next_action": "Record financial-sector scope decision before claiming applicability.",
+    },
+    {
+        "regulation": "CRA",
+        "readiness": "partial",
+        "technical_status": "SBOM, vulnerability and patch evidence implemented",
+        "blocking_gap": "product lifecycle, support period and reporting channel not operational.",
+        "next_action": "Record CRA product lifecycle and vulnerability disclosure channel.",
+    },
+]
+
+CRA_PRODUCT_LIFECYCLE: list[dict[str, str]] = [
+    {
+        "product_id": "dealiot-platform",
+        "support_status": "planned",
+        "evidence_topic": "cra.product.lifecycle",
+        "control": "Define support period, security update channel and vulnerability disclosure URL.",
+    },
+    {
+        "product_id": "wildfi-decoder-wrapper",
+        "support_status": "planned",
+        "evidence_topic": "cra.product.lifecycle",
+        "control": "Track third-party decoder provenance, support and security update policy.",
     },
 ]
 
@@ -1250,6 +1418,12 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "control": "Publish portable JSON contracts and export logs for released datasets.",
     },
     {
+        "id": "data-act-legal-basis",
+        "status": "partial",
+        "regulation": "Data Act, GDPR",
+        "control": "Check personal-data legal basis before user or third-party release.",
+    },
+    {
         "id": "retention",
         "status": "todo",
         "regulation": "GDPR, Data Act",
@@ -1302,6 +1476,18 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "status": "conditional",
         "regulation": "DORA",
         "control": "Apply DORA fully only for financial entities or ICT providers in scope.",
+    },
+    {
+        "id": "scope-and-reporting",
+        "status": "partial",
+        "regulation": "DGA, Data Act, NIS2, DORA, CRA",
+        "control": "Record scope decisions, control assessments and authority reporting channels.",
+    },
+    {
+        "id": "cra-product-lifecycle",
+        "status": "todo",
+        "regulation": "CRA",
+        "control": "Define product support period, update channel and vulnerability disclosure URL.",
     },
     {
         "id": "ai-governance",
