@@ -68,6 +68,11 @@ class ApplicationSmokeTests(unittest.TestCase):
             "governance.access.requests.json",
             "governance.research.projects.json",
             "governance.research.outputs.json",
+            "dataact.product.catalog.json",
+            "dataact.user.access.requests.json",
+            "dataact.third_party.sharing.json",
+            "dataact.user.exports.json",
+            "dataact.safeguards.json",
         ]
 
         for json_file in json_files:
