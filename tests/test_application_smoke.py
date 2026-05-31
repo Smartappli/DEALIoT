@@ -73,6 +73,7 @@ class ApplicationSmokeTests(unittest.TestCase):
             "dataact.third_party.sharing.json",
             "dataact.user.exports.json",
             "dataact.safeguards.json",
+            "dataact.legal_basis.checks.json",
             "security.asset.inventory.json",
             "security.incident.events.json",
             "security.vulnerability.findings.json",
@@ -81,6 +82,10 @@ class ApplicationSmokeTests(unittest.TestCase):
             "resilience.backup.tests.json",
             "resilience.operational.risk.json",
             "resilience.third_party.risk.json",
+            "compliance.scope.decisions.json",
+            "compliance.control.assessments.json",
+            "compliance.reporting.channels.json",
+            "cra.product.lifecycle.json",
         ]
 
         for json_file in json_files:
