@@ -272,6 +272,68 @@ function renderDga() {
     .join("");
 }
 
+function renderSecurityResilience() {
+  const scope = document.querySelector("#security-scope-list");
+  scope.innerHTML = [
+    "NIS2: secteur, taille et transposition nationale a confirmer",
+    "DORA: applicable si perimetre financier ou fournisseur ICT finance",
+    "CRA: applicable aux produits avec elements numeriques mis sur le marche UE",
+  ]
+    .map((item) => pill(item))
+    .join("");
+
+  const gates = document.querySelector("#security-gate-list");
+  gates.innerHTML = (state.architecture.security_resilience_gates || [])
+    .map(
+      (gate) => `
+        <article class="item">
+          <h3>${gate.gate}</h3>
+          <p>${gate.control}</p>
+          <div class="meta">
+            ${pill(gate.status, gate.status)}
+            ${pill(gate.evidence)}
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+
+  const controls = document.querySelector("#security-control-table");
+  controls.innerHTML = (state.architecture.security_resilience_controls || [])
+    .map(
+      (control) => `
+        <tr>
+          <td>
+            <strong>${control.id}</strong>
+            <small>${control.control}</small>
+          </td>
+          <td>${control.regulation}</td>
+          <td>${control.domain}</td>
+          <td>
+            ${control.evidence_topic}
+            <small>${pill(control.status, control.status)}</small>
+          </td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const topics = document.querySelector("#security-topic-table");
+  topics.innerHTML = (state.architecture.topics || [])
+    .filter((topic) => topic.name.startsWith("security.") || topic.name.startsWith("resilience."))
+    .map(
+      (topic) => `
+        <tr>
+          <td><strong>${topic.name}</strong></td>
+          <td>${topic.plane}</td>
+          <td>${topic.classification}</td>
+          <td>${topic.retention}</td>
+        </tr>
+      `,
+    )
+    .join("");
+}
+
 function renderOperations() {
   const container = document.querySelector("#operations-list");
   container.innerHTML = state.architecture.operations
@@ -334,6 +396,7 @@ function renderAll() {
   renderDataAct();
   renderResearch();
   renderDga();
+  renderSecurityResilience();
   renderOperations();
   renderRunbooks();
   renderCompliance();
