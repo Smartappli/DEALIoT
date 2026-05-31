@@ -50,6 +50,8 @@ Before a production release:
 7. Legal scope decisions are recorded for DGA, Data Act, NIS2, DORA and CRA.
 8. CRA product lifecycle and vulnerability disclosure are recorded if the platform is shipped as a
    product with digital elements.
+9. Adjacent legal scope is recorded for GDPR, ePrivacy, AI Act, trade secrets, product legislation,
+   open-data rules and EHDS where relevant.
 
 ## NIS2 Controls
 
@@ -79,6 +81,20 @@ When DEALIoT is shipped as a product with digital elements:
 - provide tested security updates and rollback plans;
 - define external notification workflow for exploited vulnerabilities and incidents.
 - define the product support period, security update channel and vulnerability disclosure URL.
+
+## Adjacent Legal Checks
+
+The compliance scope register must also capture:
+
+- GDPR / RGPD when telemetry, GPS, media metadata or research data can identify people or
+  operators;
+- ePrivacy when terminal access, communications metadata or tracking identifiers are involved;
+- AI Act before any AI system, model or decision support is deployed;
+- Trade Secrets Directive safeguards when Data Act sharing exposes protected know-how;
+- Radio Equipment Directive, GPSR and Product Liability when connected/radio products are placed
+  on the EU market;
+- Open Data Directive for public-sector information or public-funded research-data reuse;
+- EHDS only if datasets contain personal electronic health data.
 
 ## Operating Rules
 

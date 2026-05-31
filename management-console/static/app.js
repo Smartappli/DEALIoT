@@ -481,6 +481,23 @@ function renderCompliance() {
     )
     .join("");
 
+  const additionalLegislation = document.querySelector("#additional-legislation-table");
+  additionalLegislation.innerHTML = (state.architecture.additional_legislation || [])
+    .map(
+      (item) => `
+        <tr>
+          <td>
+            <strong>${item.regulation}</strong>
+            <small>${item.evidence_topic}</small>
+          </td>
+          <td>${pill(item.applicability, item.applicability)}</td>
+          <td>${item.reason}</td>
+          <td>${item.architecture_action}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
   const container = document.querySelector("#compliance-list");
   container.innerHTML = state.architecture.compliance_controls
     .map(
