@@ -63,6 +63,8 @@ class PlatformIntegrationTests(unittest.TestCase):
             "governance.transfer.notices",
             "governance.research.projects",
             "governance.research.outputs",
+            "governance.dataset.catalog",
+            "governance.data_management_plans",
             "dataact.product.catalog",
             "dataact.user.access.requests",
             "dataact.third_party.sharing",
