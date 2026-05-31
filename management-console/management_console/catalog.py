@@ -1283,6 +1283,75 @@ COMPLIANCE_SCOPE_DECISIONS: list[dict[str, str]] = [
         "basis": "Triggered when DEALIoT is made available as a product with digital elements.",
         "evidence_topic": "compliance.scope.decisions",
     },
+    {
+        "regulation": "GDPR",
+        "scope_status": "in_scope",
+        "owner": "privacy",
+        "basis": (
+            "Device identifiers, GPS, timestamps, media metadata and research exports may "
+            "identify a person or operator."
+        ),
+        "evidence_topic": "dataact.legal_basis.checks",
+    },
+    {
+        "regulation": "ePrivacy",
+        "scope_status": "conditional",
+        "owner": "privacy",
+        "basis": (
+            "Triggered by terminal-equipment access, electronic communications metadata or "
+            "tracking rules under Member State law."
+        ),
+        "evidence_topic": "compliance.scope.decisions",
+    },
+    {
+        "regulation": "AI Act",
+        "scope_status": "conditional",
+        "owner": "ai-governance",
+        "basis": "Triggered when AI systems or GPAI components are deployed by DEALIoT.",
+        "evidence_topic": "compliance.control.assessments",
+    },
+    {
+        "regulation": "Trade Secrets Directive",
+        "scope_status": "conditional",
+        "owner": "data-governance",
+        "basis": "Triggered when shared generated data includes protected know-how.",
+        "evidence_topic": "dataact.safeguards",
+    },
+    {
+        "regulation": "Radio Equipment Directive",
+        "scope_status": "conditional",
+        "owner": "product-compliance",
+        "basis": "Triggered if DEALIoT gateways or devices are placed on the EU market.",
+        "evidence_topic": "cra.product.lifecycle",
+    },
+    {
+        "regulation": "General Product Safety Regulation",
+        "scope_status": "conditional",
+        "owner": "product-compliance",
+        "basis": "Triggered if connected products are consumer products made available in the EU.",
+        "evidence_topic": "cra.product.lifecycle",
+    },
+    {
+        "regulation": "Product Liability Directive",
+        "scope_status": "conditional",
+        "owner": "product-compliance",
+        "basis": "Relevant for defective connected products, software or security updates.",
+        "evidence_topic": "cra.product.lifecycle",
+    },
+    {
+        "regulation": "Open Data Directive",
+        "scope_status": "conditional",
+        "owner": "data-governance",
+        "basis": "Triggered only for public-sector or publicly funded research-data reuse.",
+        "evidence_topic": "governance.dataset.catalog",
+    },
+    {
+        "regulation": "EHDS",
+        "scope_status": "conditional",
+        "owner": "data-governance",
+        "basis": "Triggered only if datasets include personal electronic health data.",
+        "evidence_topic": "governance.dataset.catalog",
+    },
 ]
 
 COMPLIANCE_REPORTING_CHANNELS: list[dict[str, str]] = [
@@ -1313,6 +1382,13 @@ COMPLIANCE_REPORTING_CHANNELS: list[dict[str, str]] = [
         "channel_status": "todo",
         "evidence_topic": "compliance.reporting.channels",
         "control": "Configure CSIRT/ENISA reporting path for in-scope product releases.",
+    },
+    {
+        "regulation": "GDPR",
+        "trigger": "personal-data breach or data-subject rights workflow",
+        "channel_status": "todo",
+        "evidence_topic": "compliance.reporting.channels",
+        "control": "Configure supervisory authority and data-subject communication paths.",
     },
 ]
 
@@ -1351,6 +1427,129 @@ COMPLIANCE_READINESS: list[dict[str, str]] = [
         "technical_status": "SBOM, vulnerability and patch evidence implemented",
         "blocking_gap": "product lifecycle, support period and reporting channel not operational.",
         "next_action": "Record CRA product lifecycle and vulnerability disclosure channel.",
+    },
+    {
+        "regulation": "GDPR",
+        "readiness": "partial",
+        "technical_status": "inventory, legal-basis and dataset/DMP evidence implemented",
+        "blocking_gap": "DPIA, retention enforcement, rights handling and processor terms.",
+        "next_action": "Record DPIA outcome and retention schedule before production research use.",
+    },
+    {
+        "regulation": "ePrivacy",
+        "readiness": "conditional",
+        "technical_status": "scope decision and consent/notice evidence can be recorded",
+        "blocking_gap": "terminal access and national ePrivacy implementation not assessed.",
+        "next_action": "Classify terminal access and telemetry metadata collection per country.",
+    },
+    {
+        "regulation": "AI Act",
+        "readiness": "conditional",
+        "technical_status": "AI governance placeholder exists",
+        "blocking_gap": "no AI-system inventory, risk class or model lifecycle evidence.",
+        "next_action": "Create AI-system inventory before deploying models or decision support.",
+    },
+]
+
+ADDITIONAL_LEGISLATION: list[dict[str, str]] = [
+    {
+        "regulation": "GDPR / RGPD",
+        "applicability": "applicable",
+        "reason": (
+            "Telemetry, GPS, identifiers, timestamps, media metadata and research datasets can "
+            "be personal data."
+        ),
+        "architecture_action": (
+            "Keep legal-basis checks, DPIA, minimisation, retention, rights handling and "
+            "processor evidence linked to each dataset and release."
+        ),
+        "evidence_topic": "dataact.legal_basis.checks",
+    },
+    {
+        "regulation": "ePrivacy Directive",
+        "applicability": "conditional",
+        "reason": (
+            "Applies if DEALIoT accesses terminal equipment, communications metadata or "
+            "tracking identifiers under Member State ePrivacy law."
+        ),
+        "architecture_action": (
+            "Record country scope, device notices, consent/exception basis and communications "
+            "metadata minimisation."
+        ),
+        "evidence_topic": "compliance.scope.decisions",
+    },
+    {
+        "regulation": "AI Act",
+        "applicability": "conditional",
+        "reason": "Applies if models or AI systems are deployed for analysis or decision support.",
+        "architecture_action": (
+            "Create AI inventory, classify risk, keep training/evaluation data lineage and "
+            "document human oversight before deployment."
+        ),
+        "evidence_topic": "compliance.control.assessments",
+    },
+    {
+        "regulation": "Trade Secrets Directive",
+        "applicability": "conditional",
+        "reason": "Relevant when Data Act sharing exposes protected know-how or confidential data.",
+        "architecture_action": (
+            "Bind third-party releases to safeguards, confidentiality terms, purpose limits and "
+            "audit logs."
+        ),
+        "evidence_topic": "dataact.safeguards",
+    },
+    {
+        "regulation": "Radio Equipment Directive",
+        "applicability": "conditional",
+        "reason": "Applies if DEALIoT radio gateways or devices are placed on the EU market.",
+        "architecture_action": (
+            "Maintain product conformity, radio/cybersecurity/privacy assessment and support "
+            "evidence."
+        ),
+        "evidence_topic": "cra.product.lifecycle",
+    },
+    {
+        "regulation": "GPSR and Product Liability Directive",
+        "applicability": "conditional",
+        "reason": (
+            "Relevant when connected devices, software or digital services are supplied as "
+            "products."
+        ),
+        "architecture_action": (
+            "Maintain product safety file, defect handling, security-update history and market "
+            "surveillance evidence."
+        ),
+        "evidence_topic": "cra.product.lifecycle",
+    },
+    {
+        "regulation": "Cybersecurity Act",
+        "applicability": "conditional",
+        "reason": "Relevant if certification is required by customers, procurement or sector rules.",
+        "architecture_action": (
+            "Record certification applicability and map security controls to the selected EU "
+            "scheme when needed."
+        ),
+        "evidence_topic": "compliance.control.assessments",
+    },
+    {
+        "regulation": "Open Data Directive",
+        "applicability": "conditional",
+        "reason": "Applies only to public-sector information or public/open research-data reuse.",
+        "architecture_action": (
+            "Mark public-funded datasets, open-access obligations, licence and embargo status "
+            "in the catalogue and DMP."
+        ),
+        "evidence_topic": "governance.dataset.catalog",
+    },
+    {
+        "regulation": "EHDS",
+        "applicability": "conditional",
+        "reason": "Applies only if datasets contain personal electronic health data.",
+        "architecture_action": (
+            "Classify health-data scope before reuse; route secondary-use requests through the "
+            "dataset catalogue and DMP controls."
+        ),
+        "evidence_topic": "governance.dataset.catalog",
     },
 ]
 
