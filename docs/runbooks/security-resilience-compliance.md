@@ -27,6 +27,10 @@ If the scope is uncertain, keep the controls enabled and mark the legal scope de
 | `resilience.backup.tests` | restore tests, RPO/RTO result and recovery evidence |
 | `resilience.operational.risk` | ICT risk scenarios, mitigations and residual-risk decisions |
 | `resilience.third_party.risk` | supplier criticality, contract, subcontracting and exit plan |
+| `compliance.scope.decisions` | in-scope, out-of-scope or conditional regulatory decisions |
+| `compliance.control.assessments` | control status, evidence, gaps, owner and next action |
+| `compliance.reporting.channels` | authority, trigger, deadline, template and owner |
+| `cra.product.lifecycle` | support period, update channel and vulnerability disclosure |
 
 These topics store control evidence only. Do not place secrets, exploit details, raw telemetry or
 personal data in them.
@@ -43,6 +47,9 @@ Before a production release:
 4. Incident channels, severity rules and reporting deadlines are documented.
 5. Backup and restore tests prove the target RPO/RTO.
 6. Critical third-party ICT providers have a security review and exit plan.
+7. Legal scope decisions are recorded for DGA, Data Act, NIS2, DORA and CRA.
+8. CRA product lifecycle and vulnerability disclosure are recorded if the platform is shipped as a
+   product with digital elements.
 
 ## NIS2 Controls
 
@@ -71,6 +78,7 @@ When DEALIoT is shipped as a product with digital elements:
 - operate vulnerability handling and coordinated remediation;
 - provide tested security updates and rollback plans;
 - define external notification workflow for exploited vulnerabilities and incidents.
+- define the product support period, security update channel and vulnerability disclosure URL.
 
 ## Operating Rules
 
