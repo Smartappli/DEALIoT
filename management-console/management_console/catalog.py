@@ -1456,6 +1456,14 @@ OPERATIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "id": "review-dataset-dmp-readiness",
+        "name": "Review dataset and DMP readiness",
+        "method": "GET",
+        "endpoint": "/api/datasets",
+        "scope": "safe",
+        "description": "Lists datasets, Data Management Plans and FAIR/release controls.",
+    },
+    {
         "id": "review-intermediation-flow",
         "name": "Review intermediation flow",
         "method": "GET",
@@ -1809,11 +1817,19 @@ def data_act_payload() -> dict[str, Any]:
         "access_channels": DATA_ACT_ACCESS_CHANNELS,
         "obligations": DATA_ACT_OBLIGATIONS,
         "user_journey": DATA_ACT_USER_JOURNEY,
+        "datasets": DATASETS,
+        "data_management_plans": DATA_MANAGEMENT_PLANS,
         "evidence_topics": [
             topic
             for topic in TOPICS
             if topic["name"].startswith("dataact.")
-            or topic["name"] in {"governance.intermediation.log", "governance.transfer.notices"}
+            or topic["name"]
+            in {
+                "governance.dataset.catalog",
+                "governance.data_management_plans",
+                "governance.intermediation.log",
+                "governance.transfer.notices",
+            }
         ],
         "legal_basis_topic": "dataact.legal_basis.checks",
         "default_policy": {
@@ -1835,6 +1851,8 @@ def data_act_payload() -> dict[str, Any]:
 def dga_payload() -> dict[str, Any]:
     return {
         "data_products": DATA_PRODUCTS,
+        "datasets": DATASETS,
+        "data_management_plans": DATA_MANAGEMENT_PLANS,
         "intermediation_flow": INTERMEDIATION_FLOW,
         "consumer_profiles": CONSUMER_PROFILES,
         "obligations": DGA_OBLIGATIONS,
@@ -1858,6 +1876,7 @@ def dga_payload() -> dict[str, Any]:
             "research protocol and ethics status before project access",
             "publication disclosure review before external release",
             "schema-based interoperability and transparent formats",
+            "dataset catalogue and DMP before mediated research release",
             "unauthorised access, transfer and use notice trail",
         ],
     }
@@ -1868,10 +1887,14 @@ def research_payload() -> dict[str, Any]:
         "research_context": RESEARCH_CONTEXT,
         "projects": RESEARCH_PROJECTS,
         "controls": RESEARCH_CONTROLS,
+        "datasets": DATASETS,
+        "data_management_plans": DATA_MANAGEMENT_PLANS,
+        "dmp_controls": DMP_CONTROLS,
         "research_topics": [
             topic
             for topic in TOPICS
             if topic["name"].startswith("governance.research.")
+            or topic["name"] in {"governance.dataset.catalog", "governance.data_management_plans"}
         ],
         "recommended_default": (
             "share derived or pseudonymised research datasets before raw GPS, raw payloads or media"
