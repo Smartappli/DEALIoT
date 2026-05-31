@@ -429,6 +429,13 @@ TOPICS: list[dict[str, str]] = [
         "retention": "compacted channel register",
     },
     {
+        "name": "compliance.legal.dossier",
+        "plane": "compliance",
+        "owner": "legal-compliance",
+        "classification": "legal-compliance-dossier",
+        "retention": "compacted legal evidence register",
+    },
+    {
         "name": "cra.product.lifecycle",
         "plane": "security",
         "owner": "product-security",
@@ -1497,6 +1504,281 @@ COMPLIANCE_READINESS: list[dict[str, str]] = [
     },
 ]
 
+LEGAL_COMPLIANCE_DOSSIER: list[dict[str, str]] = [
+    {
+        "id": "ropa-register",
+        "regulation": "GDPR",
+        "owner": "privacy",
+        "status": "todo",
+        "artifact": "Record of processing activities for telemetry, research and sharing.",
+        "control": "Record controller, processor, purposes, categories, recipients and transfers.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "production-go-live",
+    },
+    {
+        "id": "dpia-aipd",
+        "regulation": "GDPR",
+        "owner": "privacy",
+        "status": "todo",
+        "artifact": "DPIA/AIPD decision and assessment file for high-risk research processing.",
+        "control": "Decide whether a DPIA is required and record mitigations before collection.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "production-go-live",
+    },
+    {
+        "id": "privacy-notices",
+        "regulation": "GDPR, ePrivacy, Data Act",
+        "owner": "privacy",
+        "status": "todo",
+        "artifact": "Privacy and device notices for telemetry collection and research reuse.",
+        "control": "Publish notice text covering purposes, rights, retention and recipients.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "data-collection",
+    },
+    {
+        "id": "data-subject-rights",
+        "regulation": "GDPR",
+        "owner": "privacy",
+        "status": "todo",
+        "artifact": "Procedure for access, erasure, objection, restriction and portability requests.",
+        "control": "Route requests to owners and record fulfilment or refusal evidence.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "production-go-live",
+    },
+    {
+        "id": "processor-dpa",
+        "regulation": "GDPR",
+        "owner": "legal-compliance",
+        "status": "todo",
+        "artifact": "Processor, joint-controller and sub-processor contract pack.",
+        "control": "Bind hosting, research partners and processors to written terms.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "third-party-sharing",
+    },
+    {
+        "id": "data-act-user-notice",
+        "regulation": "Data Act",
+        "owner": "data-act-governance",
+        "status": "todo",
+        "artifact": "Pre-contractual user notice and access terms for generated data.",
+        "control": "Explain data generated, access method, format, frequency and holder identity.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "connected-product-release",
+    },
+    {
+        "id": "data-sharing-agreement",
+        "regulation": "DGA, Data Act, GDPR, Trade Secrets Directive",
+        "owner": "legal-compliance",
+        "status": "todo",
+        "artifact": "Data sharing agreement and third-party recipient checklist.",
+        "control": "Bind purpose, categories, safeguards, confidentiality and onward-use limits.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "third-party-sharing",
+    },
+    {
+        "id": "dga-role-notification",
+        "regulation": "DGA",
+        "owner": "legal-compliance",
+        "status": "todo",
+        "artifact": "DGA role decision and notification evidence if intermediation is regulated.",
+        "control": "Record service separation, neutrality, no own reuse and authority channel.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "mediated-data-service",
+    },
+    {
+        "id": "nis2-entity-classification",
+        "regulation": "NIS2",
+        "owner": "security",
+        "status": "todo",
+        "artifact": "Entity classification and Member State transposition mapping.",
+        "control": "Record essential/important/out-of-scope decision and national contact path.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "production-go-live",
+    },
+    {
+        "id": "dora-scope-decision",
+        "regulation": "DORA",
+        "owner": "platform-risk",
+        "status": "conditional",
+        "artifact": "Financial-sector scope decision and ICT third-party provider role.",
+        "control": "Record DORA in-scope or out-of-scope decision before financial use.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "financial-sector-use",
+    },
+    {
+        "id": "cra-conformity-file",
+        "regulation": "CRA",
+        "owner": "product-security",
+        "status": "todo",
+        "artifact": "Product classification, conformity and support-period file.",
+        "control": "Record product role, vulnerability handling and security update commitment.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "product-market-release",
+    },
+    {
+        "id": "ai-system-inventory",
+        "regulation": "AI Act",
+        "owner": "ai-governance",
+        "status": "conditional",
+        "artifact": "AI system inventory, risk class and prohibited-use check.",
+        "control": "Block AI deployment until purpose, datasets, oversight and monitoring exist.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "ai-deployment",
+    },
+    {
+        "id": "eprivacy-terminal-assessment",
+        "regulation": "ePrivacy",
+        "owner": "privacy",
+        "status": "conditional",
+        "artifact": "Terminal equipment and communications metadata assessment.",
+        "control": "Record country rules, notice/consent basis and telemetry minimisation.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "data-collection",
+    },
+    {
+        "id": "retention-schedule",
+        "regulation": "GDPR, Data Act, DGA",
+        "owner": "data-stewardship",
+        "status": "todo",
+        "artifact": "Retention and deletion schedule for topics, buckets, backups and exports.",
+        "control": "Bind each dataset and raw store to retention, deletion and archive rules.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "production-go-live",
+    },
+    {
+        "id": "incident-notification-playbook",
+        "regulation": "GDPR, NIS2, DORA, CRA",
+        "owner": "security",
+        "status": "todo",
+        "artifact": "Regulatory incident notification playbook and table-top exercise record.",
+        "control": "Record severity triggers, deadlines, templates and authority contacts.",
+        "evidence_topic": "compliance.legal.dossier",
+        "required_before": "production-go-live",
+    },
+    {
+        "id": "zenodo-publication-approval",
+        "regulation": "GDPR, DGA, Data Act, Open Data Directive",
+        "owner": "research-governance",
+        "status": "partial",
+        "artifact": "Dataset publication approval bound to catalogue, DMP and Zenodo draft.",
+        "control": "Block publication unless legal review approves access right and licence.",
+        "evidence_topic": "governance.repository.exports",
+        "required_before": "repository-publication",
+    },
+]
+
+LEGAL_RELEASE_GATES: list[dict[str, str]] = [
+    {
+        "id": "production-go-live",
+        "status": "blocked",
+        "before": "Production telemetry collection or external data access.",
+        "required_artifacts": (
+            "ropa-register, dpia-aipd, privacy-notices, data-subject-rights, "
+            "retention-schedule, incident-notification-playbook"
+        ),
+        "block_rule": "No production go-live until mandatory legal dossier items are approved.",
+    },
+    {
+        "id": "dataset-sharing",
+        "status": "blocked",
+        "before": "Any dataset release to applications, scientists or third parties.",
+        "required_artifacts": (
+            "dataset catalogue, active DMP, legal-basis check, sharing agreement, "
+            "retention schedule"
+        ),
+        "block_rule": "No sharing without purpose, recipients, safeguards and access policy.",
+    },
+    {
+        "id": "zenodo-publication",
+        "status": "blocked",
+        "before": "Zenodo publication action.",
+        "required_artifacts": (
+            "zenodo-publication-approval, DMP, disclosure review, licence and access-right "
+            "decision"
+        ),
+        "block_rule": "Only draft creation is allowed until legal_review_approved is true.",
+    },
+    {
+        "id": "third-party-sharing",
+        "status": "blocked",
+        "before": "Data Act third-party transfer or DGA-mediated external release.",
+        "required_artifacts": "processor-dpa, data-sharing-agreement, data-act-user-notice",
+        "block_rule": "No external recipient access without signed terms and user authority.",
+    },
+    {
+        "id": "ai-deployment",
+        "status": "conditional",
+        "before": "AI model or decision-support deployment.",
+        "required_artifacts": "ai-system-inventory, DPIA decision and dataset lineage.",
+        "block_rule": "No AI system without inventory, risk class and human oversight record.",
+    },
+    {
+        "id": "product-market-release",
+        "status": "blocked",
+        "before": "Software, gateway image or device made available on the EU market.",
+        "required_artifacts": "cra-conformity-file, SBOM, support period and disclosure channel.",
+        "block_rule": "No market release until product role and CRA obligations are recorded.",
+    },
+    {
+        "id": "incident-reporting",
+        "status": "blocked",
+        "before": "Operational incident management in production.",
+        "required_artifacts": "incident-notification-playbook and reporting channels.",
+        "block_rule": "No production run without authority contacts, deadlines and templates.",
+    },
+]
+
+LEGAL_TEMPLATES: list[dict[str, str]] = [
+    {
+        "id": "ropa-template",
+        "regulation": "GDPR",
+        "path": "docs/compliance/templates/ropa-template.md",
+        "purpose": "Record processing activities for telemetry, research and releases.",
+    },
+    {
+        "id": "dpia-template",
+        "regulation": "GDPR",
+        "path": "docs/compliance/templates/dpia-template.md",
+        "purpose": "DPIA/AIPD decision, risk assessment and mitigations.",
+    },
+    {
+        "id": "privacy-notice-template",
+        "regulation": "GDPR, ePrivacy",
+        "path": "docs/compliance/templates/privacy-notice-template.md",
+        "purpose": "Notice for telemetry collection and research reuse.",
+    },
+    {
+        "id": "data-act-notice-template",
+        "regulation": "Data Act",
+        "path": "docs/compliance/templates/data-act-notice-template.md",
+        "purpose": "User information for generated connected-product data access.",
+    },
+    {
+        "id": "data-sharing-agreement-checklist",
+        "regulation": "DGA, Data Act, GDPR",
+        "path": "docs/compliance/templates/data-sharing-agreement-checklist.md",
+        "purpose": "Recipient, purpose, safeguards and onward-use contract checklist.",
+    },
+    {
+        "id": "retention-schedule-template",
+        "regulation": "GDPR, DGA, Data Act",
+        "path": "docs/compliance/templates/retention-schedule-template.md",
+        "purpose": "Retention, deletion and archive rules per data store and dataset.",
+    },
+    {
+        "id": "incident-notification-playbook",
+        "regulation": "GDPR, NIS2, DORA, CRA",
+        "path": "docs/compliance/templates/incident-notification-playbook.md",
+        "purpose": "Incident classification, deadlines, owners and authority contacts.",
+    },
+    {
+        "id": "zenodo-publication-approval",
+        "regulation": "GDPR, DGA, Data Act, Open Data Directive",
+        "path": "docs/compliance/templates/zenodo-publication-approval.md",
+        "purpose": "Legal approval checklist before publishing a Zenodo record.",
+    },
+]
+
 ADDITIONAL_LEGISLATION: list[dict[str, str]] = [
     {
         "regulation": "GDPR / RGPD",
@@ -1645,6 +1927,11 @@ RUNBOOKS: list[dict[str, str]] = [
         "scope": "GDPR, ePrivacy, AI Act, product, open-data and EHDS scope matrix.",
     },
     {
+        "name": "Legal compliance dossier",
+        "path": "docs/compliance/legal-compliance-dossier.md",
+        "scope": "Legal artefacts, release gates and evidence topics before go-live.",
+    },
+    {
         "name": "Data Governance Act",
         "path": "docs/runbooks/data-governance-act.md",
         "scope": "DGA role decision, intermediation evidence and data-sharing controls.",
@@ -1782,6 +2069,14 @@ OPERATIONS: list[dict[str, Any]] = [
         "scope": "safe",
         "description": "Lists CRA secure-by-design, vulnerability and update controls.",
     },
+    {
+        "id": "review-legal-compliance",
+        "name": "Review legal compliance dossier",
+        "method": "GET",
+        "endpoint": "/api/legal-compliance",
+        "scope": "safe",
+        "description": "Lists mandatory legal artefacts, templates, gates and evidence topics.",
+    },
 ]
 
 COMPLIANCE_CONTROLS: list[dict[str, str]] = [
@@ -1866,6 +2161,14 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "status": "partial",
         "regulation": "GDPR",
         "control": "Maintain DPIA, rights handling, processor terms and breach evidence.",
+    },
+    {
+        "id": "legal-dossier",
+        "status": "partial",
+        "regulation": "GDPR, DGA, Data Act, NIS2, DORA, CRA",
+        "control": (
+            "Maintain legal dossier artefacts and block releases until required approvals exist."
+        ),
     },
     {
         "id": "eprivacy-terminal-access",
@@ -1989,6 +2292,9 @@ def catalog_payload() -> dict[str, Any]:
         "compliance_scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
         "compliance_reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
         "compliance_readiness": COMPLIANCE_READINESS,
+        "legal_compliance_dossier": LEGAL_COMPLIANCE_DOSSIER,
+        "legal_release_gates": LEGAL_RELEASE_GATES,
+        "legal_templates": LEGAL_TEMPLATES,
         "additional_legislation": ADDITIONAL_LEGISLATION,
         "cra_product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "nis2_obligations": NIS2_OBLIGATIONS,
@@ -2046,7 +2352,11 @@ def compliance_payload() -> dict[str, Any]:
         "controls": COMPLIANCE_CONTROLS,
         "scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
         "reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
+        "legal_dossier": LEGAL_COMPLIANCE_DOSSIER,
+        "release_gates": LEGAL_RELEASE_GATES,
+        "templates": LEGAL_TEMPLATES,
         "additional_legislation": ADDITIONAL_LEGISLATION,
+        "legal_dossier_topic": "compliance.legal.dossier",
         "control_assessment_topic": "compliance.control.assessments",
         "evidence_topics": [
             topic
@@ -2056,8 +2366,36 @@ def compliance_payload() -> dict[str, Any]:
         ],
         "verdict": (
             "technical evidence baseline only; legal compliance remains partial until "
-            "scope, procedures, contracts and operating evidence are recorded"
+            "scope, procedures, contracts, approvals and operating evidence are recorded"
         ),
+    }
+
+
+def legal_compliance_payload() -> dict[str, Any]:
+    return {
+        "legal_dossier": LEGAL_COMPLIANCE_DOSSIER,
+        "release_gates": LEGAL_RELEASE_GATES,
+        "templates": LEGAL_TEMPLATES,
+        "scope_decisions": COMPLIANCE_SCOPE_DECISIONS,
+        "reporting_channels": COMPLIANCE_REPORTING_CHANNELS,
+        "evidence_topics": [
+            topic
+            for topic in TOPICS
+            if topic["name"].startswith("compliance.")
+            or topic["name"]
+            in {
+                "dataact.legal_basis.checks",
+                "governance.dataset.catalog",
+                "governance.data_management_plans",
+                "governance.repository.exports",
+            }
+        ],
+        "default_policy": {
+            "production_go_live": "blocked until mandatory legal dossier is approved",
+            "dataset_sharing": "blocked until catalogue, DMP and legal review are complete",
+            "zenodo_publication": "draft only until legal_review_approved is true",
+            "legal_verdict": "reviewable baseline, not legal certification",
+        },
     }
 
 
