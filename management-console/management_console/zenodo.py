@@ -57,6 +57,20 @@ def zenodo_api_base_url() -> str:
     return ZENODO_PRODUCTION_API
 
 
+def is_zenodo_sandbox(api_base_url: str) -> bool:
+    return urlparse(api_base_url).hostname == "sandbox.zenodo.org"
+
+
+def validate_https_url(url: str) -> None:
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or not parsed.netloc:
+        raise ZenodoExportError(
+            HTTPStatus.BAD_GATEWAY,
+            "invalid_zenodo_response_url",
+            "Zenodo response included a non-HTTPS or malformed URL.",
+        )
+
+
 def find_dataset(dataset_id: str) -> dict[str, Any]:
     for dataset in DATASETS:
         if dataset["dataset_id"] == dataset_id:
@@ -204,6 +218,7 @@ def _json_request(
     token: str,
     payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    validate_https_url(url)
     body = None if payload is None else json.dumps(payload).encode("utf-8")
     headers = {
         "Accept": "application/json",
@@ -222,6 +237,7 @@ def _bytes_request(
     body: bytes,
     content_type: str,
 ) -> dict[str, Any]:
+    validate_https_url(url)
     req = request.Request(  # noqa: S310
         url,
         data=body,
@@ -237,7 +253,9 @@ def _bytes_request(
 
 def _parse_json_response(req: request.Request) -> dict[str, Any]:
     try:
-        with request.urlopen(req, timeout=request_timeout_seconds()) as response:  # noqa: S310
+        validate_https_url(req.full_url)
+        # URL is validated immediately above; urllib is kept to avoid an extra runtime dependency.
+        with request.urlopen(req, timeout=request_timeout_seconds()) as response:  # noqa: S310, B310
             response_body = response.read().decode("utf-8")
             return json.loads(response_body) if response_body else {}
     except error.HTTPError as exc:
@@ -386,7 +404,7 @@ def export_dataset_to_zenodo(payload: dict[str, Any]) -> dict[str, Any]:
     return {
         "status": "published" if published is not None else "draft_created",
         "repository": "Zenodo",
-        "sandbox": "sandbox.zenodo.org" in base_url,
+        "sandbox": is_zenodo_sandbox(base_url),
         "dataset_id": dataset_id,
         "dmp_id": dataset.get("dmp_id"),
         "deposition_id": latest.get("id", deposition_id),
@@ -406,7 +424,7 @@ def zenodo_export_payload() -> dict[str, Any]:
     return {
         "repository": "Zenodo",
         "api_base_url": base_url,
-        "sandbox": "sandbox.zenodo.org" in base_url,
+        "sandbox": is_zenodo_sandbox(base_url),
         "token_configured": bool(os.getenv("ZENODO_ACCESS_TOKEN")),
         "staging_dir_configured": bool(os.getenv("ZENODO_EXPORT_STAGING_DIR")),
         "evidence_topic": ZENODO_EXPORT_EVIDENCE_TOPIC,

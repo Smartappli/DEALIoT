@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Self, cast
 from unittest.mock import Mock, patch
 from urllib import error, request
+from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "management-console"))
@@ -44,6 +45,14 @@ class FakeBodyHandler:
         self.headers = {"Content-Length": str(len(body) if length is None else length)}
 
 
+def open_test_http_url(url_or_request: str | request.Request):
+    url = url_or_request.full_url if isinstance(url_or_request, request.Request) else url_or_request
+    if urlparse(url).scheme not in {"http", "https"}:
+        raise ValueError("test URL must use http or https")
+    # Test helper validates the scheme above before exercising the local HTTP server.
+    return request.urlopen(url_or_request, timeout=5)  # noqa: S310, B310
+
+
 @contextmanager
 def running_console_server():
     server = ThreadingHTTPServer(("127.0.0.1", 0), app.ManagementConsoleHandler)
@@ -58,7 +67,7 @@ def running_console_server():
 
 
 def read_json(url: str) -> dict[str, object]:
-    with request.urlopen(url, timeout=5) as response:  # noqa: S310
+    with open_test_http_url(url) as response:
         parsed = json.loads(response.read().decode("utf-8"))
     if not isinstance(parsed, dict):
         raise TypeError("Expected JSON object response")
@@ -318,12 +327,12 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             )
             self.assertIn("finalization_items", legal_compliance)
 
-            with request.urlopen(f"{base_url}/", timeout=5) as response:  # noqa: S310
+            with open_test_http_url(f"{base_url}/") as response:
                 html = response.read().decode("utf-8")
             self.assertIn("DEALIoT Management Console", html)
 
             with self.assertRaises(error.HTTPError) as not_found:
-                request.urlopen(f"{base_url}/missing", timeout=5)  # noqa: S310
+                open_test_http_url(f"{base_url}/missing")
             self.assertEqual(not_found.exception.code, HTTPStatus.NOT_FOUND)
 
             post = request.Request(  # noqa: S310
@@ -333,7 +342,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 headers={"Content-Type": "application/json"},
             )
             with self.assertRaises(error.HTTPError) as bad_request:
-                request.urlopen(post, timeout=5)  # noqa: S310
+                open_test_http_url(post)
             self.assertEqual(bad_request.exception.code, HTTPStatus.BAD_REQUEST)
 
             with patch(
@@ -390,7 +399,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                     headers={"Content-Type": "application/json"},
                 )
                 with self.assertRaises(error.HTTPError) as blocked:
-                    request.urlopen(post, timeout=5)  # noqa: S310
+                    open_test_http_url(post)
             self.assertEqual(blocked.exception.code, HTTPStatus.CONFLICT)
 
     def test_run_uses_configured_bind_and_port(self) -> None:
@@ -413,7 +422,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
 
 
 def read_json_from_request(req: request.Request) -> dict[str, object]:
-    with request.urlopen(req, timeout=5) as response:  # noqa: S310
+    with open_test_http_url(req) as response:
         parsed = json.loads(response.read().decode("utf-8"))
     if not isinstance(parsed, dict):
         raise TypeError("Expected JSON object response")
