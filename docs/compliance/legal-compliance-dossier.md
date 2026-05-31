@@ -51,3 +51,10 @@ Record approved legal artefacts in `compliance.legal.dossier`. Link operational 
 Every new telemetry source, dataset, research project, external application, scientist access path,
 AI feature, product release or repository publication must create or update a legal dossier record.
 If the dossier status is `draft`, `needs_review` or `blocked`, the release gate remains closed.
+
+## Finalization Rule
+
+The repository-side legal control architecture is complete when all required topics, schemas,
+templates, UI views, API payloads and tests are present. Production compliance is complete only
+when the corresponding `compliance.legal.dossier`, `compliance.scope.decisions` and
+`compliance.reporting.channels` records are approved with real organisation details.

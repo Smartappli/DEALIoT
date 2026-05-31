@@ -28,6 +28,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "zenodo-export.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
             REPO_ROOT / "docs" / "compliance" / "legal-compliance-dossier.md",
+            REPO_ROOT / "docs" / "compliance" / "legal-finalization-report.md",
             REPO_ROOT / "docs" / "compliance" / "legal-readiness-review.md",
             REPO_ROOT / "docs" / "compliance" / "templates" / "ropa-template.md",
             REPO_ROOT / "docs" / "compliance" / "templates" / "dpia-template.md",
@@ -46,6 +47,46 @@ class RepositoryUnitTests(unittest.TestCase):
             / "compliance"
             / "templates"
             / "data-sharing-agreement-checklist.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "processor-dpa-checklist.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "data-subject-rights-procedure.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "dga-role-notification-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "scope-decision-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "reporting-channel-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "cra-conformity-file-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "ai-system-inventory-template.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "eprivacy-assessment-template.md",
             REPO_ROOT
             / "docs"
             / "compliance"
