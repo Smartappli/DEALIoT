@@ -538,6 +538,7 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - [Backup and restore](docs/runbooks/backup-restore.md)
 - [Security hardening](docs/runbooks/security-hardening.md)
 - [Security resilience compliance](docs/runbooks/security-resilience-compliance.md)
+- [Legal applicability](docs/runbooks/legal-applicability.md)
 - [Data Governance Act](docs/runbooks/data-governance-act.md)
 - [Data Act](docs/runbooks/data-act.md)
 - [Dataset catalogue and Data Management Plan](docs/runbooks/data-management-plan.md)
