@@ -27,6 +27,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "data-management-plan.md",
             REPO_ROOT / "docs" / "runbooks" / "zenodo-export.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
+            REPO_ROOT / "docs" / "compliance" / "legal-readiness-review.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
