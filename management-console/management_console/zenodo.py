@@ -255,7 +255,7 @@ def _parse_json_response(req: request.Request) -> dict[str, Any]:
     try:
         validate_https_url(req.full_url)
         # URL is validated immediately above; urllib is kept to avoid an extra runtime dependency.
-        with request.urlopen(req, timeout=request_timeout_seconds()) as response:  # noqa: S310, B310
+        with request.urlopen(req, timeout=request_timeout_seconds()) as response:  # noqa: S310  # nosec B310
             response_body = response.read().decode("utf-8")
             return json.loads(response_body) if response_body else {}
     except error.HTTPError as exc:

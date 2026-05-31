@@ -50,7 +50,7 @@ def open_test_http_url(url_or_request: str | request.Request):
     if urlparse(url).scheme not in {"http", "https"}:
         raise ValueError("test URL must use http or https")
     # Test helper validates the scheme above before exercising the local HTTP server.
-    return request.urlopen(url_or_request, timeout=5)  # noqa: S310, B310
+    return request.urlopen(url_or_request, timeout=5)  # noqa: S310  # nosec B310
 
 
 @contextmanager

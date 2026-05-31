@@ -63,7 +63,7 @@ def open_http_request(req: request.Request, timeout: float) -> Any:
     if parsed.scheme not in {"http", "https"}:
         raise ValueError("HTTP request URL must use http or https")
     # URL scheme is validated immediately above; urllib is kept to avoid an extra dependency.
-    return request.urlopen(req, timeout=timeout)  # noqa: S310, B310
+    return request.urlopen(req, timeout=timeout)  # noqa: S310  # nosec B310
 
 
 def probe_tcp(endpoint: str, timeout: float) -> dict[str, Any]:
