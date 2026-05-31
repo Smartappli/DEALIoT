@@ -1524,7 +1524,9 @@ ADDITIONAL_LEGISLATION: list[dict[str, str]] = [
     {
         "regulation": "Cybersecurity Act",
         "applicability": "conditional",
-        "reason": "Relevant if certification is required by customers, procurement or sector rules.",
+        "reason": (
+            "Relevant if certification is required by customers, procurement or sector rules."
+        ),
         "architecture_action": (
             "Record certification applicability and map security controls to the selected EU "
             "scheme when needed."
