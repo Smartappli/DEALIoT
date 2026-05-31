@@ -416,6 +416,15 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('fetch("/api/health"', app_js)
         self.assertNotIn("fetch(endpoint", app_js)
 
+    def test_management_console_backend_avoids_scanner_hotspots(self) -> None:
+        app_py = (REPO_ROOT / "management-console" / "management_console" / "app.py").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertNotIn("urlopen", app_py)
+        self.assertNotIn('os.getenv("MANAGEMENT_CONSOLE_BIND", "0.0.0.0")', app_py)
+        self.assertIn('os.getenv("MANAGEMENT_CONSOLE_BIND", "127.0.0.1")', app_py)
+
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [
             REPO_ROOT / "scripts" / "post-bootstrap.sh",
