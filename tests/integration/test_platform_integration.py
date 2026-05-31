@@ -56,6 +56,11 @@ class PlatformIntegrationTests(unittest.TestCase):
             "features.events",
             "state.latest",
             "dlq.events",
+            "governance.data.products",
+            "governance.access.requests",
+            "governance.permission.events",
+            "governance.intermediation.log",
+            "governance.transfer.notices",
         ]
 
         for topic in expected_topics:
