@@ -441,7 +441,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
 
         self.assertIn("shundor/python-bandit-scan", bandit_text)
-        self.assertIn("excluded_paths: \".git,.venv,build,dist,grafana,secrets,tests\"", bandit_text)
+        self.assertIn(
+            'excluded_paths: ".git,.venv,build,dist,grafana,secrets,tests"',
+            bandit_text,
+        )
         self.assertIn("security-events: write", bandit_text)
         self.assertIn("github/ossar-action", ossar_text)
         self.assertIn("github/codeql-action/upload-sarif", ossar_text)
