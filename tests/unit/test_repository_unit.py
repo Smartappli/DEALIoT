@@ -26,6 +26,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "data-act.md",
             REPO_ROOT / "docs" / "runbooks" / "data-management-plan.md",
             REPO_ROOT / "docs" / "runbooks" / "zenodo-export.md",
+            REPO_ROOT / "docs" / "runbooks" / "openaire-export.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
             REPO_ROOT / "docs" / "compliance" / "legal-compliance-dossier.md",
             REPO_ROOT / "docs" / "compliance" / "legal-finalization-report.md",
@@ -102,6 +103,11 @@ class RepositoryUnitTests(unittest.TestCase):
             / "compliance"
             / "templates"
             / "zenodo-publication-approval.md",
+            REPO_ROOT
+            / "docs"
+            / "compliance"
+            / "templates"
+            / "openaire-discovery-approval.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
@@ -110,6 +116,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
             REPO_ROOT / "management-console" / "Dockerfile",
             REPO_ROOT / "management-console" / "management_console" / "app.py",
+            REPO_ROOT / "management-console" / "management_console" / "openaire.py",
         ]
 
         for file_path in required_files:

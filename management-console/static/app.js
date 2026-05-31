@@ -113,6 +113,11 @@ function renderDatasets() {
               Draft
             </button>
           </td>
+          <td>
+            <button type="button" data-action="openaire-export" data-dataset-id="${dataset.dataset_id}">
+              Metadata
+            </button>
+          </td>
         </tr>
       `,
     )
@@ -120,6 +125,11 @@ function renderDatasets() {
 
   const zenodoPolicy = document.querySelector("#zenodo-export-policy");
   zenodoPolicy.innerHTML = (state.architecture.zenodo_export_policy || [])
+    .map((control) => pill(control.id, control.status))
+    .join("");
+
+  const openairePolicy = document.querySelector("#openaire-export-policy");
+  openairePolicy.innerHTML = (state.architecture.openaire_export_policy || [])
     .map((control) => pill(control.id, control.status))
     .join("");
 
@@ -618,6 +628,17 @@ async function exportDatasetToZenodo(datasetId) {
   result.textContent = `Draft Zenodo cree pour ${payload.dataset_id}: ${payload.record_url || "-"}`;
 }
 
+async function exportDatasetToOpenAire(datasetId) {
+  const result = document.querySelector("#openaire-export-result");
+  result.textContent = "Export OpenAIRE en cours...";
+  const payload = await fetchJson("/api/datasets/openaire/export", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ dataset_id: datasetId }),
+  });
+  result.textContent = `Package OpenAIRE cree pour ${payload.dataset_id}: ${payload.files.join(", ")}`;
+}
+
 async function init() {
   state.architecture = await fetchJson("/api/architecture");
   renderAll();
@@ -631,6 +652,11 @@ document.addEventListener("click", (event) => {
   if (event.target.matches('[data-action="zenodo-export"]')) {
     exportDatasetToZenodo(event.target.dataset.datasetId).catch((error) => {
       document.querySelector("#zenodo-export-result").textContent = error.message;
+    });
+  }
+  if (event.target.matches('[data-action="openaire-export"]')) {
+    exportDatasetToOpenAire(event.target.dataset.datasetId).catch((error) => {
+      document.querySelector("#openaire-export-result").textContent = error.message;
     });
   }
 });

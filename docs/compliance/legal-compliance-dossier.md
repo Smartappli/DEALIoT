@@ -33,6 +33,7 @@ Record approved legal artefacts in `compliance.legal.dossier`. Link operational 
 | Retention schedule | GDPR, DGA, Data Act | production go-live | topics, buckets, databases, backups and exports have deletion rules |
 | Incident notification playbook | GDPR, NIS2, DORA, CRA | production go-live | triggers, owners, templates, channels and exercise evidence exist |
 | Zenodo publication approval | GDPR, DGA, Data Act, Open Data | publication | catalogue, DMP, licence, access right and legal approval are linked |
+| OpenAIRE discovery approval | GDPR, DGA, Data Act, Open Data | external discovery | catalogue, DMP, landing page, metadata rights and legal approval are linked |
 
 ## Release Gates
 
@@ -41,6 +42,7 @@ Record approved legal artefacts in `compliance.legal.dossier`. Link operational 
 - Dataset sharing is blocked until catalogue, DMP, legal-basis check, sharing terms and access
   policy are recorded.
 - Zenodo publication is draft-only until `legal_review_approved=true` is recorded.
+- OpenAIRE discovery is metadata-only and blocked until access rights match classification.
 - Third-party sharing is blocked until recipient identity, user authority, signed terms and
   safeguards are approved.
 - AI deployment is blocked until the AI inventory, risk class and oversight record exist.
