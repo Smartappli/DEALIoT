@@ -324,6 +324,13 @@ TOPICS: list[dict[str, str]] = [
         "retention": "compacted control register",
     },
     {
+        "name": "dataact.legal_basis.checks",
+        "plane": "governance",
+        "owner": "data-act-governance",
+        "classification": "personal-data-release-check",
+        "retention": "one year minimum, site policy required",
+    },
+    {
         "name": "security.asset.inventory",
         "plane": "security",
         "owner": "security",
@@ -378,6 +385,34 @@ TOPICS: list[dict[str, str]] = [
         "owner": "platform-risk",
         "classification": "supplier-risk-register",
         "retention": "compacted supplier register",
+    },
+    {
+        "name": "compliance.scope.decisions",
+        "plane": "compliance",
+        "owner": "compliance",
+        "classification": "regulatory-scope-decision",
+        "retention": "compacted scope register",
+    },
+    {
+        "name": "compliance.control.assessments",
+        "plane": "compliance",
+        "owner": "compliance",
+        "classification": "control-assessment-evidence",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "compliance.reporting.channels",
+        "plane": "compliance",
+        "owner": "compliance",
+        "classification": "regulatory-reporting-channel",
+        "retention": "compacted channel register",
+    },
+    {
+        "name": "cra.product.lifecycle",
+        "plane": "security",
+        "owner": "product-security",
+        "classification": "product-support-lifecycle",
+        "retention": "compacted product register",
     },
 ]
 
