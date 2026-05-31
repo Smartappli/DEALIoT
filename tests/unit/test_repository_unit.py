@@ -43,6 +43,8 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.data.products.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.permission.events.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.intermediation.log.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "governance.research.projects.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "governance.research.outputs.json",
         ]
 
         for file_path in bootstrap_files:
@@ -86,6 +88,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn(
             "post_artifact governance governance.intermediation.log "
             "/bootstrap/governance.intermediation.log.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact governance governance.research.projects "
+            "/bootstrap/governance.research.projects.json",
             compose_text,
         )
 

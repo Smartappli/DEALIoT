@@ -61,6 +61,8 @@ class PlatformIntegrationTests(unittest.TestCase):
             "governance.permission.events",
             "governance.intermediation.log",
             "governance.transfer.notices",
+            "governance.research.projects",
+            "governance.research.outputs",
         ]
 
         for topic in expected_topics:

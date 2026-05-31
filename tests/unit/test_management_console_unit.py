@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "management-console"))
 
 from management_console.app import configured_probe, first_host_port  # noqa: E402
-from management_console.catalog import catalog_payload, dga_payload  # noqa: E402
+from management_console.catalog import catalog_payload, dga_payload, research_payload  # noqa: E402
 
 
 class ManagementConsoleUnitTests(unittest.TestCase):
@@ -19,6 +19,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         topic_names = {topic["name"] for topic in payload["topics"]}
         operation_ids = {operation["id"] for operation in payload["operations"]}
         data_product_ids = {product["product_id"] for product in payload["data_products"]}
+        research_control_ids = {control["id"] for control in payload["research_controls"]}
 
         self.assertIn("kafka", component_ids)
         self.assertIn("airflow", component_ids)
@@ -27,9 +28,13 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("raw.gps", topic_names)
         self.assertIn("dlq.events", topic_names)
         self.assertIn("governance.intermediation.log", topic_names)
+        self.assertIn("governance.research.projects", topic_names)
+        self.assertIn("governance.research.outputs", topic_names)
         self.assertIn("telemetry.raw.gps", data_product_ids)
+        self.assertIn("research-protocol", research_control_ids)
         self.assertIn("refresh-health", operation_ids)
         self.assertIn("review-dga-readiness", operation_ids)
+        self.assertIn("review-research-readiness", operation_ids)
         self.assertIn("trigger-media-backfill", operation_ids)
 
     def test_dga_payload_exposes_evidence_topics_and_obligations(self) -> None:
@@ -40,8 +45,20 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.data.products", evidence_topics)
         self.assertIn("governance.permission.events", evidence_topics)
         self.assertIn("governance.intermediation.log", evidence_topics)
+        self.assertIn("governance.research.projects", evidence_topics)
         self.assertIn("neutrality", obligation_ids)
         self.assertIn("intermediation-log", obligation_ids)
+
+    def test_research_payload_exposes_research_collection_context(self) -> None:
+        payload = research_payload()
+        topic_names = {topic["name"] for topic in payload["research_topics"]}
+        control_ids = {control["id"] for control in payload["controls"]}
+
+        self.assertEqual(payload["research_context"]["primary_purpose"], "scientific research")
+        self.assertIn("governance.research.projects", topic_names)
+        self.assertIn("governance.research.outputs", topic_names)
+        self.assertIn("ethics-review", control_ids)
+        self.assertIn("publication-review", control_ids)
 
     def test_first_host_port_accepts_common_kafka_listener_prefixes(self) -> None:
         self.assertEqual(
