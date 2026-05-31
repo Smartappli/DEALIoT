@@ -35,6 +35,7 @@ class ApplicationSmokeTests(unittest.TestCase):
             "airflow-scheduler",
             "airflow-worker",
             "mqtt-kafka-bridge",
+            "management-console",
             "apicurio-registry",
         ]
 
@@ -63,6 +64,8 @@ class ApplicationSmokeTests(unittest.TestCase):
             "raw.sensor.json",
             "raw.image2d.meta.json",
             "raw.video2d.meta.json",
+            "governance.data.products.json",
+            "governance.access.requests.json",
         ]
 
         for json_file in json_files:

@@ -102,6 +102,7 @@ class DeploymentReadinessTests(unittest.TestCase):
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "kustomization.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "base" / "airflow.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "base" / "management-console.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "kustomization.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "serviceaccount.yaml",
             REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "configmap.yaml",
@@ -201,6 +202,7 @@ class DeploymentReadinessTests(unittest.TestCase):
             image_tags,
             {
                 "ghcr.io/smartappli/dealiot-mqtt-kafka-bridge": "sha-REPLACE_WITH_RELEASE_SHA",
+                "ghcr.io/smartappli/dealiot-management-console": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-flink-pyflink": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-orchestration": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-wildfi-decoder": "sha-REPLACE_WITH_RELEASE_SHA",
@@ -260,6 +262,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         ):
             self.assertGreaterEqual(replicas[workload_name], 3)
         self.assertGreaterEqual(replicas["airflow-apiserver"], 2)
+        self.assertGreaterEqual(replicas["management-console"], 2)
 
     def test_kubernetes_production_network_policies_default_deny_and_scope_egress(self) -> None:
         policy_path = (
@@ -277,6 +280,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("default-deny-all", policy_names)
         self.assertIn("allow-dns-egress", policy_names)
         self.assertIn("allow-runtime-egress-to-external-dependencies", policy_names)
+        self.assertIn("allow-management-console-ingress", policy_names)
         self.assertNotIn("0.0.0.0/0", policy_text)
 
         default_deny = next(
@@ -380,6 +384,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("org.opencontainers.image.revision", workflow_text)
         self.assertIn("sha-${GITHUB_SHA}", workflow_text)
         self.assertNotIn(':latest"', workflow_text)
+        self.assertIn("image_name: management-console", workflow_text)
         self.assertIn("image_name: wildfi-decoder", workflow_text)
         self.assertIn("WILDFI_DECODER_GIT_REF", workflow_text)
 
@@ -418,6 +423,9 @@ class DeploymentReadinessTests(unittest.TestCase):
         orchestration_dockerfile = (REPO_ROOT / "orchestration" / "Dockerfile").read_text(
             encoding="utf-8"
         )
+        management_console_dockerfile = (
+            REPO_ROOT / "management-console" / "Dockerfile"
+        ).read_text(encoding="utf-8")
         flink_dockerfile = (REPO_ROOT / "flink" / "Dockerfile.pyflink").read_text(encoding="utf-8")
         bridge_dockerfile = (REPO_ROOT / "mqtt-kafka-bridge" / "Dockerfile").read_text(
             encoding="utf-8"
@@ -455,6 +463,11 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("flink-connector-base", flink_dockerfile)
         self.assertIn("jdk_only_exports", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
+        self.assertIn(
+            "COPY --chown=root:root --chmod=0555 management-console/management_console",
+            management_console_dockerfile,
+        )
+        self.assertIn("USER appuser", management_console_dockerfile)
 
     def test_flink_runtime_logs_suppress_kafka_client_info_noise(self) -> None:
         log4j_config = (REPO_ROOT / "flink" / "log4j-console.properties").read_text(

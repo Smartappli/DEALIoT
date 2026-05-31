@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DEALIoT Management Console</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">D</span>
+        <div>
+          <strong>DEALIoT</strong>
+          <small>Management Console</small>
+        </div>
+      </div>
+      <nav aria-label="Sections">
+        <a href="#overview">Vue</a>
+        <a href="#topology">Architecture</a>
+        <a href="#topics">Data</a>
+        <a href="#dga">DGA</a>
+        <a href="#operations">Operations</a>
+        <a href="#compliance">Conformite</a>
+      </nav>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <div>
+          <h1>Console de gestion</h1>
+          <p>Supervision et pilotage interne de la plateforme IoT.</p>
+        </div>
+        <button id="refresh-health" type="button">Actualiser</button>
+      </header>
+
+      <section id="overview" class="metric-grid" aria-label="Synthese">
+        <article class="metric">
+          <span>Services</span>
+          <strong id="metric-services">0</strong>
+        </article>
+        <article class="metric">
+          <span>Healthy</span>
+          <strong id="metric-healthy">0</strong>
+        </article>
+        <article class="metric">
+          <span>Unreachable</span>
+          <strong id="metric-unreachable">0</strong>
+        </article>
+        <article class="metric">
+          <span>Topics</span>
+          <strong id="metric-topics">0</strong>
+        </article>
+      </section>
+
+      <section id="topology" class="panel">
+        <div class="section-head">
+          <h2>Architecture</h2>
+          <select id="plane-filter" aria-label="Filtrer par plan">
+            <option value="all">Tous les plans</option>
+          </select>
+        </div>
+        <div id="component-grid" class="component-grid"></div>
+      </section>
+
+      <section id="topics" class="panel">
+        <div class="section-head">
+          <h2>Catalogue data</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Topic</th>
+                <th>Plan</th>
+                <th>Classification</th>
+                <th>Retention</th>
+              </tr>
+            </thead>
+            <tbody id="topic-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="dga" class="panel">
+        <div class="section-head">
+          <h2>Data Governance Act</h2>
+        </div>
+        <div id="dga-principles" class="principles"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data product</th>
+                <th>Categorie</th>
+                <th>Acces</th>
+                <th>Controle</th>
+              </tr>
+            </thead>
+            <tbody id="data-product-table"></tbody>
+          </table>
+        </div>
+        <div id="dga-obligation-list" class="compliance-grid"></div>
+      </section>
+
+      <section id="operations" class="panel two-col">
+        <div>
+          <div class="section-head">
+            <h2>Operations</h2>
+          </div>
+          <div id="operations-list" class="stack"></div>
+        </div>
+        <div>
+          <div class="section-head">
+            <h2>Runbooks</h2>
+          </div>
+          <div id="runbook-list" class="stack"></div>
+        </div>
+      </section>
+
+      <section id="compliance" class="panel">
+        <div class="section-head">
+          <h2>Conformite</h2>
+        </div>
+        <div id="compliance-list" class="compliance-grid"></div>
+      </section>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

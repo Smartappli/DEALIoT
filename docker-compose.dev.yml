@@ -116,6 +116,10 @@ services:
     ports:
       - "3000:3000"
 
+  management-console:
+    ports:
+      - "8090:8080"
+
   cadvisor:
     ports:
       - "8089:8080"

@@ -46,6 +46,10 @@ services:
     <<: *prod-resources-medium
     logging: *prod-logging
 
+  management-console:
+    <<: *prod-resources-small
+    logging: *prod-logging
+
   flink-jobmanager:
     <<: *prod-resources-medium
     logging: *prod-logging

@@ -22,6 +22,8 @@ commonLabels:
 images:
   - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge
     newTag: sha-REPLACE_WITH_RELEASE_SHA
+  - name: ghcr.io/smartappli/dealiot-management-console
+    newTag: sha-REPLACE_WITH_RELEASE_SHA
   - name: ghcr.io/smartappli/dealiot-flink-pyflink
     newTag: sha-REPLACE_WITH_RELEASE_SHA
   - name: ghcr.io/smartappli/dealiot-orchestration
@@ -40,6 +42,8 @@ replicas:
     count: 2
   - name: airflow-worker
     count: 3
+  - name: management-console
+    count: 2
 
 patches:
   - target:
@@ -115,3 +119,21 @@ patches:
                   matchLabels:
                     app.kubernetes.io/name: airflow
                     app.kubernetes.io/component: worker
+  - target:
+      kind: Deployment
+      name: management-console
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: management-console
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: management-console

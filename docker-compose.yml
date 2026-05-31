@@ -542,6 +542,11 @@ services:
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic features.events --partitions 24 --replication-factor 3;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic alerts.events --partitions 12 --replication-factor 3;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic dlq.events --partitions 12 --replication-factor 3;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.data.products --partitions 3 --replication-factor 3 --config cleanup.policy=compact --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.access.requests --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.permission.events --partitions 6 --replication-factor 3 --config cleanup.policy=compact --config delete.retention.ms=31536000000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.intermediation.log --partitions 12 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic governance.transfer.notices --partitions 6 --replication-factor 3 --config retention.ms=31536000000 --config min.insync.replicas=2;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-journal-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic kafkasql-snapshots-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
         /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --bootstrap-server kafka1:9092 --topic registry-events-v3 --partitions 1 --replication-factor 3 --config cleanup.policy=delete --config retention.ms=-1 --config retention.bytes=-1;
@@ -1675,6 +1680,46 @@ services:
     networks:
       - orchestration_net
 
+  management-console:
+    build:
+      context: .
+      dockerfile: management-console/Dockerfile
+    image: dealiot-management-console:local
+    container_name: management-console
+    hostname: management-console
+    restart: unless-stopped
+    depends_on:
+      airflow-apiserver:
+        condition: service_started
+      apicurio-registry:
+        condition: service_started
+      prometheus:
+        condition: service_started
+      grafana:
+        condition: service_started
+    environment:
+      MANAGEMENT_CONSOLE_PORT: "8080"
+      MANAGEMENT_CONSOLE_PROBE_TIMEOUT_SECONDS: "2"
+      AIRFLOW_API_URL: "http://airflow-apiserver:8080/api/v2"
+      APICURIO_REGISTRY_URL: "http://apicurio-registry:8080/apis/registry/v3"
+      FLINK_REST_URL: "http://flink-jobmanager:8081"
+      PROMETHEUS_URL: "http://prometheus:9090"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=5)\""
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - orchestration_net
+      - kafka_net
+      - ingest_net
+      - patroni_frontend
+
   cadvisor:
     image: ghcr.io/google/cadvisor:v0.57.0
     container_name: cadvisor
@@ -1814,6 +1859,11 @@ services:
         post_artifact media raw.video3d.meta /bootstrap/raw.video3d.meta.json
         post_artifact media media.object.events /bootstrap/media.object.events.json
         post_artifact platform dlq.events /bootstrap/dlq.events.json
+        post_artifact governance governance.data.products /bootstrap/governance.data.products.json
+        post_artifact governance governance.access.requests /bootstrap/governance.access.requests.json
+        post_artifact governance governance.permission.events /bootstrap/governance.permission.events.json
+        post_artifact governance governance.intermediation.log /bootstrap/governance.intermediation.log.json
+        post_artifact governance governance.transfer.notices /bootstrap/governance.transfer.notices.json
 
         echo "Apicurio bootstrap done."
     networks:
