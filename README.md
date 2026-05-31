@@ -201,6 +201,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `compliance.scope.decisions` | Regulatory scope decision register | 3 | 3 |
 | `compliance.control.assessments` | Compliance control assessment evidence | 6 | 3 |
 | `compliance.reporting.channels` | Regulatory reporting channel register | 3 | 3 |
+| `compliance.legal.dossier` | Legal dossier artefacts and release gates | 3 | 3 |
 | `cra.product.lifecycle` | CRA product support and update lifecycle | 3 | 3 |
 | `kafkasql-journal-v3` | Apicurio KafkaSQL journal | 1 | 3 |
 | `kafkasql-snapshots-v3` | Apicurio KafkaSQL snapshots | 1 | 3 |
@@ -246,6 +247,7 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `compliance.scope.decisions`
 - `compliance.control.assessments`
 - `compliance.reporting.channels`
+- `compliance.legal.dossier`
 - `cra.product.lifecycle`
 
 ### WildFi ingestion
@@ -541,6 +543,7 @@ The `timescaledb-source` connector captures changes from `appdb` via a named pub
 - [Security hardening](docs/runbooks/security-hardening.md)
 - [Security resilience compliance](docs/runbooks/security-resilience-compliance.md)
 - [Legal applicability](docs/runbooks/legal-applicability.md)
+- [Legal compliance dossier](docs/compliance/legal-compliance-dossier.md)
 - [Data Governance Act](docs/runbooks/data-governance-act.md)
 - [Data Act](docs/runbooks/data-act.md)
 - [Dataset catalogue and Data Management Plan](docs/runbooks/data-management-plan.md)
