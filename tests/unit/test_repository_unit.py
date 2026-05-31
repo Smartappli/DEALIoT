@@ -33,81 +33,21 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "compliance" / "legal-readiness-review.md",
             REPO_ROOT / "docs" / "compliance" / "templates" / "ropa-template.md",
             REPO_ROOT / "docs" / "compliance" / "templates" / "dpia-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "privacy-notice-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "data-act-notice-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "data-sharing-agreement-checklist.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "processor-dpa-checklist.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "data-subject-rights-procedure.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "dga-role-notification-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "scope-decision-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "reporting-channel-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "cra-conformity-file-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "ai-system-inventory-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "eprivacy-assessment-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "retention-schedule-template.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "incident-notification-playbook.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "zenodo-publication-approval.md",
-            REPO_ROOT
-            / "docs"
-            / "compliance"
-            / "templates"
-            / "openaire-discovery-approval.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "privacy-notice-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "data-act-notice-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "data-sharing-agreement-checklist.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "processor-dpa-checklist.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "data-subject-rights-procedure.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "dga-role-notification-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "scope-decision-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "reporting-channel-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "cra-conformity-file-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "ai-system-inventory-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "eprivacy-assessment-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "retention-schedule-template.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "incident-notification-playbook.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "zenodo-publication-approval.md",
+            REPO_ROOT / "docs" / "compliance" / "templates" / "openaire-discovery-approval.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
@@ -220,8 +160,7 @@ class RepositoryUnitTests(unittest.TestCase):
             compose_text,
         )
         self.assertIn(
-            "post_artifact dataact dataact.product.catalog "
-            "/bootstrap/dataact.product.catalog.json",
+            "post_artifact dataact dataact.product.catalog /bootstrap/dataact.product.catalog.json",
             compose_text,
         )
         self.assertIn(
@@ -465,6 +404,17 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn("--cov-fail-under=90", workflow)
         self.assertIn("fail_under = 90", pyproject)
+
+    def test_management_console_frontend_avoids_unsafe_dom_sinks(self) -> None:
+        app_js = (REPO_ROOT / "management-console" / "static" / "app.js").read_text(
+            encoding="utf-8"
+        )
+
+        for forbidden in ["innerHTML", "outerHTML", "document.write"]:
+            self.assertNotIn(forbidden, app_js)
+        self.assertIn('fetch("/api/architecture"', app_js)
+        self.assertIn('fetch("/api/health"', app_js)
+        self.assertNotIn("fetch(endpoint", app_js)
 
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [
