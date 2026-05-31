@@ -25,6 +25,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "data-governance-act.md",
             REPO_ROOT / "docs" / "runbooks" / "data-act.md",
             REPO_ROOT / "docs" / "runbooks" / "data-management-plan.md",
+            REPO_ROOT / "docs" / "runbooks" / "zenodo-export.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
@@ -51,6 +52,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.research.outputs.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.dataset.catalog.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.data_management_plans.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "governance.repository.exports.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.product.catalog.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.user.access.requests.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "dataact.third_party.sharing.json",
@@ -127,6 +129,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn(
             "post_artifact governance governance.data_management_plans "
             "/bootstrap/governance.data_management_plans.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact governance governance.repository.exports "
+            "/bootstrap/governance.repository.exports.json",
             compose_text,
         )
         self.assertIn(
@@ -361,6 +368,15 @@ class RepositoryUnitTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             for fragment in forbidden_fragments:
                 self.assertNotIn(fragment, text, f"{path} contains {fragment}")
+
+    def test_coverage_threshold_is_at_least_90_percent(self) -> None:
+        workflow = (REPO_ROOT / ".github" / "workflows" / "sonarqube.yml").read_text(
+            encoding="utf-8"
+        )
+        pyproject = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+        self.assertIn("--cov-fail-under=90", workflow)
+        self.assertIn("fail_under = 90", pyproject)
 
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [

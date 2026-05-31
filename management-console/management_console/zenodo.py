@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from http import HTTPStatus
 from pathlib import Path
 from typing import Any
@@ -31,7 +31,7 @@ def now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def truthy_env(name: str, default: bool = False) -> bool:
+def truthy_env(name: str, *, default: bool = False) -> bool:
     value = os.getenv(name)
     if value is None:
         return default
@@ -145,7 +145,8 @@ def build_zenodo_metadata(
         "upload_type": "dataset",
         "description": payload.get("description") or zenodo_description(dataset, dmp),
         "creators": default_creators(payload),
-        "publication_date": payload.get("publication_date") or date.today().isoformat(),
+        "publication_date": payload.get("publication_date")
+        or datetime.now(UTC).date().isoformat(),
         "access_right": access_right,
         "keywords": [
             "DEALIoT",
@@ -292,7 +293,12 @@ def staged_files_from_payload(payload: dict[str, Any]) -> list[Path]:
     return resolved_files
 
 
-def upload_file_to_bucket(bucket_url: str, token: str, filename: str, content: bytes) -> dict[str, Any]:
+def upload_file_to_bucket(
+    bucket_url: str,
+    token: str,
+    filename: str,
+    content: bytes,
+) -> dict[str, Any]:
     target_url = f"{bucket_url.rstrip('/')}/{quote(filename)}"
     return _bytes_request("PUT", target_url, token, content, "application/octet-stream")
 
@@ -353,8 +359,8 @@ def export_dataset_to_zenodo(payload: dict[str, Any]) -> dict[str, Any]:
             manifest,
         )
     ]
-    for staged_file in staged_files:
-        uploaded_files.append(
+    uploaded_files.extend(
+        (
             upload_file_to_bucket(
                 bucket_url,
                 token,
@@ -362,6 +368,8 @@ def export_dataset_to_zenodo(payload: dict[str, Any]) -> dict[str, Any]:
                 staged_file.read_bytes(),
             )
         )
+        for staged_file in staged_files
+    )
 
     published: dict[str, Any] | None = None
     if payload.get("publish"):

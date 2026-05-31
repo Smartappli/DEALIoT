@@ -70,6 +70,7 @@ class ApplicationSmokeTests(unittest.TestCase):
             "governance.research.outputs.json",
             "governance.dataset.catalog.json",
             "governance.data_management_plans.json",
+            "governance.repository.exports.json",
             "dataact.product.catalog.json",
             "dataact.user.access.requests.json",
             "dataact.third_party.sharing.json",
