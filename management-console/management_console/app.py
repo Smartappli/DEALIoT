@@ -13,7 +13,7 @@ from typing import Any
 from urllib import error, request
 from urllib.parse import urlparse
 
-from management_console.catalog import COMPONENTS, catalog_payload, dga_payload
+from management_console.catalog import COMPONENTS, catalog_payload, dga_payload, research_payload
 
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
 DEFAULT_TIMEOUT_SECONDS = 2.0
@@ -251,6 +251,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
             "/api/architecture": lambda: self.respond_json(catalog_payload()),
             "/api/dga": lambda: self.respond_json(dga_payload()),
             "/api/health": lambda: self.respond_json(health_payload()),
+            "/api/research": lambda: self.respond_json(research_payload()),
             "/api/runbooks": lambda: self.respond_json({"runbooks": catalog_payload()["runbooks"]}),
             "/healthz": lambda: self.respond_json({"status": "ok", "checked_at": now_iso()}),
         }

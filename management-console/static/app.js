@@ -94,6 +94,50 @@ function renderTopics() {
     .join("");
 }
 
+function renderResearch() {
+  const context = state.architecture.research_context;
+  const contextContainer = document.querySelector("#research-context");
+  contextContainer.innerHTML = `
+    <article class="item">
+      <h3>${context.primary_purpose}</h3>
+      <p>${context.dga_mode}</p>
+      <div class="meta">
+        ${context.general_interest_objectives.map((objective) => pill(objective)).join("")}
+      </div>
+    </article>
+  `;
+
+  const projects = document.querySelector("#research-project-list");
+  projects.innerHTML = state.architecture.research_projects
+    .map(
+      (project) => `
+        <article class="component">
+          <h3>${project.title}</h3>
+          <p>${project.objective}</p>
+          <div class="meta">
+            ${pill(project.permission_model)}
+            ${pill(project.ethics_review_status, project.ethics_review_status)}
+          </div>
+          <small>${project.sharing_layer}</small>
+        </article>
+      `,
+    )
+    .join("");
+
+  const controls = document.querySelector("#research-control-list");
+  controls.innerHTML = state.architecture.research_controls
+    .map(
+      (control) => `
+        <article class="control">
+          <h3>${control.id}</h3>
+          <p>${control.control}</p>
+          <div class="meta">${pill(control.status, control.status)}</div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
 function renderDga() {
   const principles = document.querySelector("#dga-principles");
   principles.innerHTML = state.architecture.dga_obligations
@@ -192,6 +236,7 @@ function renderAll() {
   renderPlaneFilter();
   renderComponents();
   renderTopics();
+  renderResearch();
   renderDga();
   renderOperations();
   renderRunbooks();
