@@ -21,6 +21,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "backup-restore.md",
             REPO_ROOT / "docs" / "runbooks" / "security-hardening.md",
             REPO_ROOT / "docs" / "runbooks" / "security-resilience-compliance.md",
+            REPO_ROOT / "docs" / "runbooks" / "legal-applicability.md",
             REPO_ROOT / "docs" / "runbooks" / "data-governance-act.md",
             REPO_ROOT / "docs" / "runbooks" / "data-act.md",
             REPO_ROOT / "docs" / "runbooks" / "data-management-plan.md",
