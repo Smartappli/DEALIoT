@@ -118,6 +118,19 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "unreachable")
 
     def test_runtime_probe_overrides_cover_registered_components(self) -> None:
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertIsNone(app.mqtt_probe())
+            self.assertIsNone(app.kafka_probe())
+            self.assertIsNone(app.apicurio_probe())
+            self.assertIsNone(app.endpoint_probe("MISSING_URL"))
+            self.assertEqual(
+                app.configured_probe({"id": "unknown", "probe": "tcp://fallback:1"}),
+                "tcp://fallback:1",
+            )
+
+        with patch.dict("os.environ", {"KAFKA_BOOTSTRAP_SERVERS": ", ,"}, clear=True):
+            self.assertIsNone(app.kafka_probe())
+
         with patch.dict(
             "os.environ",
             {
@@ -163,6 +176,28 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
     def test_probe_component_and_health_payload_summarize_checks(self) -> None:
         no_probe = app.probe_component({"id": "manual", "probe": None})
         self.assertEqual(no_probe["status"], "unknown")
+
+        with (
+            patch("management_console.app.configured_probe", return_value="tcp://broker:9092"),
+            patch(
+                "management_console.app.probe_tcp",
+                return_value={"status": "healthy", "detail": "tcp"},
+            ),
+        ):
+            result = app.probe_component({"id": "kafka"})
+        self.assertEqual(result["status"], "healthy")
+        self.assertEqual(result["detail"], "tcp")
+
+        with (
+            patch("management_console.app.configured_probe", return_value="https://service/health"),
+            patch(
+                "management_console.app.probe_http",
+                return_value={"status": "degraded", "detail": "http 503"},
+            ),
+        ):
+            result = app.probe_component({"id": "service"})
+        self.assertEqual(result["status"], "degraded")
+        self.assertEqual(result["detail"], "http 503")
 
         components = [{"id": "healthy"}, {"id": "offline"}, {"id": "offline-2"}]
 
@@ -308,6 +343,24 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 )
                 response = read_json_from_request(post)
             self.assertEqual(response["status"], "draft_created")
+
+            with patch(
+                "management_console.app.export_dataset_to_zenodo",
+                side_effect=app.ZenodoExportError(
+                    HTTPStatus.CONFLICT,
+                    "missing_zenodo_token",
+                    "Set ZENODO_ACCESS_TOKEN before exporting to Zenodo.",
+                ),
+            ):
+                post = request.Request(  # noqa: S310
+                    f"{base_url}/api/datasets/zenodo/export",
+                    data=b'{"dataset_id":"dataset.telemetry.sensor-minimised"}',
+                    method="POST",
+                    headers={"Content-Type": "application/json"},
+                )
+                with self.assertRaises(error.HTTPError) as blocked:
+                    request.urlopen(post, timeout=5)  # noqa: S310
+            self.assertEqual(blocked.exception.code, HTTPStatus.CONFLICT)
 
     def test_run_uses_configured_bind_and_port(self) -> None:
         fake_server = Mock()
