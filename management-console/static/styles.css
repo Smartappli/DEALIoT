@@ -227,7 +227,8 @@ button:hover,
 }
 
 .unknown,
-.todo {
+.todo,
+.conditional {
   background: #edf1f7;
   color: #475467;
 }
