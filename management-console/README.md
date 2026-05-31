@@ -7,6 +7,7 @@ It exposes:
 - platform topology and component ownership,
 - HTTP/TCP health probes from inside the Compose or Kubernetes networks,
 - Kafka topic and data classification inventory,
+- dataset catalogue, FAIR metadata and Data Management Plan controls,
 - DGA data products, access/permission evidence topics and readiness controls,
 - Data Act connected-product catalogue, user access and third-party sharing controls,
 - intermediation flow between raw data, applications and scientists,

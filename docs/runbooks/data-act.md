@@ -32,6 +32,8 @@ DEALIoT uses dedicated Data Act evidence topics:
 | `dataact.user.exports` | export format, delivery channel, object references and completion status |
 | `dataact.safeguards` | security, privacy, trade-secret and misuse safeguards |
 | `dataact.legal_basis.checks` | GDPR legal-basis check for personal data in Data Act releases |
+| `governance.dataset.catalog` | dataset release metadata, access mode and reuse policy |
+| `governance.data_management_plans` | DMP for research or third-party dataset release |
 
 These topics hold governance metadata only. Raw telemetry, GPS, media or research payloads stay in
 the restricted ingestion, processing or object-storage planes.
@@ -54,9 +56,10 @@ Use the following release order:
 4. If personal data is in scope, record the legal-basis check in
    `dataact.legal_basis.checks`.
 5. Apply privacy, security, trade-secret and misuse safeguards.
-6. Deliver data through secure API, controlled object access or a minimised export.
-7. If the user selected a third party, log the transfer in `dataact.third_party.sharing`.
-8. Log the export in `dataact.user.exports` and the mediated activity in
+6. If the release is dataset-based, confirm the dataset catalogue entry and DMP.
+7. Deliver data through secure API, controlled object access or a minimised export.
+8. If the user selected a third party, log the transfer in `dataact.third_party.sharing`.
+9. Log the export in `dataact.user.exports` and the mediated activity in
    `governance.intermediation.log`.
 
 ## Intermediation With Research

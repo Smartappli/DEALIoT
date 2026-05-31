@@ -318,6 +318,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         ):
             self.assertIn(required_secret, contract_text)
         for required_evidence_topic in (
+            "governance.dataset.catalog",
+            "governance.data_management_plans",
             "dataact.legal_basis.checks",
             "security.incident.events",
             "security.vulnerability.findings",
@@ -332,6 +334,11 @@ class DeploymentReadinessTests(unittest.TestCase):
         ):
             self.assertIn(required_evidence_topic, contract_text)
         self.assertIn("required_security_resilience:", contract_text)
+        self.assertIn("dataset_catalog: governance.dataset.catalog", contract_text)
+        self.assertIn(
+            "data_management_plan_register: governance.data_management_plans",
+            contract_text,
+        )
         self.assertIn("scope_decision_register: compliance.scope.decisions", contract_text)
         self.assertIn("dora_scope: required_if_financial_entity_or_ict_provider", contract_text)
 
