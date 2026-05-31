@@ -11,6 +11,7 @@ sys.path.insert(0, str(REPO_ROOT / "management-console"))
 from management_console.app import configured_probe, first_host_port  # noqa: E402
 from management_console.catalog import (  # noqa: E402
     catalog_payload,
+    data_act_payload,
     dga_payload,
     intermediation_payload,
     research_payload,
@@ -24,6 +25,9 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         topic_names = {topic["name"] for topic in payload["topics"]}
         operation_ids = {operation["id"] for operation in payload["operations"]}
         data_product_ids = {product["product_id"] for product in payload["data_products"]}
+        data_act_products = {
+            product["product_id"] for product in payload["data_act_connected_products"]
+        }
         research_control_ids = {control["id"] for control in payload["research_controls"]}
         profile_ids = {profile["profile_id"] for profile in payload["consumer_profiles"]}
 
@@ -36,12 +40,17 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.intermediation.log", topic_names)
         self.assertIn("governance.research.projects", topic_names)
         self.assertIn("governance.research.outputs", topic_names)
+        self.assertIn("dataact.product.catalog", topic_names)
+        self.assertIn("dataact.user.access.requests", topic_names)
+        self.assertIn("dataact.third_party.sharing", topic_names)
         self.assertIn("telemetry.raw.gps", data_product_ids)
+        self.assertIn("connected-device.telemetry", data_act_products)
         self.assertIn("research-protocol", research_control_ids)
         self.assertIn("application.operational", profile_ids)
         self.assertIn("researcher.external", profile_ids)
         self.assertIn("refresh-health", operation_ids)
         self.assertIn("review-dga-readiness", operation_ids)
+        self.assertIn("review-data-act-readiness", operation_ids)
         self.assertIn("review-intermediation-flow", operation_ids)
         self.assertIn("review-research-readiness", operation_ids)
         self.assertIn("trigger-media-backfill", operation_ids)
@@ -57,6 +66,25 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("governance.research.projects", evidence_topics)
         self.assertIn("neutrality", obligation_ids)
         self.assertIn("intermediation-log", obligation_ids)
+
+    def test_data_act_payload_exposes_user_access_and_third_party_sharing(self) -> None:
+        payload = data_act_payload()
+        evidence_topics = {topic["name"] for topic in payload["evidence_topics"]}
+        channel_ids = {channel["channel_id"] for channel in payload["access_channels"]}
+        obligation_ids = {obligation["id"] for obligation in payload["obligations"]}
+
+        self.assertIn("dataact.product.catalog", evidence_topics)
+        self.assertIn("dataact.user.access.requests", evidence_topics)
+        self.assertIn("dataact.third_party.sharing", evidence_topics)
+        self.assertIn("dataact.user.exports", evidence_topics)
+        self.assertIn("dataact.direct-access", channel_ids)
+        self.assertIn("dataact.third-party-transfer", channel_ids)
+        self.assertIn("user-access", obligation_ids)
+        self.assertIn("third-party-sharing", obligation_ids)
+        self.assertEqual(
+            payload["default_policy"]["third_party_sharing"],
+            "requires user authorization, recipient identity and purpose scope",
+        )
 
     def test_research_payload_exposes_research_collection_context(self) -> None:
         payload = research_payload()

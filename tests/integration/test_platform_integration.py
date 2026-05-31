@@ -63,6 +63,11 @@ class PlatformIntegrationTests(unittest.TestCase):
             "governance.transfer.notices",
             "governance.research.projects",
             "governance.research.outputs",
+            "dataact.product.catalog",
+            "dataact.user.access.requests",
+            "dataact.third_party.sharing",
+            "dataact.user.exports",
+            "dataact.safeguards",
         ]
 
         for topic in expected_topics:

@@ -21,6 +21,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "backup-restore.md",
             REPO_ROOT / "docs" / "runbooks" / "security-hardening.md",
             REPO_ROOT / "docs" / "runbooks" / "data-governance-act.md",
+            REPO_ROOT / "docs" / "runbooks" / "data-act.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
@@ -45,6 +46,11 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.intermediation.log.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.research.projects.json",
             REPO_ROOT / "apicurio" / "bootstrap" / "governance.research.outputs.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "dataact.product.catalog.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "dataact.user.access.requests.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "dataact.third_party.sharing.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "dataact.user.exports.json",
+            REPO_ROOT / "apicurio" / "bootstrap" / "dataact.safeguards.json",
         ]
 
         for file_path in bootstrap_files:
@@ -93,6 +99,16 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn(
             "post_artifact governance governance.research.projects "
             "/bootstrap/governance.research.projects.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact dataact dataact.product.catalog "
+            "/bootstrap/dataact.product.catalog.json",
+            compose_text,
+        )
+        self.assertIn(
+            "post_artifact dataact dataact.third_party.sharing "
+            "/bootstrap/dataact.third_party.sharing.json",
             compose_text,
         )
 

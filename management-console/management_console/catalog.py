@@ -380,7 +380,7 @@ DATA_ACT_CONNECTED_PRODUCTS: list[dict[str, Any]] = [
         "related_services": ["MQTT ingestion", "WildFi decoding", "media metadata ingestion"],
         "generated_data": ["raw.gps", "raw.sensor", "media object metadata"],
         "user_roles": ["device owner", "field operator", "research data holder"],
-        "access_channels": ["dataact.direct-access", "dataact.user-export"],
+        "access_channels": ["dataact.direct-access", "dataact.research-mediated"],
         "default_access": "available through mediated access, not unrestricted raw topics",
         "third_party_sharing": "allowed only after user authorization and scope review",
         "contract_status": "terms and user notices required before production",
