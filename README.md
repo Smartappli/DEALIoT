@@ -179,6 +179,8 @@ This makes the Airflow workflow operational instead of only printing objects to 
 | `governance.permission.events` | DGA consent/permission lifecycle | 6 | 3 |
 | `governance.intermediation.log` | DGA intermediation activity log | 12 | 3 |
 | `governance.transfer.notices` | DGA unauthorised access/transfer/use notices | 6 | 3 |
+| `governance.research.projects` | Research project register and ethics status | 3 | 3 |
+| `governance.research.outputs` | Research outputs and disclosure review evidence | 6 | 3 |
 | `kafkasql-journal-v3` | Apicurio KafkaSQL journal | 1 | 3 |
 | `kafkasql-snapshots-v3` | Apicurio KafkaSQL snapshots | 1 | 3 |
 | `registry-events-v3` | Apicurio registry events | 1 | 3 |
@@ -201,6 +203,8 @@ This makes the Airflow workflow operational instead of only printing objects to 
 - `governance.permission.events`
 - `governance.intermediation.log`
 - `governance.transfer.notices`
+- `governance.research.projects`
+- `governance.research.outputs`
 
 ### WildFi ingestion
 
