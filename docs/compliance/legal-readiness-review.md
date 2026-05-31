@@ -21,6 +21,8 @@ authority channels, approvals and final role decisions must still be recorded.
 
 The legal dossier to close those gaps is defined in
 `docs/compliance/legal-compliance-dossier.md` and recorded in `compliance.legal.dossier`.
+The repository-side finalisation position is recorded in
+`docs/compliance/legal-finalization-report.md`.
 
 ## Primary Regulations
 

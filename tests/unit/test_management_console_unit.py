@@ -241,6 +241,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         dossier_ids = {item["id"] for item in payload["legal_dossier"]}
         gate_ids = {gate["id"] for gate in payload["release_gates"]}
         template_ids = {template["id"] for template in payload["templates"]}
+        finalization = {item["id"]: item["status"] for item in payload["finalization_items"]}
         evidence_topics = {topic["name"] for topic in payload["evidence_topics"]}
         operation_ids = {operation["id"] for operation in catalog_payload()["operations"]}
 
@@ -253,6 +254,11 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("zenodo-publication", gate_ids)
         self.assertIn("ropa-template", template_ids)
         self.assertIn("data-act-notice-template", template_ids)
+        self.assertIn("processor-dpa-checklist", template_ids)
+        self.assertIn("dga-role-notification-template", template_ids)
+        self.assertIn("cra-conformity-file-template", template_ids)
+        self.assertEqual(finalization["architecture-controls"], "finalized")
+        self.assertEqual(finalization["production-approval"], "approval_required")
         self.assertIn("compliance.legal.dossier", evidence_topics)
         self.assertIn("review-legal-compliance", operation_ids)
         self.assertEqual(
@@ -274,9 +280,11 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn('id="legal-dossier-table"', html)
         self.assertIn('id="legal-release-gate-list"', html)
         self.assertIn('id="legal-template-table"', html)
+        self.assertIn('id="legal-finalization-table"', html)
         self.assertIn("legal_compliance_dossier", javascript)
         self.assertIn("legal_release_gates", javascript)
         self.assertIn("legal_templates", javascript)
+        self.assertIn("legal_finalization_items", javascript)
         self.assertIn('id="zenodo-export-policy"', html)
         self.assertIn("zenodo_export_policy", javascript)
         self.assertIn("zenodo-export", javascript)

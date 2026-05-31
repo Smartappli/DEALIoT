@@ -305,6 +305,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 legal_compliance["default_policy"]["legal_verdict"],
                 "reviewable baseline, not legal certification",
             )
+            self.assertIn("finalization_items", legal_compliance)
 
             with request.urlopen(f"{base_url}/", timeout=5) as response:  # noqa: S310
                 html = response.read().decode("utf-8")
