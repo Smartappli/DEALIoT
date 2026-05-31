@@ -103,6 +103,13 @@ data:
           reporting_channel_register: compliance.reporting.channels
           cra_product_lifecycle_register: cra.product.lifecycle
           production_plaintext_protocols: denied
+          required_legal_applicability:
+            gdpr: required_for_personal_data
+            eprivacy: assess_terminal_access_and_member_state_rules
+            ai_act: required_before_ai_deployment
+            trade_secrets: required_for_confidential_generated_data
+            radio_and_product_law: required_if_devices_are_placed_on_eu_market
+            open_data_ehds: required_if_public_sector_research_or_health_data
           release_gates:
             - asset_owners_and_classification
             - sbom_provenance_and_signature

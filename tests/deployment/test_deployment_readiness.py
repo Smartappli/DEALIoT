@@ -341,6 +341,13 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
         self.assertIn("scope_decision_register: compliance.scope.decisions", contract_text)
         self.assertIn("dora_scope: required_if_financial_entity_or_ict_provider", contract_text)
+        self.assertIn("required_legal_applicability:", contract_text)
+        self.assertIn("gdpr: required_for_personal_data", contract_text)
+        self.assertIn("ai_act: required_before_ai_deployment", contract_text)
+        self.assertIn(
+            "radio_and_product_law: required_if_devices_are_placed_on_eu_market",
+            contract_text,
+        )
 
     def test_kubernetes_production_wildfi_contract_is_explicit(self) -> None:
         contract = yaml.safe_load(
