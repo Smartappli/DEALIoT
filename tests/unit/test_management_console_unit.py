@@ -38,6 +38,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         }
         research_control_ids = {control["id"] for control in payload["research_controls"]}
         profile_ids = {profile["profile_id"] for profile in payload["consumer_profiles"]}
+        additional_regs = {item["regulation"] for item in payload["additional_legislation"]}
 
         self.assertIn("kafka", component_ids)
         self.assertIn("airflow", component_ids)
@@ -60,6 +61,9 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("connected-device.telemetry", data_act_products)
         self.assertIn("research-protocol", research_control_ids)
         self.assertIn("data-management-plan", research_control_ids)
+        self.assertIn("GDPR / RGPD", additional_regs)
+        self.assertIn("AI Act", additional_regs)
+        self.assertIn("ePrivacy Directive", additional_regs)
         self.assertIn("application.operational", profile_ids)
         self.assertIn("researcher.external", profile_ids)
         self.assertIn("refresh-health", operation_ids)
@@ -95,6 +99,8 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("third-party-ict-risk", security_control_ids)
         self.assertIn("DGA", readiness_regs)
         self.assertIn("CRA", readiness_regs)
+        self.assertIn("GDPR", readiness_regs)
+        self.assertIn("AI Act", readiness_regs)
 
     def test_dga_payload_exposes_evidence_topics_and_obligations(self) -> None:
         payload = dga_payload()
@@ -186,15 +192,43 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         topic_names = {topic["name"] for topic in payload["evidence_topics"]}
         readiness = {item["regulation"]: item["readiness"] for item in payload["readiness"]}
         channels = {item["regulation"] for item in payload["reporting_channels"]}
+        scope_regs = {item["regulation"] for item in payload["scope_decisions"]}
+        additional = {
+            item["regulation"]: item["applicability"]
+            for item in payload["additional_legislation"]
+        }
+        control_ids = {item["id"] for item in payload["controls"]}
 
         self.assertEqual(readiness["DORA"], "conditional")
         self.assertEqual(readiness["Data Act"], "partial")
+        self.assertEqual(readiness["GDPR"], "partial")
+        self.assertEqual(readiness["AI Act"], "conditional")
         self.assertIn("compliance.scope.decisions", topic_names)
         self.assertIn("compliance.control.assessments", topic_names)
         self.assertIn("compliance.reporting.channels", topic_names)
         self.assertIn("dataact.legal_basis.checks", topic_names)
         self.assertIn("CRA", channels)
+        self.assertIn("GDPR", channels)
+        self.assertIn("ePrivacy", scope_regs)
+        self.assertEqual(additional["GDPR / RGPD"], "applicable")
+        self.assertEqual(additional["AI Act"], "conditional")
+        self.assertEqual(additional["EHDS"], "conditional")
+        self.assertIn("gdpr-dpia-rights", control_ids)
+        self.assertIn("eprivacy-terminal-access", control_ids)
+        self.assertIn("product-market-scope", control_ids)
         self.assertIn("technical evidence baseline only", payload["verdict"])
+
+    def test_compliance_ui_exposes_additional_legislation_matrix(self) -> None:
+        html = (REPO_ROOT / "management-console" / "static" / "index.html").read_text(
+            encoding="utf-8"
+        )
+        javascript = (REPO_ROOT / "management-console" / "static" / "app.js").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn('id="additional-legislation-table"', html)
+        self.assertIn("additional_legislation", javascript)
+        self.assertIn("#additional-legislation-table", javascript)
 
     def test_research_payload_exposes_research_collection_context(self) -> None:
         payload = research_payload()
