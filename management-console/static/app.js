@@ -443,6 +443,53 @@ function renderRunbooks() {
 }
 
 function renderCompliance() {
+  const legalDossier = document.querySelector("#legal-dossier-table");
+  legalDossier.innerHTML = (state.architecture.legal_compliance_dossier || [])
+    .map(
+      (item) => `
+        <tr>
+          <td>
+            <strong>${item.id}</strong>
+            <small>${item.artifact}</small>
+          </td>
+          <td>${item.regulation}</td>
+          <td>${pill(item.status, item.status)}</td>
+          <td>${item.evidence_topic}</td>
+          <td>${item.required_before}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
+  const legalGates = document.querySelector("#legal-release-gate-list");
+  legalGates.innerHTML = (state.architecture.legal_release_gates || [])
+    .map(
+      (gate) => `
+        <article class="control">
+          <h3>${gate.id}</h3>
+          <p>${gate.before}</p>
+          <small>${gate.required_artifacts}</small>
+          <div class="meta">${pill(gate.status, gate.status)}</div>
+          <footer>${gate.block_rule}</footer>
+        </article>
+      `,
+    )
+    .join("");
+
+  const legalTemplates = document.querySelector("#legal-template-table");
+  legalTemplates.innerHTML = (state.architecture.legal_templates || [])
+    .map(
+      (template) => `
+        <tr>
+          <td><strong>${template.id}</strong></td>
+          <td>${template.regulation}</td>
+          <td>${template.purpose}</td>
+          <td>${template.path}</td>
+        </tr>
+      `,
+    )
+    .join("");
+
   const readiness = document.querySelector("#compliance-readiness-table");
   readiness.innerHTML = (state.architecture.compliance_readiness || [])
     .map(

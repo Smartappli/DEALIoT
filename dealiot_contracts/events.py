@@ -38,6 +38,7 @@ RESILIENCE_THIRD_PARTY_RISK_TOPIC = "resilience.third_party.risk"
 COMPLIANCE_SCOPE_DECISIONS_TOPIC = "compliance.scope.decisions"
 COMPLIANCE_CONTROL_ASSESSMENTS_TOPIC = "compliance.control.assessments"
 COMPLIANCE_REPORTING_CHANNELS_TOPIC = "compliance.reporting.channels"
+COMPLIANCE_LEGAL_DOSSIER_TOPIC = "compliance.legal.dossier"
 CRA_PRODUCT_LIFECYCLE_TOPIC = "cra.product.lifecycle"
 LATITUDE_MIN = -90
 LATITUDE_MAX = 90

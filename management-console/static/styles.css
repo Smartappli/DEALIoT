@@ -91,6 +91,11 @@ main {
   margin-bottom: 22px;
 }
 
+.subhead {
+  margin-top: 14px;
+  margin-bottom: 8px;
+}
+
 h1,
 h2,
 p {
@@ -224,6 +229,11 @@ button:hover,
 .partial {
   background: #fff2d6;
   color: var(--amber);
+}
+
+.blocked {
+  background: #fdecea;
+  color: var(--red);
 }
 
 .unknown,
