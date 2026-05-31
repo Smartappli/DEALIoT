@@ -238,6 +238,20 @@ button:hover,
   color: var(--green);
 }
 
+.in_scope,
+.configured,
+.tested {
+  background: #e7f6ed;
+  color: var(--green);
+}
+
+.pending,
+.out_of_scope,
+.draft {
+  background: #edf1f7;
+  color: #475467;
+}
+
 .high {
   background: #fdecea;
   color: var(--red);
