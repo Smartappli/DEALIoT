@@ -442,13 +442,17 @@ DATA_ACT_OBLIGATIONS: list[dict[str, str]] = [
         "id": "user-access",
         "article": "Data Act Ch. II",
         "status": "partial",
-        "control": "Expose generated connected-product data to entitled users through clear channels.",
+        "control": (
+            "Expose generated connected-product data to entitled users through clear channels."
+        ),
     },
     {
         "id": "third-party-sharing",
         "article": "Data Act Ch. II",
         "status": "partial",
-        "control": "Enable user-authorized sharing to third parties with purpose and scope records.",
+        "control": (
+            "Enable user-authorized sharing to third parties with purpose and scope records."
+        ),
     },
     {
         "id": "fair-contractual-terms",
@@ -498,7 +502,9 @@ DATA_ACT_USER_JOURNEY: list[dict[str, str]] = [
     {
         "step": "4",
         "name": "Delivery or third-party share",
-        "control": "Deliver data in a transparent format or transfer it to the user-selected party.",
+        "control": (
+            "Deliver data in a transparent format or transfer it to the user-selected party."
+        ),
         "evidence": "dataact.user.exports, dataact.third_party.sharing",
     },
     {
@@ -872,7 +878,9 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "id": "data-act-user-access",
         "status": "partial",
         "regulation": "Data Act",
-        "control": "Provide user access to generated connected-product data through logged channels.",
+        "control": (
+            "Provide user access to generated connected-product data through logged channels."
+        ),
     },
     {
         "id": "data-act-third-party-sharing",
@@ -960,7 +968,9 @@ def data_act_payload() -> dict[str, Any]:
                 "controlled object access",
                 "DGA-mediated research data product",
             ],
-            "third_party_sharing": "requires user authorization, recipient identity and purpose scope",
+            "third_party_sharing": (
+                "requires user authorization, recipient identity and purpose scope"
+            ),
             "research_access": "combine Data Act user entitlement with DGA research governance",
         },
     }
