@@ -61,8 +61,8 @@ def read_json(url: str) -> dict[str, object]:
     with request.urlopen(url, timeout=5) as response:  # noqa: S310
         parsed = json.loads(response.read().decode("utf-8"))
     if not isinstance(parsed, dict):
-        raise AssertionError("Expected JSON object response")
-    return cast(dict[str, object], parsed)
+        raise TypeError("Expected JSON object response")
+    return cast("dict[str, object]", parsed)
 
 
 class ManagementConsoleAppUnitTests(unittest.TestCase):
@@ -311,7 +311,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             legal_compliance = read_json(f"{base_url}/api/legal-compliance")
             default_policy = legal_compliance["default_policy"]
             if not isinstance(default_policy, dict):
-                raise AssertionError("Expected default_policy to be a JSON object")
+                raise TypeError("Expected default_policy to be a JSON object")
             self.assertEqual(
                 default_policy["legal_verdict"],
                 "reviewable baseline, not legal certification",
@@ -416,8 +416,8 @@ def read_json_from_request(req: request.Request) -> dict[str, object]:
     with request.urlopen(req, timeout=5) as response:  # noqa: S310
         parsed = json.loads(response.read().decode("utf-8"))
     if not isinstance(parsed, dict):
-        raise AssertionError("Expected JSON object response")
-    return cast(dict[str, object], parsed)
+        raise TypeError("Expected JSON object response")
+    return cast("dict[str, object]", parsed)
 
 
 if __name__ == "__main__":

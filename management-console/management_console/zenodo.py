@@ -335,7 +335,7 @@ def export_dataset_to_zenodo(payload: dict[str, Any]) -> dict[str, Any]:
     deposition = _json_request("POST", f"{base_url}/deposit/depositions", token, {})
     deposition_id = deposition.get("id")
     deposition_links = deposition.get("links")
-    links = cast(dict[str, Any], deposition_links) if isinstance(deposition_links, dict) else {}
+    links = cast("dict[str, Any]", deposition_links) if isinstance(deposition_links, dict) else {}
     self_url = links.get("self") or f"{base_url}/deposit/depositions/{deposition_id}"
     bucket_url = links.get("bucket")
     if not bucket_url:
@@ -379,7 +379,9 @@ def export_dataset_to_zenodo(payload: dict[str, Any]) -> dict[str, Any]:
     latest = published or updated
     latest_links_value = latest.get("links")
     latest_links = (
-        cast(dict[str, Any], latest_links_value) if isinstance(latest_links_value, dict) else links
+        cast("dict[str, Any]", latest_links_value)
+        if isinstance(latest_links_value, dict)
+        else links
     )
     return {
         "status": "published" if published is not None else "draft_created",
