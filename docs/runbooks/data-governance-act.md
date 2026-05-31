@@ -40,6 +40,8 @@ DEALIoT uses a dedicated governance plane for DGA evidence:
 | `governance.transfer.notices` | unauthorised access, transfer or use notifications |
 | `governance.research.projects` | research protocol, objective, ethics status and access model |
 | `governance.research.outputs` | publications, derived datasets, models and disclosure review |
+| `compliance.scope.decisions` | DGA role and notification scope decision |
+| `compliance.reporting.channels` | competent authority, notification template and owner |
 
 These topics must not contain raw telemetry or media. Store only the minimum metadata required to
 prove governance decisions and operate the intermediation service.
@@ -92,9 +94,10 @@ Default consumer policy:
 Before production data sharing:
 
 1. Confirm the DGA role and notification status.
-2. Review all research data products in the management console.
-3. Confirm each product has research purpose, access mode, retention, format and transfer policy.
-4. Confirm each active project has protocol and ethics status.
-5. Test permission grant, withdrawal and denial workflows.
-6. Test unauthorised transfer notice handling.
-7. Export the governance evidence topics and attach them to the release record.
+2. Record the scope decision in `compliance.scope.decisions`.
+3. Review all research data products in the management console.
+4. Confirm each product has research purpose, access mode, retention, format and transfer policy.
+5. Confirm each active project has protocol and ethics status.
+6. Test permission grant, withdrawal and denial workflows.
+7. Test unauthorised transfer notice handling.
+8. Export the governance evidence topics and attach them to the release record.
