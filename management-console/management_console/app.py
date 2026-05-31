@@ -16,10 +16,14 @@ from urllib.parse import urlparse
 from management_console.catalog import (
     COMPONENTS,
     catalog_payload,
+    cra_payload,
     data_act_payload,
     dga_payload,
+    dora_payload,
     intermediation_payload,
+    nis2_payload,
     research_payload,
+    security_resilience_payload,
 )
 
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
@@ -256,12 +260,18 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         routes = {
             "/api/architecture": lambda: self.respond_json(catalog_payload()),
+            "/api/cra": lambda: self.respond_json(cra_payload()),
             "/api/data-act": lambda: self.respond_json(data_act_payload()),
             "/api/dga": lambda: self.respond_json(dga_payload()),
+            "/api/dora": lambda: self.respond_json(dora_payload()),
             "/api/health": lambda: self.respond_json(health_payload()),
             "/api/intermediation": lambda: self.respond_json(intermediation_payload()),
+            "/api/nis2": lambda: self.respond_json(nis2_payload()),
             "/api/research": lambda: self.respond_json(research_payload()),
             "/api/runbooks": lambda: self.respond_json({"runbooks": catalog_payload()["runbooks"]}),
+            "/api/security-resilience": lambda: self.respond_json(
+                security_resilience_payload()
+            ),
             "/healthz": lambda: self.respond_json({"status": "ok", "checked_at": now_iso()}),
         }
         route = routes.get(self.path)

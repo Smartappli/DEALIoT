@@ -161,6 +161,18 @@ COMPONENTS: list[dict[str, Any]] = [
         ),
         "risk": "high",
     },
+    {
+        "id": "security-resilience",
+        "name": "Security and resilience evidence plane",
+        "service": "management-console",
+        "plane": "governance",
+        "role": "Tracks cyber risk, incidents, vulnerabilities, SBOMs and resilience evidence.",
+        "probe": "http://management-console:8080/healthz",
+        "ui": "http://localhost:8090",
+        "depends_on": ["kafka", "apicurio", "prometheus", "grafana"],
+        "data_scope": "security incidents, vulnerability findings, SBOMs and resilience tests.",
+        "risk": "high",
+    },
 ]
 
 TOPICS: list[dict[str, str]] = [
@@ -310,6 +322,62 @@ TOPICS: list[dict[str, str]] = [
         "owner": "data-act-governance",
         "classification": "trade-secret-security-safeguard",
         "retention": "compacted control register",
+    },
+    {
+        "name": "security.asset.inventory",
+        "plane": "security",
+        "owner": "security",
+        "classification": "asset-inventory",
+        "retention": "compacted inventory",
+    },
+    {
+        "name": "security.incident.events",
+        "plane": "security",
+        "owner": "security",
+        "classification": "incident-evidence",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "security.vulnerability.findings",
+        "plane": "security",
+        "owner": "security",
+        "classification": "vulnerability-evidence",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "security.sbom.attestations",
+        "plane": "security",
+        "owner": "security",
+        "classification": "supply-chain-evidence",
+        "retention": "compacted artifact register",
+    },
+    {
+        "name": "security.patch.events",
+        "plane": "security",
+        "owner": "security",
+        "classification": "security-update-evidence",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "resilience.backup.tests",
+        "plane": "resilience",
+        "owner": "platform",
+        "classification": "continuity-test-evidence",
+        "retention": "one year minimum, site policy required",
+    },
+    {
+        "name": "resilience.operational.risk",
+        "plane": "resilience",
+        "owner": "platform-risk",
+        "classification": "ict-risk-register",
+        "retention": "compacted risk register",
+    },
+    {
+        "name": "resilience.third_party.risk",
+        "plane": "resilience",
+        "owner": "platform-risk",
+        "classification": "supplier-risk-register",
+        "retention": "compacted supplier register",
     },
 ]
 
@@ -738,6 +806,213 @@ DGA_OBLIGATIONS: list[dict[str, str]] = [
     },
 ]
 
+SECURITY_RESILIENCE_CONTROLS: list[dict[str, str]] = [
+    {
+        "id": "asset-inventory",
+        "regulation": "NIS2, DORA, CRA",
+        "status": "implemented",
+        "domain": "risk-management",
+        "evidence_topic": "security.asset.inventory",
+        "control": "Maintain critical assets, owners, dependencies and data classifications.",
+    },
+    {
+        "id": "cyber-risk-register",
+        "regulation": "NIS2, DORA",
+        "status": "partial",
+        "domain": "risk-management",
+        "evidence_topic": "resilience.operational.risk",
+        "control": "Track ICT risk scenarios, severity, owners, mitigations and review dates.",
+    },
+    {
+        "id": "incident-reporting",
+        "regulation": "NIS2, DORA, CRA",
+        "status": "partial",
+        "domain": "incident-management",
+        "evidence_topic": "security.incident.events",
+        "control": "Log incidents with severity, affected assets, deadlines and reporting channels.",
+    },
+    {
+        "id": "vulnerability-handling",
+        "regulation": "CRA, NIS2",
+        "status": "partial",
+        "domain": "secure-development",
+        "evidence_topic": "security.vulnerability.findings",
+        "control": "Track vulnerabilities, CVEs, affected assets, due dates and remediation status.",
+    },
+    {
+        "id": "sbom-provenance",
+        "regulation": "CRA, NIS2, DORA",
+        "status": "implemented",
+        "domain": "supply-chain",
+        "evidence_topic": "security.sbom.attestations",
+        "control": "Record SBOM, provenance, digest and signature evidence for released artifacts.",
+    },
+    {
+        "id": "security-updates",
+        "regulation": "CRA, NIS2, DORA",
+        "status": "partial",
+        "domain": "change-management",
+        "evidence_topic": "security.patch.events",
+        "control": "Track security updates, tests, deployment state, rollback plan and approver.",
+    },
+    {
+        "id": "continuity-testing",
+        "regulation": "NIS2, DORA",
+        "status": "partial",
+        "domain": "business-continuity",
+        "evidence_topic": "resilience.backup.tests",
+        "control": "Record restore tests, RPO/RTO results, evidence and next test due date.",
+    },
+    {
+        "id": "third-party-ict-risk",
+        "regulation": "NIS2, DORA, CRA",
+        "status": "partial",
+        "domain": "supplier-risk",
+        "evidence_topic": "resilience.third_party.risk",
+        "control": "Review suppliers, subcontracting, exit plans and security requirements.",
+    },
+    {
+        "id": "dora-scope",
+        "regulation": "DORA",
+        "status": "conditional",
+        "domain": "scope",
+        "evidence_topic": "resilience.operational.risk",
+        "control": "Apply DORA controls when DEALIoT is used by a financial entity or ICT provider.",
+    },
+]
+
+NIS2_OBLIGATIONS: list[dict[str, str]] = [
+    {
+        "id": "risk-management",
+        "status": "partial",
+        "control": "Operate a documented cybersecurity risk-management baseline.",
+        "evidence": "security.asset.inventory, resilience.operational.risk",
+    },
+    {
+        "id": "incident-handling",
+        "status": "partial",
+        "control": "Classify, contain, recover and report significant cyber incidents.",
+        "evidence": "security.incident.events",
+    },
+    {
+        "id": "business-continuity",
+        "status": "partial",
+        "control": "Test backups, disaster recovery and crisis procedures.",
+        "evidence": "resilience.backup.tests",
+    },
+    {
+        "id": "supply-chain-security",
+        "status": "partial",
+        "control": "Assess provider and software supply-chain risks.",
+        "evidence": "security.sbom.attestations, resilience.third_party.risk",
+    },
+    {
+        "id": "secure-access",
+        "status": "partial",
+        "control": "Enforce TLS, least privilege, strong authentication and cryptography.",
+        "evidence": "production dependency contract and security hardening runbook",
+    },
+]
+
+DORA_OBLIGATIONS: list[dict[str, str]] = [
+    {
+        "id": "scope-assessment",
+        "status": "conditional",
+        "control": "Confirm whether deployment supports a financial entity or critical ICT service.",
+        "evidence": "resilience.operational.risk",
+    },
+    {
+        "id": "ict-risk-management",
+        "status": "partial",
+        "control": "Maintain ICT risks, controls, dependencies and residual-risk decisions.",
+        "evidence": "resilience.operational.risk",
+    },
+    {
+        "id": "ict-incident-reporting",
+        "status": "partial",
+        "control": "Classify major ICT incidents and retain reporting evidence.",
+        "evidence": "security.incident.events",
+    },
+    {
+        "id": "resilience-testing",
+        "status": "partial",
+        "control": "Perform restore, failover, vulnerability and operational resilience tests.",
+        "evidence": "resilience.backup.tests, security.vulnerability.findings",
+    },
+    {
+        "id": "ict-third-party-risk",
+        "status": "partial",
+        "control": "Track ICT providers, criticality, subcontracting and exit plans.",
+        "evidence": "resilience.third_party.risk",
+    },
+]
+
+CRA_OBLIGATIONS: list[dict[str, str]] = [
+    {
+        "id": "secure-by-design",
+        "status": "partial",
+        "control": "Document secure defaults, hardening, access control and security tests.",
+        "evidence": "security.asset.inventory, security.vulnerability.findings",
+    },
+    {
+        "id": "vulnerability-management",
+        "status": "partial",
+        "control": "Track and remediate vulnerabilities throughout the support period.",
+        "evidence": "security.vulnerability.findings, security.patch.events",
+    },
+    {
+        "id": "sbom-and-provenance",
+        "status": "implemented",
+        "control": "Record SBOM and provenance for product images and release artifacts.",
+        "evidence": "security.sbom.attestations",
+    },
+    {
+        "id": "security-updates",
+        "status": "partial",
+        "control": "Plan, test, deploy and roll back security updates.",
+        "evidence": "security.patch.events",
+    },
+    {
+        "id": "incident-notification",
+        "status": "todo",
+        "control": "Define external notification workflow for exploited vulnerabilities/incidents.",
+        "evidence": "security.incident.events",
+    },
+]
+
+SECURITY_RESILIENCE_GATES: list[dict[str, str]] = [
+    {
+        "gate": "asset-scope",
+        "status": "partial",
+        "evidence": "security.asset.inventory",
+        "control": "All critical services, topics, buckets, secrets and providers have owners.",
+    },
+    {
+        "gate": "release-supply-chain",
+        "status": "partial",
+        "evidence": "security.sbom.attestations",
+        "control": "Every released image has SBOM, provenance and signature evidence.",
+    },
+    {
+        "gate": "known-vulnerabilities",
+        "status": "partial",
+        "evidence": "security.vulnerability.findings",
+        "control": "No unaccepted critical vulnerability remains open at release.",
+    },
+    {
+        "gate": "incident-readiness",
+        "status": "partial",
+        "evidence": "security.incident.events",
+        "control": "Incident classification and regulatory reporting channels are configured.",
+    },
+    {
+        "gate": "recovery-proof",
+        "status": "partial",
+        "evidence": "resilience.backup.tests",
+        "control": "Restore tests prove target RPO/RTO before production sharing.",
+    },
+]
+
 RUNBOOKS: list[dict[str, str]] = [
     {
         "name": "Operations",
@@ -753,6 +1028,11 @@ RUNBOOKS: list[dict[str, str]] = [
         "name": "Security hardening",
         "path": "docs/runbooks/security-hardening.md",
         "scope": "TLS, authentication, secret handling and rotation.",
+    },
+    {
+        "name": "Security resilience compliance",
+        "path": "docs/runbooks/security-resilience-compliance.md",
+        "scope": "NIS2, DORA and CRA evidence, incident, vulnerability and recovery controls.",
     },
     {
         "name": "Data Governance Act",
@@ -832,6 +1112,38 @@ OPERATIONS: list[dict[str, Any]] = [
         "endpoint": "/api/research",
         "scope": "safe",
         "description": "Lists research purpose, project templates, gates and publication controls.",
+    },
+    {
+        "id": "review-security-resilience-readiness",
+        "name": "Review security resilience readiness",
+        "method": "GET",
+        "endpoint": "/api/security-resilience",
+        "scope": "safe",
+        "description": "Lists NIS2, DORA and CRA evidence topics, gates and open gaps.",
+    },
+    {
+        "id": "review-nis2-readiness",
+        "name": "Review NIS2 readiness",
+        "method": "GET",
+        "endpoint": "/api/nis2",
+        "scope": "safe",
+        "description": "Lists NIS2 risk management, incident and continuity controls.",
+    },
+    {
+        "id": "review-dora-readiness",
+        "name": "Review DORA readiness",
+        "method": "GET",
+        "endpoint": "/api/dora",
+        "scope": "safe",
+        "description": "Lists DORA ICT-risk controls when financial-sector scope applies.",
+    },
+    {
+        "id": "review-cra-readiness",
+        "name": "Review CRA readiness",
+        "method": "GET",
+        "endpoint": "/api/cra",
+        "scope": "safe",
+        "description": "Lists CRA secure-by-design, vulnerability and update controls.",
     },
 ]
 
@@ -919,6 +1231,36 @@ COMPLIANCE_CONTROLS: list[dict[str, str]] = [
         "control": "Publish SBOM/provenance and add image signature admission policy.",
     },
     {
+        "id": "security-incident-reporting",
+        "status": "partial",
+        "regulation": "NIS2, DORA, CRA",
+        "control": "Classify incidents, track deadlines and retain reporting evidence.",
+    },
+    {
+        "id": "vulnerability-management",
+        "status": "partial",
+        "regulation": "CRA, NIS2",
+        "control": "Track vulnerabilities, due dates, patches and accepted residual risk.",
+    },
+    {
+        "id": "operational-resilience",
+        "status": "partial",
+        "regulation": "NIS2, DORA",
+        "control": "Maintain ICT risk, continuity tests, RPO/RTO evidence and recovery proof.",
+    },
+    {
+        "id": "third-party-risk",
+        "status": "partial",
+        "regulation": "NIS2, DORA, CRA",
+        "control": "Assess providers, subcontracting, criticality and exit plans.",
+    },
+    {
+        "id": "dora-scope",
+        "status": "conditional",
+        "regulation": "DORA",
+        "control": "Apply DORA fully only for financial entities or ICT providers in scope.",
+    },
+    {
         "id": "ai-governance",
         "status": "todo",
         "regulation": "AI Act",
@@ -939,12 +1281,87 @@ def catalog_payload() -> dict[str, Any]:
         "intermediation_flow": INTERMEDIATION_FLOW,
         "consumer_profiles": CONSUMER_PROFILES,
         "dga_obligations": DGA_OBLIGATIONS,
+        "security_resilience_controls": SECURITY_RESILIENCE_CONTROLS,
+        "security_resilience_gates": SECURITY_RESILIENCE_GATES,
+        "nis2_obligations": NIS2_OBLIGATIONS,
+        "dora_obligations": DORA_OBLIGATIONS,
+        "cra_obligations": CRA_OBLIGATIONS,
         "research_context": RESEARCH_CONTEXT,
         "research_projects": RESEARCH_PROJECTS,
         "research_controls": RESEARCH_CONTROLS,
         "runbooks": RUNBOOKS,
         "operations": OPERATIONS,
         "compliance_controls": COMPLIANCE_CONTROLS,
+    }
+
+
+def security_resilience_payload() -> dict[str, Any]:
+    return {
+        "controls": SECURITY_RESILIENCE_CONTROLS,
+        "release_gates": SECURITY_RESILIENCE_GATES,
+        "nis2_obligations": NIS2_OBLIGATIONS,
+        "dora_obligations": DORA_OBLIGATIONS,
+        "cra_obligations": CRA_OBLIGATIONS,
+        "evidence_topics": [
+            topic
+            for topic in TOPICS
+            if topic["name"].startswith("security.")
+            or topic["name"].startswith("resilience.")
+        ],
+        "scope_notes": [
+            "NIS2 depends on sector, entity size and national transposition.",
+            "DORA applies when financial entity or ICT third-party provider scope is confirmed.",
+            "CRA applies to products with digital elements made available on the EU market.",
+        ],
+        "default_policy": {
+            "plaintext_production_protocols": "not allowed",
+            "critical_vulnerabilities": "block release unless mitigated or accepted by owner",
+            "incident_evidence": "record severity, affected assets, deadlines and channels",
+            "supply_chain": "SBOM, provenance and signature evidence required for releases",
+            "resilience": "restore tests and supplier exit plans required before go-live",
+        },
+    }
+
+
+def nis2_payload() -> dict[str, Any]:
+    payload = security_resilience_payload()
+    return {
+        "obligations": NIS2_OBLIGATIONS,
+        "controls": [
+            control
+            for control in SECURITY_RESILIENCE_CONTROLS
+            if "NIS2" in control["regulation"]
+        ],
+        "evidence_topics": payload["evidence_topics"],
+        "scope_note": payload["scope_notes"][0],
+    }
+
+
+def dora_payload() -> dict[str, Any]:
+    payload = security_resilience_payload()
+    return {
+        "obligations": DORA_OBLIGATIONS,
+        "controls": [
+            control
+            for control in SECURITY_RESILIENCE_CONTROLS
+            if "DORA" in control["regulation"]
+        ],
+        "evidence_topics": payload["evidence_topics"],
+        "scope_note": payload["scope_notes"][1],
+    }
+
+
+def cra_payload() -> dict[str, Any]:
+    payload = security_resilience_payload()
+    return {
+        "obligations": CRA_OBLIGATIONS,
+        "controls": [
+            control
+            for control in SECURITY_RESILIENCE_CONTROLS
+            if "CRA" in control["regulation"]
+        ],
+        "evidence_topics": payload["evidence_topics"],
+        "scope_note": payload["scope_notes"][2],
     }
 
 
