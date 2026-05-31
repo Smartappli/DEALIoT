@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 from management_console.catalog import (
     COMPONENTS,
     catalog_payload,
+    compliance_payload,
     cra_payload,
     data_act_payload,
     dga_payload,
@@ -260,6 +261,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         routes = {
             "/api/architecture": lambda: self.respond_json(catalog_payload()),
+            "/api/compliance": lambda: self.respond_json(compliance_payload()),
             "/api/cra": lambda: self.respond_json(cra_payload()),
             "/api/data-act": lambda: self.respond_json(data_act_payload()),
             "/api/dga": lambda: self.respond_json(dga_payload()),
