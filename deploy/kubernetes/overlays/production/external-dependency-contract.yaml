@@ -36,6 +36,7 @@ data:
           - dataact.third_party.sharing
           - dataact.user.exports
           - dataact.safeguards
+          - dataact.legal_basis.checks
           - security.asset.inventory
           - security.incident.events
           - security.vulnerability.findings
@@ -44,6 +45,10 @@ data:
           - resilience.backup.tests
           - resilience.operational.risk
           - resilience.third_party.risk
+          - compliance.scope.decisions
+          - compliance.control.assessments
+          - compliance.reporting.channels
+          - cra.product.lifecycle
         required_governance:
           notification_status: required_if_data_intermediation_service
           neutrality: separate_intermediation_context
@@ -68,6 +73,7 @@ data:
           third_party_sharing_authorizations: dataact.third_party.sharing
           user_export_log: dataact.user.exports
           safeguard_register: dataact.safeguards
+          personal_data_legal_basis_checks: dataact.legal_basis.checks
           raw_access_default: denied
           required_access_channels:
             - direct_secure_user_access
@@ -87,6 +93,10 @@ data:
           backup_restore_tests: resilience.backup.tests
           ict_risk_register: resilience.operational.risk
           third_party_risk_register: resilience.third_party.risk
+          scope_decision_register: compliance.scope.decisions
+          control_assessment_register: compliance.control.assessments
+          reporting_channel_register: compliance.reporting.channels
+          cra_product_lifecycle_register: cra.product.lifecycle
           production_plaintext_protocols: denied
           release_gates:
             - asset_owners_and_classification
