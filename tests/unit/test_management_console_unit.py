@@ -11,6 +11,7 @@ sys.path.insert(0, str(REPO_ROOT / "management-console"))
 from management_console.app import configured_probe, first_host_port  # noqa: E402
 from management_console.catalog import (  # noqa: E402
     catalog_payload,
+    compliance_payload,
     cra_payload,
     data_act_payload,
     dga_payload,
@@ -36,6 +37,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         security_control_ids = {
             control["id"] for control in payload["security_resilience_controls"]
         }
+        readiness_regs = {item["regulation"] for item in payload["compliance_readiness"]}
         profile_ids = {profile["profile_id"] for profile in payload["consumer_profiles"]}
 
         self.assertIn("kafka", component_ids)
@@ -51,15 +53,22 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dataact.product.catalog", topic_names)
         self.assertIn("dataact.user.access.requests", topic_names)
         self.assertIn("dataact.third_party.sharing", topic_names)
+        self.assertIn("dataact.legal_basis.checks", topic_names)
         self.assertIn("security.incident.events", topic_names)
         self.assertIn("security.vulnerability.findings", topic_names)
         self.assertIn("security.sbom.attestations", topic_names)
         self.assertIn("resilience.backup.tests", topic_names)
+        self.assertIn("compliance.scope.decisions", topic_names)
+        self.assertIn("compliance.reporting.channels", topic_names)
+        self.assertIn("cra.product.lifecycle", topic_names)
         self.assertIn("telemetry.raw.gps", data_product_ids)
         self.assertIn("connected-device.telemetry", data_act_products)
         self.assertIn("research-protocol", research_control_ids)
         self.assertIn("incident-reporting", security_control_ids)
+        self.assertIn("scope-decisions", security_control_ids)
         self.assertIn("third-party-ict-risk", security_control_ids)
+        self.assertIn("DGA", readiness_regs)
+        self.assertIn("CRA", readiness_regs)
         self.assertIn("application.operational", profile_ids)
         self.assertIn("researcher.external", profile_ids)
         self.assertIn("refresh-health", operation_ids)
@@ -95,6 +104,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("dataact.user.access.requests", evidence_topics)
         self.assertIn("dataact.third_party.sharing", evidence_topics)
         self.assertIn("dataact.user.exports", evidence_topics)
+        self.assertIn("dataact.legal_basis.checks", evidence_topics)
         self.assertIn("dataact.direct-access", channel_ids)
         self.assertIn("dataact.third-party-transfer", channel_ids)
         self.assertIn("user-access", obligation_ids)
@@ -115,8 +125,11 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("security.vulnerability.findings", evidence_topics)
         self.assertIn("security.sbom.attestations", evidence_topics)
         self.assertIn("resilience.operational.risk", evidence_topics)
+        self.assertIn("compliance.scope.decisions", evidence_topics)
+        self.assertIn("cra.product.lifecycle", evidence_topics)
         self.assertIn("incident-reporting", control_ids)
         self.assertIn("dora-scope", control_ids)
+        self.assertIn("reporting-channels", control_ids)
         self.assertIn("release-supply-chain", gate_ids)
         self.assertEqual(
             payload["default_policy"]["plaintext_production_protocols"],
@@ -131,6 +144,21 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         self.assertIn("continuity-testing", nis2_controls)
         self.assertIn("dora-scope", dora_controls)
         self.assertIn("vulnerability-handling", cra_controls)
+
+    def test_compliance_payload_states_partial_legal_readiness(self) -> None:
+        payload = compliance_payload()
+        topic_names = {topic["name"] for topic in payload["evidence_topics"]}
+        readiness = {item["regulation"]: item["readiness"] for item in payload["readiness"]}
+        channels = {item["regulation"] for item in payload["reporting_channels"]}
+
+        self.assertEqual(readiness["DORA"], "conditional")
+        self.assertEqual(readiness["Data Act"], "partial")
+        self.assertIn("compliance.scope.decisions", topic_names)
+        self.assertIn("compliance.control.assessments", topic_names)
+        self.assertIn("compliance.reporting.channels", topic_names)
+        self.assertIn("dataact.legal_basis.checks", topic_names)
+        self.assertIn("CRA", channels)
+        self.assertIn("technical evidence baseline only", payload["verdict"])
 
     def test_research_payload_exposes_research_collection_context(self) -> None:
         payload = research_payload()
