@@ -430,9 +430,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         bandit_text = (REPO_ROOT / ".github" / "workflows" / "bandit.yml").read_text(
             encoding="utf-8"
         )
-        ossar_text = (REPO_ROOT / ".github" / "workflows" / "ossar.yml").read_text(
-            encoding="utf-8"
-        )
+        ossar_text = (REPO_ROOT / ".github" / "workflows" / "ossar.yml").read_text(encoding="utf-8")
         osv_text = (REPO_ROOT / ".github" / "workflows" / "osv-scanner.yml").read_text(
             encoding="utf-8"
         )
@@ -507,9 +505,9 @@ class DeploymentReadinessTests(unittest.TestCase):
         orchestration_dockerfile = (REPO_ROOT / "orchestration" / "Dockerfile").read_text(
             encoding="utf-8"
         )
-        management_console_dockerfile = (
-            REPO_ROOT / "management-console" / "Dockerfile"
-        ).read_text(encoding="utf-8")
+        management_console_dockerfile = (REPO_ROOT / "management-console" / "Dockerfile").read_text(
+            encoding="utf-8"
+        )
         flink_dockerfile = (REPO_ROOT / "flink" / "Dockerfile.pyflink").read_text(encoding="utf-8")
         bridge_dockerfile = (REPO_ROOT / "mqtt-kafka-bridge" / "Dockerfile").read_text(
             encoding="utf-8"

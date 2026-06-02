@@ -1738,8 +1738,7 @@ LEGAL_RELEASE_GATES: list[dict[str, str]] = [
         "status": "blocked",
         "before": "Zenodo publication action.",
         "required_artifacts": (
-            "zenodo-publication-approval, DMP, disclosure review, licence and access-right "
-            "decision"
+            "zenodo-publication-approval, DMP, disclosure review, licence and access-right decision"
         ),
         "block_rule": "Only draft creation is allowed until legal_review_approved is true.",
     },
@@ -2625,9 +2624,7 @@ def nis2_payload() -> dict[str, Any]:
     return {
         "obligations": NIS2_OBLIGATIONS,
         "controls": [
-            control
-            for control in SECURITY_RESILIENCE_CONTROLS
-            if "NIS2" in control["regulation"]
+            control for control in SECURITY_RESILIENCE_CONTROLS if "NIS2" in control["regulation"]
         ],
         "evidence_topics": payload["evidence_topics"],
         "scope_note": payload["scope_notes"][0],
@@ -2639,9 +2636,7 @@ def dora_payload() -> dict[str, Any]:
     return {
         "obligations": DORA_OBLIGATIONS,
         "controls": [
-            control
-            for control in SECURITY_RESILIENCE_CONTROLS
-            if "DORA" in control["regulation"]
+            control for control in SECURITY_RESILIENCE_CONTROLS if "DORA" in control["regulation"]
         ],
         "evidence_topics": payload["evidence_topics"],
         "scope_note": payload["scope_notes"][1],
@@ -2654,9 +2649,7 @@ def cra_payload() -> dict[str, Any]:
         "obligations": CRA_OBLIGATIONS,
         "product_lifecycle": CRA_PRODUCT_LIFECYCLE,
         "controls": [
-            control
-            for control in SECURITY_RESILIENCE_CONTROLS
-            if "CRA" in control["regulation"]
+            control for control in SECURITY_RESILIENCE_CONTROLS if "CRA" in control["regulation"]
         ],
         "evidence_topics": payload["evidence_topics"],
         "scope_note": payload["scope_notes"][2],

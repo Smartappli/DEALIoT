@@ -218,8 +218,7 @@ class ManagementConsoleUnitTests(unittest.TestCase):
         channels = {item["regulation"] for item in payload["reporting_channels"]}
         scope_regs = {item["regulation"] for item in payload["scope_decisions"]}
         additional = {
-            item["regulation"]: item["applicability"]
-            for item in payload["additional_legislation"]
+            item["regulation"]: item["applicability"] for item in payload["additional_legislation"]
         }
         control_ids = {item["id"] for item in payload["controls"]}
 
