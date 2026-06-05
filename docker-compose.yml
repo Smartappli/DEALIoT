@@ -135,7 +135,7 @@ x-apicurio-env: &apicurio-env
 
 services:
   etcd1:
-    image: registry.k8s.io/etcd:v3.6.11
+    image: registry.k8s.io/etcd:v3.6.12
     container_name: etcd1
     hostname: etcd1
     restart: unless-stopped
@@ -159,7 +159,7 @@ services:
     <<: *etcd-health
 
   etcd2:
-    image: registry.k8s.io/etcd:v3.6.11
+    image: registry.k8s.io/etcd:v3.6.12
     container_name: etcd2
     hostname: etcd2
     restart: unless-stopped
@@ -183,7 +183,7 @@ services:
     <<: *etcd-health
 
   etcd3:
-    image: registry.k8s.io/etcd:v3.6.11
+    image: registry.k8s.io/etcd:v3.6.12
     container_name: etcd3
     hostname: etcd3
     restart: unless-stopped
@@ -667,7 +667,7 @@ services:
       - orchestration_net
 
   seaweedfs-master1:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-master1
     hostname: seaweedfs-master1
     restart: unless-stopped
@@ -695,7 +695,7 @@ services:
       start_period: 30s
 
   seaweedfs-master2:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-master2
     hostname: seaweedfs-master2
     restart: unless-stopped
@@ -723,7 +723,7 @@ services:
       start_period: 30s
 
   seaweedfs-master3:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-master3
     hostname: seaweedfs-master3
     restart: unless-stopped
@@ -751,7 +751,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume1:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-volume1
     hostname: seaweedfs-volume1
     restart: unless-stopped
@@ -788,7 +788,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume2:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-volume2
     hostname: seaweedfs-volume2
     restart: unless-stopped
@@ -825,7 +825,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume3:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-volume3
     hostname: seaweedfs-volume3
     restart: unless-stopped
@@ -929,7 +929,7 @@ services:
         max-file: "3"
 
   seaweedfs-filer:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-filer
     hostname: seaweedfs-filer
     restart: unless-stopped
@@ -1040,7 +1040,7 @@ services:
         max-file: "3"
 
   seaweedfs-s3:
-    image: chrislusf/seaweedfs:4.29
+    image: chrislusf/seaweedfs:4.31
     container_name: seaweedfs-s3
     hostname: seaweedfs-s3
     restart: unless-stopped
@@ -1109,7 +1109,7 @@ services:
         max-file: "3"
 
   seaweedfs-init:
-    image: amazon/aws-cli:2.34.57
+    image: amazon/aws-cli:2.34.61
     container_name: seaweedfs-init
     restart: "no"
     depends_on:
@@ -1438,7 +1438,7 @@ services:
       - kafka_net
 
   beam-python-harness:
-    image: apache/beam_python3.13_sdk:2.73.0
+    image: apache/beam_python3.13_sdk:2.74.0
     container_name: beam-python-harness
     hostname: beam-python-harness
     restart: unless-stopped
@@ -1467,7 +1467,7 @@ services:
       start_period: 30s
 
   beam-cli:
-    image: apache/beam_python3.13_sdk:2.73.0
+    image: apache/beam_python3.13_sdk:2.74.0
     container_name: beam-cli
     hostname: beam-cli
     profiles: ["tools"]
@@ -1809,7 +1809,7 @@ services:
       - orchestration_net
 
   apicurio-registry-ui:
-    image: apicurio/apicurio-registry-ui:3.2.4
+    image: apicurio/apicurio-registry-ui:3.2.5
     container_name: apicurio-registry-ui
     hostname: apicurio-registry-ui
     restart: unless-stopped
