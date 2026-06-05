@@ -1809,7 +1809,7 @@ services:
       - orchestration_net
 
   apicurio-registry-ui:
-    image: apicurio/apicurio-registry-ui:3.2.4
+    image: apicurio/apicurio-registry-ui:3.2.5
     container_name: apicurio-registry-ui
     hostname: apicurio-registry-ui
     restart: unless-stopped
