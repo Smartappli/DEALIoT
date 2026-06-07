@@ -276,6 +276,7 @@ class _FakeCheckpointingMode:
 
 class _FakeDeliveryGuarantee:
     NONE = "NONE"
+    AT_LEAST_ONCE = "AT_LEAST_ONCE"
 
 
 def _load_streaming_module():
@@ -372,6 +373,30 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         for args, expected in cases.items():
             self.assertEqual(self.module.infer_event_kind(*args), expected)
 
+    def test_kafka_client_properties_support_sasl_ssl(self) -> None:
+        with patch.dict(
+            self.module.os.environ,
+            {
+                "KAFKA_SECURITY_PROTOCOL": "SASL_SSL",
+                "KAFKA_SASL_MECHANISM": "SCRAM-SHA-512",
+                "KAFKA_SASL_USERNAME": "flink",
+                "KAFKA_SASL_PASSWORD": "secret",
+                "KAFKA_SSL_TRUSTSTORE_LOCATION": "/etc/kafka/truststore.p12",
+                "KAFKA_SSL_TRUSTSTORE_PASSWORD": "truststore-secret",
+                "KAFKA_CLIENT_PROPERTIES": "client.dns.lookup=use_all_dns_ips",
+            },
+            clear=False,
+        ):
+            properties = self.module.kafka_client_properties()
+
+        self.assertEqual(properties["security.protocol"], "SASL_SSL")
+        self.assertEqual(properties["sasl.mechanism"], "SCRAM-SHA-512")
+        self.assertIn('username="flink"', properties["sasl.jaas.config"])
+        self.assertIn('password="secret"', properties["sasl.jaas.config"])
+        self.assertEqual(properties["ssl.truststore.location"], "/etc/kafka/truststore.p12")
+        self.assertEqual(properties["ssl.truststore.password"], "truststore-secret")
+        self.assertEqual(properties["client.dns.lookup"], "use_all_dns_ips")
+
     def test_normalize_event_flat_map_handles_valid_and_invalid_json(self) -> None:
         normalizer = self.module.NormalizeEvent()
         raw = json.dumps(
@@ -437,14 +462,16 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         self.assertEqual(source.config["starting_offsets"], ("committed_offsets", "EARLIEST"))
         self.assertEqual(source.config["properties"]["enable.auto.commit"], "false")
         self.assertEqual(source.config["properties"]["commit.offsets.on.checkpoint"], "true")
+        self.assertEqual(source.config["properties"]["security.protocol"], "PLAINTEXT")
         self.assertEqual(watermark_strategy, "NO_WATERMARKS")
         self.assertEqual(source_name, "Kafka Source raw.sensor")
         self.assertEqual(stream.operations[0][0], "map")
 
         sink = self.module.build_kafka_sink("kafka:9092", "features.events")
         self.assertEqual(sink.config["bootstrap_servers"], "kafka:9092")
-        self.assertEqual(sink.config["delivery_guarantee"], "NONE")
+        self.assertEqual(sink.config["delivery_guarantee"], "AT_LEAST_ONCE")
         self.assertEqual(sink.config["properties"]["acks"], "all")
+        self.assertEqual(sink.config["properties"]["security.protocol"], "PLAINTEXT")
         self.assertEqual(sink.config["serializer"].config["topic"], "features.events")
         self.assertIn("value_schema", sink.config["serializer"].config)
         self.assertNotIn("key_schema", sink.config["serializer"].config)
