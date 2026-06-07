@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import json
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -312,9 +313,25 @@ class RepositoryUnitTests(unittest.TestCase):
         gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
         dockerignore = (REPO_ROOT / ".dockerignore").read_text(encoding="utf-8")
 
-        for ignored_path in [".env", "secrets/"]:
+        for ignored_path in [".env", ".env.*", ".idea/", ".mypy_cache/", "secrets/*"]:
             self.assertIn(ignored_path, gitignore)
+
+        self.assertIn("!secrets/.gitkeep", gitignore)
+
+        for ignored_path in [".env", ".env.*", ".idea", ".mypy_cache", "secrets/"]:
             self.assertIn(ignored_path, dockerignore)
+
+        tracked_sensitive_paths = subprocess.run(
+            ["git", "ls-files", ".env", ".idea", "secrets"],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.splitlines()
+        allowed_sensitive_paths = {"secrets/.gitkeep"}
+
+        for path in tracked_sensitive_paths:
+            self.assertIn(path, allowed_sensitive_paths)
 
     def test_compose_does_not_define_sensitive_password_fallbacks(self) -> None:
         compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
