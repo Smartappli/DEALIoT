@@ -1,6 +1,7 @@
 const header = document.querySelector("[data-header]");
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
 const revealTargets = Array.from(document.querySelectorAll(".reveal"));
+const deferredStylesheets = Array.from(document.querySelectorAll("[data-deferred-stylesheet]"));
 const allowedLanguageRoutes = new Map([
   ["/", "https://smartappli.io/"],
   ["/bg/", "https://smartappli.io/bg/"],
@@ -76,6 +77,10 @@ function setupLanguageSelects() {
 }
 
 function startInteractiveControls() {
+  for (const stylesheet of deferredStylesheets) {
+    stylesheet.media = "all";
+  }
+
   setupLanguageSelects();
   updateHeaderShadow();
 }

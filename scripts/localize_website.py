@@ -9,7 +9,7 @@ from typing import cast
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEBSITE_DIR = REPO_ROOT / "website"
 BASE_URL = "https://smartappli.io/"
-ASSET_VERSION = "20260607-cache-performance-v1"
+ASSET_VERSION = "20260607-render-blocking-v1"
 TRANSLATION_FILE = WEBSITE_DIR / "src" / "i18n-copy.json"
 
 
@@ -213,9 +213,7 @@ def apply_translations(html: str, lang: str, copy: dict[str, str]) -> str:
     html = html.replace(
         f'href="styles.css?v={ASSET_VERSION}"', f'href="../styles.css?v={ASSET_VERSION}"'
     )
-    html = html.replace(
-        f'href="app.js?v={ASSET_VERSION}"', f'href="../app.js?v={ASSET_VERSION}"'
-    )
+    html = html.replace(f'href="app.js?v={ASSET_VERSION}"', f'href="../app.js?v={ASSET_VERSION}"')
     html = html.replace(f'src="app.js?v={ASSET_VERSION}"', f'src="../app.js?v={ASSET_VERSION}"')
 
     html = html.replace(

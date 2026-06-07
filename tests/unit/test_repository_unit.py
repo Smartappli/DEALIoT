@@ -548,6 +548,12 @@ class RepositoryUnitTests(unittest.TestCase):
             encoding="utf-8"
         )
         compact_styles_css = re.sub(r"\s+", "", styles_css)
+        index_without_noscript = re.sub(
+            r"<noscript>.*?</noscript>",
+            "",
+            index_html,
+            flags=re.DOTALL,
+        )
 
         for product_name in ("DEALIoT", "DEALHost", "DEALData"):
             self.assertIn(product_name, index_html)
@@ -564,11 +570,23 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("data-language-select", index_html)
         self.assertIn("navigateToSelectedLanguage", app_js)
         self.assertIn("DOMContentLoaded", app_js)
-        self.assertIn("app.js?v=20260607-cache-performance-v1", index_html)
-        self.assertIn("styles.css?v=20260607-cache-performance-v1", index_html)
+        self.assertIn("app.js?v=20260607-render-blocking-v1", index_html)
+        self.assertIn("styles.css?v=20260607-render-blocking-v1", index_html)
         self.assertIn('<link rel="preload"', index_html)
         self.assertIn('as="style"', index_html)
         self.assertIn('as="script"', index_html)
+        self.assertIn("data-critical-css", index_html)
+        self.assertIn("data-deferred-stylesheet", index_html)
+        self.assertIn('fetchpriority="high"', index_html)
+        self.assertIn('media="print"', index_html)
+        self.assertNotIn("onload=", index_html)
+        self.assertIn("<noscript>", index_html)
+        self.assertNotIn(
+            '<link rel="stylesheet" href="styles.css?v=20260607-render-blocking-v1">',
+            index_without_noscript,
+        )
+        self.assertIn("deferredStylesheets", app_js)
+        self.assertIn('stylesheet.media = "all"', app_js)
         self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
         self.assertIn("mailto:contact@smartappli.com", index_html)
         self.assertIn("actions/upload-pages-artifact@", workflow)
@@ -781,9 +799,12 @@ class RepositoryUnitTests(unittest.TestCase):
             self.assertIn(f'<html lang="{language["hreflang"]}">', html)
             self.assertIn(f'<link rel="canonical" href="{localized_url}">', html)
             self.assertEqual(25, html.count('rel="alternate"'))
-            self.assertIn("styles.css?v=20260607-cache-performance-v1", html)
-            self.assertIn("app.js?v=20260607-cache-performance-v1", html)
+            self.assertIn("styles.css?v=20260607-render-blocking-v1", html)
+            self.assertIn("app.js?v=20260607-render-blocking-v1", html)
             self.assertIn('<link rel="preload"', html)
+            self.assertIn("data-critical-css", html)
+            self.assertIn("data-deferred-stylesheet", html)
+            self.assertIn('media="print"', html)
             self.assertIn("language-menu", html)
             self.assertIn("language-select", html)
             self.assertIn("data-language-select", html)
@@ -848,8 +869,8 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("navigator.serviceWorker.register", app_js)
         self.assertIn('return "/";', app_js)
         self.assertIn("CACHE_NAME", service_worker)
-        self.assertIn('const CACHE_NAME = "dealiot-pwa-v5"', service_worker)
-        self.assertIn('const ASSET_VERSION = "20260607-cache-performance-v1"', service_worker)
+        self.assertIn('const CACHE_NAME = "dealiot-pwa-v6"', service_worker)
+        self.assertIn('const ASSET_VERSION = "20260607-render-blocking-v1"', service_worker)
         self.assertIn("isNetworkFirstAsset", service_worker)
         self.assertIn("staleWhileRevalidate", service_worker)
         self.assertIn("networkFirst", service_worker)

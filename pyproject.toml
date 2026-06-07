@@ -77,7 +77,7 @@ profile = "jinja"
 indent = 2
 max_line_length = 100
 format_js = true
-format_css = true
+format_css = false
 ignore = "H006,H030"
 
 

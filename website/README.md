@@ -61,6 +61,7 @@ The public website ships with:
 
 - HTML, `sw.js` and `site.webmanifest` are configured for revalidation.
 - Versioned `styles.css` and `app.js` URLs can be cached for one year.
+- The canonical and localized pages inline critical above-the-fold CSS, then load Google Fonts and the full stylesheet asynchronously to reduce render-blocking requests.
 - Images, SVG icons and social cards are cached as immutable static assets.
 - Text metadata files such as `robots.txt`, `sitemap.xml`, `humans.txt` and `llms.txt` use a one-day cache.
 - The GitHub Pages workflow stages `website-dist/` and excludes `node_modules`, source CSS and package metadata from the published artifact.
