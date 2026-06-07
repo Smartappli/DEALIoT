@@ -39,6 +39,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
+      - name: Prepare local secret files
+        run: |
+          mkdir -p secrets
+          app_password="$(openssl rand -hex 24)"
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/postgres_superuser_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/patroni_repl_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/patroni_rewind_password.txt
+          printf '%s\n' "$app_password" > secrets/app_user_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/pgadmin_default_password.txt
+          printf '%s\n' "\"app_user\" \"$app_password\"" > secrets/pgbouncer_rw_userlist.txt
+          printf '%s\n' "\"app_user\" \"$app_password\"" > secrets/pgbouncer_ro_userlist.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/postgres_exporter_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/debezium_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/seaweedfs_pg_password.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/seaweedfs_s3_access_key.txt
+          printf '%s\n' "$(openssl rand -hex 24)" > secrets/seaweedfs_s3_secret_key.txt
+
       - name: Validate compose rendering
         run: docker compose -f docker-compose.yml config -q
 

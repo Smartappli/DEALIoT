@@ -45,6 +45,9 @@ class DeploymentReadinessTests(unittest.TestCase):
         workflow_text = (
             REPO_ROOT / ".github" / "workflows" / "compose-deployment-test.yml"
         ).read_text(encoding="utf-8")
+        self.assertIn("Prepare local secret files", workflow_text)
+        self.assertIn("secrets/postgres_superuser_password.txt", workflow_text)
+        self.assertIn("secrets/seaweedfs_s3_secret_key.txt", workflow_text)
         self.assertIn("Dump compose logs on failure", workflow_text)
         self.assertIn("if: failure()", workflow_text)
         self.assertIn("if: always()", workflow_text)
