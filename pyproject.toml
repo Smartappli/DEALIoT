@@ -1,6 +1,6 @@
 [tool.ruff]
 line-length = 100
-target-version = "py313"
+target-version = "py314"
 extend-exclude = [
   ".git",
   ".venv",
@@ -42,7 +42,7 @@ indent-style = "space"
 line-ending = "lf"
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
