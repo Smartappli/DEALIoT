@@ -61,7 +61,13 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
+            REPO_ROOT / ".github" / "workflows" / "website-pages.yml",
             REPO_ROOT / "bandit.yaml",
+            REPO_ROOT / "website" / "index.html",
+            REPO_ROOT / "website" / "styles.css",
+            REPO_ROOT / "website" / "app.js",
+            REPO_ROOT / "website" / "README.md",
+            REPO_ROOT / "website" / "assets" / "mark.svg",
             REPO_ROOT / "wildfi-decoder" / "Dockerfile",
             REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
             REPO_ROOT / "management-console" / "Dockerfile",
@@ -470,6 +476,31 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('fetch("/api/architecture"', app_js)
         self.assertIn('fetch("/api/health"', app_js)
         self.assertNotIn("fetch(endpoint", app_js)
+
+    def test_public_website_presents_deal_suite(self) -> None:
+        index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        styles_css = (REPO_ROOT / "website" / "styles.css").read_text(encoding="utf-8")
+        app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
+        workflow = (REPO_ROOT / ".github" / "workflows" / "website-pages.yml").read_text(
+            encoding="utf-8"
+        )
+
+        for product_name in ("DEALIoT", "DealHost", "DealData"):
+            self.assertIn(product_name, index_html)
+
+        self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
+        self.assertIn("mailto:contact@smartappli.com", index_html)
+        self.assertIn("actions/upload-pages-artifact@", workflow)
+        self.assertIn("actions/deploy-pages@", workflow)
+        self.assertIn("path: website", workflow)
+        self.assertIn("@media (max-width: 920px)", styles_css)
+        self.assertIn("Fraunces", styles_css)
+        self.assertIn("Space Grotesk", styles_css)
+
+        for forbidden_fragment in ("innerHTML", "outerHTML", "document.write", "eval("):
+            self.assertNotIn(forbidden_fragment, app_js)
+        for forbidden_font in ("Inter", "Roboto", "Arial", "system-ui"):
+            self.assertNotIn(forbidden_font, styles_css)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:
         app_py = (REPO_ROOT / "management-console" / "management_console" / "app.py").read_text(
