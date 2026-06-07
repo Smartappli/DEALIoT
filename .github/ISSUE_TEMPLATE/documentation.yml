@@ -1,4 +1,4 @@
-﻿name: Documentation gap
+name: Documentation gap
 description: Report unclear, missing, or outdated documentation.
 title: "Docs: "
 labels: ["documentation"]

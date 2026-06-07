@@ -6,9 +6,8 @@ import re
 from datetime import UTC, datetime
 from http import HTTPStatus
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 from urllib.parse import urlparse
-from xml.etree.ElementTree import Element, SubElement, register_namespace, tostring  # nosec B405
 
 from management_console.catalog import DATA_MANAGEMENT_PLANS, DATASETS
 
@@ -18,9 +17,6 @@ OPENAIRE_EXPORT_EVIDENCE_TOPIC = "governance.repository.exports"
 DATACITE_NS = "http://datacite.org/schema/kernel-4"
 XSI_NS = "http://www.w3.org/2001/XMLSchema-instance"
 NON_OPEN_CLASSIFICATIONS = {"internal", "restricted", "personal", "sensitive", "mixed"}
-
-register_namespace("", DATACITE_NS)
-register_namespace("xsi", XSI_NS)
 
 
 class OpenAIREExportError(RuntimeError):
@@ -33,10 +29,6 @@ class OpenAIREExportError(RuntimeError):
 
 def now_iso() -> str:
     return datetime.now(UTC).isoformat()
-
-
-def qname(name: str) -> str:
-    return f"{{{DATACITE_NS}}}{name}"
 
 
 def find_dataset(dataset_id: str) -> dict[str, Any]:
@@ -199,70 +191,121 @@ def build_openaire_metadata(
     }
 
 
-def add_text(parent: Element, name: str, text: str, **attributes: str) -> Element:
-    child = SubElement(parent, qname(name), attributes)
-    child.text = text
-    return child
+def xml_escape_text(value: Any) -> str:
+    return (
+        str(value)
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+
+
+def xml_escape_attr(value: Any) -> str:
+    return xml_escape_text(value).replace('"', "&quot;")
+
+
+def xml_attrs(attributes: dict[str, Any] | None = None) -> str:
+    if not attributes:
+        return ""
+    return "".join(
+        f' {name}="{xml_escape_attr(value)}"'
+        for name, value in attributes.items()
+        if value is not None
+    )
+
+
+def xml_text_element(
+    name: str,
+    value: Any,
+    attributes: dict[str, Any] | None = None,
+    *,
+    indent: int = 1,
+) -> str:
+    spaces = "  " * indent
+    return f"{spaces}<{name}{xml_attrs(attributes)}>{xml_escape_text(value)}</{name}>"
 
 
 def datacite_xml_bytes(metadata: dict[str, Any]) -> bytes:
-    resource = Element(
-        qname("resource"),
-        {
-            f"{{{XSI_NS}}}schemaLocation": (
-                f"{DATACITE_NS} https://schema.datacite.org/meta/kernel-4/metadata.xsd"
-            )
-        },
-    )
-    add_text(
-        resource,
-        "identifier",
-        metadata["identifier"],
-        identifierType=metadata["identifier_type"],
-    )
-
-    creators = SubElement(resource, qname("creators"))
+    lines = [
+        '<?xml version="1.0" encoding="utf-8"?>',
+        (
+            f'<resource xmlns="{DATACITE_NS}" xmlns:xsi="{XSI_NS}" '
+            f'xsi:schemaLocation="{DATACITE_NS} '
+            'https://schema.datacite.org/meta/kernel-4/metadata.xsd">'
+        ),
+        xml_text_element(
+            "identifier",
+            metadata["identifier"],
+            {"identifierType": metadata["identifier_type"]},
+        ),
+        "  <creators>",
+    ]
     for creator in metadata["creators"]:
-        creator_node = SubElement(creators, qname("creator"))
-        add_text(creator_node, "creatorName", creator["name"])
+        lines.append("    <creator>")
+        lines.append(xml_text_element("creatorName", creator["name"], indent=3))
         affiliation = creator.get("affiliation")
         if affiliation:
-            add_text(creator_node, "affiliation", affiliation)
+            lines.append(xml_text_element("affiliation", affiliation, indent=3))
+        lines.append("    </creator>")
 
-    titles = SubElement(resource, qname("titles"))
-    add_text(titles, "title", metadata["title"])
-    add_text(resource, "publisher", metadata["publisher"])
-    add_text(resource, "publicationYear", metadata["publication_year"])
-
-    subjects = SubElement(resource, qname("subjects"))
-    for subject in metadata["subjects"]:
-        add_text(subjects, "subject", subject)
-
-    add_text(resource, "language", metadata["language"])
-    resource_type = SubElement(
-        resource,
-        qname("resourceType"),
-        {"resourceTypeGeneral": metadata["resource_type_general"]},
+    lines.extend(
+        [
+            "  </creators>",
+            "  <titles>",
+            xml_text_element("title", metadata["title"], indent=2),
+            "  </titles>",
+            xml_text_element("publisher", metadata["publisher"]),
+            xml_text_element("publicationYear", metadata["publication_year"]),
+            "  <subjects>",
+        ]
     )
-    resource_type.text = metadata["resource_type"]
+    lines.extend(xml_text_element("subject", subject, indent=2) for subject in metadata["subjects"])
 
-    dates = SubElement(resource, qname("dates"))
-    add_text(dates, "date", datetime.now(UTC).date().isoformat(), dateType="Issued")
-
-    formats = SubElement(resource, qname("formats"))
-    for item_format in metadata["formats"]:
-        add_text(formats, "format", item_format)
-
-    rights_list = SubElement(resource, qname("rightsList"))
-    add_text(
-        rights_list,
-        "rights",
-        metadata["rights"],
-        rightsURI=metadata["rights_uri"],
+    lines.extend(
+        [
+            "  </subjects>",
+            xml_text_element("language", metadata["language"]),
+            xml_text_element(
+                "resourceType",
+                metadata["resource_type"],
+                {"resourceTypeGeneral": metadata["resource_type_general"]},
+            ),
+            "  <dates>",
+            xml_text_element(
+                "date",
+                datetime.now(UTC).date().isoformat(),
+                {"dateType": "Issued"},
+                indent=2,
+            ),
+            "  </dates>",
+            "  <formats>",
+        ]
+    )
+    lines.extend(
+        xml_text_element("format", item_format, indent=2) for item_format in metadata["formats"]
     )
 
-    descriptions = SubElement(resource, qname("descriptions"))
-    add_text(descriptions, "description", metadata["description"], descriptionType="Abstract")
+    lines.extend(
+        [
+            "  </formats>",
+            "  <rightsList>",
+            xml_text_element(
+                "rights",
+                metadata["rights"],
+                {"rightsURI": metadata["rights_uri"]},
+                indent=2,
+            ),
+            "  </rightsList>",
+            "  <descriptions>",
+            xml_text_element(
+                "description",
+                metadata["description"],
+                {"descriptionType": "Abstract"},
+                indent=2,
+            ),
+            "  </descriptions>",
+        ]
+    )
 
     related = [
         item
@@ -270,17 +313,25 @@ def datacite_xml_bytes(metadata: dict[str, Any]) -> bytes:
         if item["identifier"] and item["identifier_type"] and item["relation_type"]
     ]
     if related:
-        related_identifiers = SubElement(resource, qname("relatedIdentifiers"))
-        for item in related:
-            add_text(
-                related_identifiers,
-                "relatedIdentifier",
-                item["identifier"],
-                relatedIdentifierType=item["identifier_type"],
-                relationType=item["relation_type"],
+        lines.append("  <relatedIdentifiers>")
+        lines.extend(
+            (
+                xml_text_element(
+                    "relatedIdentifier",
+                    item["identifier"],
+                    {
+                        "relatedIdentifierType": item["identifier_type"],
+                        "relationType": item["relation_type"],
+                    },
+                    indent=2,
+                )
             )
+            for item in related
+        )
+        lines.append("  </relatedIdentifiers>")
 
-    return cast("bytes", tostring(resource, encoding="utf-8", xml_declaration=True))
+    lines.append("</resource>")
+    return ("\n".join(lines) + "\n").encode("utf-8")
 
 
 def build_openaire_manifest(

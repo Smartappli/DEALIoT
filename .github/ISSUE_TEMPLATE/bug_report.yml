@@ -1,4 +1,4 @@
-﻿name: Bug report
+name: Bug report
 description: Report a reproducible platform, deployment, documentation, or website defect.
 title: "Bug: "
 labels: ["bug"]

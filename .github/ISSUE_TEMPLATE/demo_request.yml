@@ -1,4 +1,4 @@
-﻿name: Demo or pilot request
+name: Demo or pilot request
 description: Request a DEALIoT, DealHost, or DealData demo with a concrete data source.
 title: "Demo: "
 labels: ["adoption", "demo"]

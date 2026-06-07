@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from typing import Any, ClassVar
 
-from tests.unit.test_bridge_unit import _load_bridge_module
+from test_bridge_unit import _load_bridge_module
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 

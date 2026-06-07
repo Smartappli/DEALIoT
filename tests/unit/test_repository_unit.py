@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import json
 import subprocess
+import unicodedata
 import unittest
 from pathlib import Path
 
@@ -500,13 +501,19 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("--cov-fail-under=90", workflow)
         self.assertIn("fail_under = 90", pyproject)
 
+    def test_codacy_excludes_issue_template_unicode_false_positives(self) -> None:
+        codacy_config = (REPO_ROOT / ".codacy.yaml").read_text(encoding="utf-8")
+
+        self.assertIn(".github/ISSUE_TEMPLATE/*.yml", codacy_config)
+
     def test_management_console_frontend_avoids_unsafe_dom_sinks(self) -> None:
         app_js = (REPO_ROOT / "management-console" / "static" / "app.js").read_text(
             encoding="utf-8"
         )
 
-        for forbidden in ["innerHTML", "outerHTML", "document.write"]:
+        for forbidden in ["innerHTML", "outerHTML", "document.write", "dataset["]:
             self.assertNotIn(forbidden, app_js)
+        self.assertIn("dataAttributeName", app_js)
         self.assertIn('fetch("/api/architecture"', app_js)
         self.assertIn('fetch("/api/health"', app_js)
         self.assertNotIn("fetch(endpoint", app_js)
@@ -783,10 +790,34 @@ class RepositoryUnitTests(unittest.TestCase):
         app_py = (REPO_ROOT / "management-console" / "management_console" / "app.py").read_text(
             encoding="utf-8"
         )
+        openaire_py = (
+            REPO_ROOT / "management-console" / "management_console" / "openaire.py"
+        ).read_text(encoding="utf-8")
 
         self.assertNotIn("urlopen", app_py)
         self.assertNotIn('os.getenv("MANAGEMENT_CONSOLE_BIND", "0.0.0.0")', app_py)
         self.assertIn('os.getenv("MANAGEMENT_CONSOLE_BIND", "127.0.0.1")', app_py)
+        self.assertNotIn("xml.etree", openaire_py)
+        self.assertNotIn("from xml", openaire_py)
+        self.assertIn("xml_escape_text", openaire_py)
+
+    def test_github_metadata_has_no_hidden_unicode_controls(self) -> None:
+        scanned_paths = [
+            *sorted((REPO_ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml")),
+            *sorted((REPO_ROOT / ".github" / "DISCUSSION_TEMPLATE").glob("*.yml")),
+            REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md",
+        ]
+        allowed_controls = {"\n", "\r", "\t"}
+
+        for path in scanned_paths:
+            text = path.read_text(encoding="utf-8")
+            for line_number, line in enumerate(text.splitlines(keepends=True), start=1):
+                for column, char in enumerate(line, start=1):
+                    if char in allowed_controls:
+                        continue
+                    if unicodedata.category(char).startswith("C"):
+                        codepoint = f"U+{ord(char):04X}"
+                        self.fail(f"{path}:{line_number}:{column} contains {codepoint}")
 
     def test_critical_shell_scripts_are_present(self) -> None:
         script_files = [

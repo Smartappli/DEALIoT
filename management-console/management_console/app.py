@@ -471,7 +471,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
 
     def log_message(  # pylint: disable=arguments-differ
         self,
-        format: str,  # noqa: A002
+        message_format: str,
         *args: Any,
     ) -> None:
         print(
@@ -479,7 +479,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
                 {
                     "time": now_iso(),
                     "client": self.client_address[0],
-                    "message": format % args,
+                    "message": message_format % args,
                 },
                 separators=(",", ":"),
             )

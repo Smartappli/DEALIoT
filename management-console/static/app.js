@@ -5,9 +5,10 @@ const state = {
 };
 
 async function fetchJson(endpointName, options = {}) {
+  const { headers = {}, ...requestOptions } = options;
   const init = {
-    headers: { Accept: "application/json", ...(options.headers || {}) },
-    ...options,
+    ...requestOptions,
+    headers: { Accept: "application/json", ...headers },
   };
   let response;
   switch (endpointName) {
@@ -69,6 +70,17 @@ function appendChildren(parent, children) {
   });
 }
 
+function dataAttributeName(name) {
+  switch (name) {
+    case "action":
+      return "data-action";
+    case "datasetId":
+      return "data-dataset-id";
+    default:
+      return null;
+  }
+}
+
 function element(tagName, options = {}, children = []) {
   const node = document.createElement(tagName);
   if (options.className) {
@@ -83,7 +95,10 @@ function element(tagName, options = {}, children = []) {
     }
   });
   Object.entries(options.dataset || {}).forEach(([name, value]) => {
-    node.dataset[name] = String(value ?? "");
+    const attributeName = dataAttributeName(name);
+    if (attributeName && value !== null && value !== undefined) {
+      node.setAttribute(attributeName, String(value));
+    }
   });
   appendChildren(node, children);
   return node;
@@ -166,13 +181,14 @@ function externalLink(value) {
 function renderMetrics() {
   const components = state.architecture?.components || [];
   const summary = [...state.healthById.values()].reduce((acc, item) => {
-    acc[item.status] = (acc[item.status] || 0) + 1;
+    const status = text(item.status);
+    acc.set(status, (acc.get(status) || 0) + 1);
     return acc;
-  }, {});
+  }, new Map());
 
   query("#metric-services").textContent = components.length;
-  query("#metric-healthy").textContent = summary.healthy || 0;
-  query("#metric-unreachable").textContent = summary.unreachable || 0;
+  query("#metric-healthy").textContent = summary.get("healthy") || 0;
+  query("#metric-unreachable").textContent = summary.get("unreachable") || 0;
   query("#metric-topics").textContent = state.architecture?.topics.length || 0;
 }
 
@@ -621,28 +637,36 @@ async function refreshHealth() {
 
 async function exportDatasetToZenodo(datasetId) {
   const result = query("#zenodo-export-result");
-  result.textContent = "Export Zenodo en cours...";
-  const payload = await fetchJson("zenodoExport", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ dataset_id: datasetId }),
-  });
-  result.textContent = `Draft Zenodo cree pour ${text(payload.dataset_id)}: ${text(
-    payload.record_url,
-  )}`;
+  try {
+    result.textContent = "Export Zenodo en cours...";
+    const payload = await fetchJson("zenodoExport", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataset_id: datasetId }),
+    });
+    result.textContent = `Draft Zenodo cree pour ${text(payload.dataset_id)}: ${text(
+      payload.record_url,
+    )}`;
+  } catch (error) {
+    result.textContent = error instanceof Error ? error.message : "Export Zenodo impossible";
+  }
 }
 
 async function exportDatasetToOpenAire(datasetId) {
   const result = query("#openaire-export-result");
-  result.textContent = "Export OpenAIRE en cours...";
-  const payload = await fetchJson("openaireExport", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ dataset_id: datasetId }),
-  });
-  result.textContent = `Package OpenAIRE cree pour ${text(payload.dataset_id)}: ${textList(
-    payload.files,
-  )}`;
+  try {
+    result.textContent = "Export OpenAIRE en cours...";
+    const payload = await fetchJson("openaireExport", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ dataset_id: datasetId }),
+    });
+    result.textContent = `Package OpenAIRE cree pour ${text(payload.dataset_id)}: ${textList(
+      payload.files,
+    )}`;
+  } catch (error) {
+    result.textContent = error instanceof Error ? error.message : "Export OpenAIRE impossible";
+  }
 }
 
 async function init() {
@@ -661,14 +685,10 @@ document.addEventListener("click", (event) => {
     refreshHealth().catch((error) => console.error(error));
   }
   if (action === "zenodo-export") {
-    exportDatasetToZenodo(target.dataset.datasetId).catch((error) => {
-      query("#zenodo-export-result").textContent = error.message;
-    });
+    void exportDatasetToZenodo(target.dataset.datasetId);
   }
   if (action === "openaire-export") {
-    exportDatasetToOpenAire(target.dataset.datasetId).catch((error) => {
-      query("#openaire-export-result").textContent = error.message;
-    });
+    void exportDatasetToOpenAire(target.dataset.datasetId);
   }
 });
 
