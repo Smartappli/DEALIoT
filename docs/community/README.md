@@ -3,6 +3,10 @@
 This directory contains the versioned adoption assets for DEALIoT, DealHost, and DealData.
 
 - `adoption-playbook.md`: public positioning, audience strategy, adoption ladder, and success metrics.
+- `architecture-popularity-playbook.md`: repeatable plan to make the architecture discoverable, explainable, testable, trusted, and shareable.
+- `use-case-catalog.md`: concrete scenarios and proof assets for evaluators, partners, and public launch material.
+- `public-launch-kit.md`: reusable announcement, partner outreach, conference, badge, and screenshot copy.
+- `adoption-funnel.md`: funnel stages, conversion assets, weekly review questions, and minimum viable popularity metrics.
 - `user-community-launch-plan.md`: channel strategy, 30-day launch motion, cadence, and success metrics for the user community.
 - `user-onboarding-guide.md`: first path for evaluators, pilot teams, operators, partners, and data stewards.
 - `community-rituals.md`: triage cadence, office-hours agenda, moderation rules, labels, and escalation boundaries.

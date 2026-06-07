@@ -62,6 +62,7 @@ DEALIoT users should be able to:
 ## Launch Checklist
 
 - [x] Community plan documented.
+- [x] Public launch, use-case, popularity, and funnel assets are documented.
 - [x] User onboarding documented.
 - [x] Feedback loop documented.
 - [x] Community rituals documented.

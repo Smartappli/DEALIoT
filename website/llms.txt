@@ -33,11 +33,17 @@ DEALData manages data catalogues, controlled sharing, Data Act readiness, Data G
 - What is the default language? The default public website language is English US. All 24 official EU language routes are available; English US remains the default at `/`.
 - Who is it for? Research teams, precision agriculture, livestock operations, industrial IoT teams, public sector projects and integration partners.
 - How do adopters start? Run the local smoke test, pick one representative data source, complete a 30-day pilot and score the result before production rollout.
+- Which use cases are the strongest entry points? Livestock telemetry, WildFi decoding, precision agriculture, industrial IoT hardening, research publication, EU data-sharing readiness, managed hosting evaluation, and device integrations.
+- How should the architecture become popular? Make the fit visible, make the first trial reproducible, publish production guardrails, collect approved proof, and convert user friction into docs, tests, or roadmap decisions.
 
 ## Source Documents
 
 - README: https://github.com/Smartappli/DEALIoT/blob/main/README.md
 - Adoption playbook: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/adoption-playbook.md
+- Architecture popularity playbook: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/architecture-popularity-playbook.md
+- Use case catalog: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/use-case-catalog.md
+- Public launch kit: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/public-launch-kit.md
+- Adoption funnel: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/adoption-funnel.md
 - User community launch plan: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/user-community-launch-plan.md
 - User onboarding guide: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/user-onboarding-guide.md
 - User feedback loop: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/user-feedback-loop.md

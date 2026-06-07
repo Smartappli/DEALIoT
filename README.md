@@ -13,6 +13,20 @@ The platform targets livestock, precision agriculture, and industrial IoT deploy
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
+## Why Teams Adopt DEALIoT
+
+DEALIoT is designed for teams that need to move beyond isolated IoT demos into governed, reproducible, production-ready data flows. The adoption thesis is simple: prove one field data source, one event contract, one useful output, and one operational decision path before scaling the architecture.
+
+Strong first-fit scenarios include livestock telemetry, WildFi decoding, precision agriculture, industrial IoT hardening, research dataset publication, EU data-sharing readiness, managed hosting evaluation, and device or platform integrations.
+
+## Fast Adoption Path
+
+1. Confirm fit with the [use case catalog](docs/community/use-case-catalog.md).
+2. Run the local smoke test and capture the first event reaching Kafka.
+3. Scope one 30-day pilot with the [demo pilot playbook](docs/community/demo-pilot-playbook.md).
+4. Score the pilot with the [validation scorecard](docs/community/validation-scorecard.md).
+5. Publish an approved lesson, adopter story, or integration note using the [public launch kit](docs/community/public-launch-kit.md).
+
 ## Platform Scope
 
 DEALIoT provides six runtime planes:
@@ -30,6 +44,10 @@ DEALIoT provides six runtime planes:
 
 - Public website: `https://smartappli.io/`
 - Adoption playbook: [docs/community/adoption-playbook.md](docs/community/adoption-playbook.md)
+- Architecture popularity playbook: [docs/community/architecture-popularity-playbook.md](docs/community/architecture-popularity-playbook.md)
+- Use case catalog: [docs/community/use-case-catalog.md](docs/community/use-case-catalog.md)
+- Public launch kit: [docs/community/public-launch-kit.md](docs/community/public-launch-kit.md)
+- Adoption funnel: [docs/community/adoption-funnel.md](docs/community/adoption-funnel.md)
 - User community launch plan: [docs/community/user-community-launch-plan.md](docs/community/user-community-launch-plan.md)
 - User onboarding guide: [docs/community/user-onboarding-guide.md](docs/community/user-onboarding-guide.md)
 - Community rituals: [docs/community/community-rituals.md](docs/community/community-rituals.md)
