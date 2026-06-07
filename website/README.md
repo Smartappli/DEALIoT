@@ -1,6 +1,6 @@
 # DEAL public website
 
-Static Progressive Web App for presenting DEALIoT, DealHost and DealData.
+Static Progressive Web App for presenting DEALIoT, DEALHost and DEALData.
 
 ## Local preview
 
@@ -9,6 +9,18 @@ python -m http.server 8080 --directory website
 ```
 
 Open `http://localhost:8080`.
+
+## Styling
+
+The site uses Tailwind CSS CLI to compile `src/styles.css` into the static `styles.css` file served by GitHub Pages.
+
+```bash
+cd website
+npm ci
+npm run build
+```
+
+Use `npm run watch` while editing styles locally.
 
 ## Languages
 

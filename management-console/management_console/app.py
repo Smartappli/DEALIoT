@@ -11,7 +11,7 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, cast
-from urllib.parse import urlparse
+from urllib.parse import ParseResult, urlparse
 
 from management_console.catalog import (
     COMPONENTS,
@@ -75,11 +75,24 @@ def timeout_seconds() -> float:
         return DEFAULT_TIMEOUT_SECONDS
 
 
-def http_path(parsed_url: Any) -> str:
+def http_path(parsed_url: ParseResult) -> str:
     path = parsed_url.path or "/"
+    if parsed_url.params:
+        path = f"{path};{parsed_url.params}"
     if parsed_url.query:
         return f"{path}?{parsed_url.query}"
     return path
+
+
+def parse_http_url(url: str) -> ParseResult:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or parsed.hostname is None:
+        raise ValueError("HTTP request URL must use http or https with a host")
+    if parsed.username is not None or parsed.password is not None:
+        raise ValueError("HTTP request URL must not include credentials")
+    if parsed.fragment:
+        raise ValueError("HTTP request URL must not include a fragment")
+    return parsed
 
 
 def open_http_request(
@@ -89,9 +102,7 @@ def open_http_request(
     headers: dict[str, str] | None = None,
     body: bytes | None = None,
 ) -> SimpleHttpResponse:
-    parsed = urlparse(url)
-    if parsed.scheme not in {"http", "https"} or parsed.hostname is None:
-        raise ValueError("HTTP request URL must use http or https")
+    parsed = parse_http_url(url)
 
     connection_cls = (
         http.client.HTTPSConnection if parsed.scheme == "https" else http.client.HTTPConnection
@@ -120,8 +131,9 @@ def probe_tcp(endpoint: str, timeout: float) -> dict[str, Any]:
 
 
 def probe_http(endpoint: str, timeout: float) -> dict[str, Any]:
-    parsed = urlparse(endpoint)
-    if parsed.scheme not in {"http", "https"}:
+    try:
+        parse_http_url(endpoint)
+    except ValueError:
         return {"status": "unknown", "detail": "invalid http probe scheme"}
 
     try:
@@ -263,7 +275,9 @@ def trigger_media_backfill(payload: dict[str, Any]) -> tuple[int, dict[str, Any]
 
     airflow_api_url = os.getenv("AIRFLOW_API_URL", "http://airflow-apiserver:8080/api/v2")
     dag_run_url = f"{airflow_api_url.rstrip('/')}/dags/media_backfill/dagRuns"
-    if urlparse(dag_run_url).scheme not in {"http", "https"}:
+    try:
+        parse_http_url(dag_run_url)
+    except ValueError:
         return HTTPStatus.BAD_REQUEST, {"error": "invalid_airflow_api_url"}
 
     body = json.dumps(
@@ -430,7 +444,11 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
+    def log_message(  # pylint: disable=arguments-differ
+        self,
+        format: str,  # noqa: A002
+        *args: Any,
+    ) -> None:
         print(
             json.dumps(
                 {

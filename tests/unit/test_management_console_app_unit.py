@@ -102,6 +102,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
 
     def test_probe_http_reports_status_classes_and_errors(self) -> None:
         self.assertEqual(app.probe_http("ftp://example.net", 0.1)["status"], "unknown")
+        self.assertEqual(app.probe_http("https://user@example.net", 0.1)["status"], "unknown")
 
         with patch("management_console.app.open_http_request", return_value=FakeResponse(204)):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "healthy")
@@ -114,6 +115,19 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "degraded")
         with patch("management_console.app.open_http_request", side_effect=OSError("offline")):
             self.assertEqual(app.probe_http("https://example.net", 0.1)["status"], "unreachable")
+
+    def test_parse_http_url_rejects_non_http_credentials_and_fragments(self) -> None:
+        self.assertEqual(app.parse_http_url("https://example.net/health").hostname, "example.net")
+
+        for value in (
+            "ftp://example.net/health",
+            "file:///etc/passwd",
+            "https://user:pass@example.net/health",
+            "https://example.net/health#token",
+            "/relative",
+        ):
+            with self.assertRaises(ValueError):
+                app.parse_http_url(value)
 
     def test_runtime_probe_overrides_cover_registered_components(self) -> None:
         with patch.dict("os.environ", {}, clear=True):
@@ -223,6 +237,19 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 "AIRFLOW_API_USERNAME": "u",
                 "AIRFLOW_API_PASSWORD": "p",
                 "AIRFLOW_API_URL": "ftp://airflow",
+            },
+            clear=True,
+        ):
+            status, payload = app.trigger_media_backfill({})
+        self.assertEqual(status, HTTPStatus.BAD_REQUEST)
+        self.assertEqual(payload["error"], "invalid_airflow_api_url")
+
+        with patch.dict(
+            "os.environ",
+            {
+                "AIRFLOW_API_USERNAME": "u",
+                "AIRFLOW_API_PASSWORD": "p",
+                "AIRFLOW_API_URL": "https://user:pass@airflow.example/api/v2",
             },
             clear=True,
         ):

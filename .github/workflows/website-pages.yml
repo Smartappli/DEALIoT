@@ -32,6 +32,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
 
+      - name: Install website dependencies
+        working-directory: website
+        run: npm ci
+
+      - name: Build website CSS
+        working-directory: website
+        run: npm run build
+
       - name: Upload website artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:

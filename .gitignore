@@ -17,5 +17,5 @@ secrets/
 # Airflow runtime artifacts
 airflow/logs/
 
-# Externalized public website source
-website/
+# Website build artifacts
+website/node_modules/

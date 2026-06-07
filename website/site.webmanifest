@@ -1,7 +1,7 @@
 {
   "name": "DEAL suite",
   "short_name": "DEAL",
-  "description": "DEALIoT, DealHost and DealData: IoT data platform, managed hosting and data governance suite.",
+  "description": "DEALIoT, DEALHost and DEALData: IoT data platform, managed hosting and data governance suite.",
   "lang": "en-US",
   "dir": "ltr",
   "id": "/",
@@ -9,8 +9,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#050807",
-  "theme_color": "#050807",
+  "background_color": "#f7fcff",
+  "theme_color": "#0196d0",
   "categories": [
     "business",
     "productivity",

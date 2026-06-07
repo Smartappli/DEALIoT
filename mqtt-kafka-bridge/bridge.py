@@ -133,6 +133,7 @@ MQTT_TLS_CERT_FILE = os.getenv("MQTT_TLS_CERT_FILE")
 MQTT_TLS_KEY_FILE = os.getenv("MQTT_TLS_KEY_FILE")
 MQTT_TLS_INSECURE_SKIP_VERIFY = bool_env("MQTT_TLS_INSECURE_SKIP_VERIFY")
 BRIDGE_HEALTH_PORT = int(os.getenv("BRIDGE_HEALTH_PORT", "8080"))
+BRIDGE_HEALTH_BIND = os.getenv("BRIDGE_HEALTH_BIND", "127.0.0.1")
 legacy_mqtt_topic = os.getenv("MQTT_TOPIC")
 MQTT_TOPICS_DEFAULT = (
     legacy_mqtt_topic if legacy_mqtt_topic and legacy_mqtt_topic.strip() else DEFAULT_MQTT_TOPICS
@@ -421,7 +422,7 @@ class HealthHandler(BaseHTTPRequestHandler):
 
 
 def start_health_server() -> None:
-    server = ThreadingHTTPServer(("0.0.0.0", BRIDGE_HEALTH_PORT), HealthHandler)  # noqa: S104
+    server = ThreadingHTTPServer((BRIDGE_HEALTH_BIND, BRIDGE_HEALTH_PORT), HealthHandler)
     thread = threading.Thread(target=server.serve_forever, name="bridge-health", daemon=True)
     thread.start()
 

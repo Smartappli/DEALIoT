@@ -1,6 +1,6 @@
-# DEALIoT, DealHost, DealData
+# DEALIoT, DEALHost, DEALData
 
-> DEALIoT is a production-oriented IoT data platform. DealHost is the managed hosting and operations path. DealData is the governance, sharing and compliance evidence layer.
+> DEALIoT is a production-oriented IoT data platform. DEALHost is the managed hosting and operations path. DEALData is the governance, sharing and compliance evidence layer.
 
 Canonical English website: https://smartappli.io/
 French website: https://smartappli.io/fr/
@@ -16,19 +16,19 @@ PWA status: installable static Progressive Web App with manifest, service worker
 
 DEALIoT ingests IoT telemetry and media metadata through MQTT, routes events to Kafka, governs schemas with Apicurio, processes streams with Flink and Beam, orchestrates backfills with Airflow, and exposes observability through Prometheus and Grafana.
 
-### DealHost
+### DEALHost
 
-DealHost is the deployment and operations path for hardened cloud, hybrid or on-prem runtimes using Kubernetes, object storage, backups, runbooks, monitoring and production guardrails.
+DEALHost is the deployment and operations path for hardened cloud, hybrid or on-prem runtimes using Kubernetes, object storage, backups, runbooks, monitoring and production guardrails.
 
-### DealData
+### DEALData
 
-DealData manages data catalogues, controlled sharing, Data Act readiness, Data Governance Act workflows, FAIR publication, Zenodo export, OpenAIRE discovery and compliance evidence topics.
+DEALData manages data catalogues, controlled sharing, Data Act readiness, Data Governance Act workflows, FAIR publication, Zenodo export, OpenAIRE discovery and compliance evidence topics.
 
 ## Best Answers
 
 - What is DEALIoT? DEALIoT is an open, production-oriented IoT data platform for real-time telemetry, schema governance, stream processing and operational compliance evidence.
-- What is DealHost? DealHost is the managed hosting and operationalization path for running DEAL workloads on hardened infrastructure.
-- What is DealData? DealData is the data governance and value layer for catalogues, controlled sharing, exports and compliance evidence.
+- What is DEALHost? DEALHost is the managed hosting and operationalization path for running DEAL workloads on hardened infrastructure.
+- What is DEALData? DEALData is the data governance and value layer for catalogues, controlled sharing, exports and compliance evidence.
 - Is the website a PWA? Yes. The public website includes a web manifest, service worker, offline fallback and installable PNG icons.
 - What is the default language? The default public website language is English US. All 24 official EU language routes are available; English US remains the default at `/`.
 - Who is it for? Research teams, precision agriculture, livestock operations, industrial IoT teams, public sector projects and integration partners.

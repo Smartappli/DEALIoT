@@ -375,6 +375,32 @@ class BridgeUnitTests(unittest.TestCase):
         mock_sleep.assert_called_once_with(5)
         client.loop_forever.assert_not_called()
 
+    def test_start_health_server_uses_configured_loopback_bind(self):
+        fake_server = Mock()
+        fake_thread = Mock()
+
+        with (
+            patch.object(self.bridge, "BRIDGE_HEALTH_BIND", "127.0.0.1"),
+            patch.object(
+                self.bridge,
+                "ThreadingHTTPServer",
+                return_value=fake_server,
+            ) as server_ctor,
+            patch.object(self.bridge.threading, "Thread", return_value=fake_thread) as thread_ctor,
+        ):
+            self.bridge.start_health_server()
+
+        server_ctor.assert_called_once_with(
+            ("127.0.0.1", self.bridge.BRIDGE_HEALTH_PORT),
+            self.bridge.HealthHandler,
+        )
+        thread_ctor.assert_called_once_with(
+            target=fake_server.serve_forever,
+            name="bridge-health",
+            daemon=True,
+        )
+        fake_thread.start.assert_called_once_with()
+
     def test_main_sets_credentials_and_runs_bridge(self):
         client = _FakeClient()
         with (

@@ -50,15 +50,31 @@ spec:
               mountPath: /var/run/dealiot-secrets
               readOnly: true
           readinessProbe:
-            httpGet:
-              path: /healthz
-              port: health
+            exec:
+              command:
+                - python
+                - -c
+                - >-
+                  import socket;
+                  sock = socket.create_connection(("127.0.0.1", 8080), 5);
+                  sock.sendall(b"GET /healthz HTTP/1.0\r\n\r\n");
+                  status = sock.recv(64).split(b"\r\n", 1)[0];
+                  sock.close();
+                  raise SystemExit(0 if b" 200 " in status else 1)
             initialDelaySeconds: 10
             periodSeconds: 15
           livenessProbe:
-            httpGet:
-              path: /healthz
-              port: health
+            exec:
+              command:
+                - python
+                - -c
+                - >-
+                  import socket;
+                  sock = socket.create_connection(("127.0.0.1", 8080), 5);
+                  sock.sendall(b"GET /healthz HTTP/1.0\r\n\r\n");
+                  status = sock.recv(64).split(b"\r\n", 1)[0];
+                  sock.close();
+                  raise SystemExit(0 if b" 200 " in status else 1)
             initialDelaySeconds: 30
             periodSeconds: 30
           resources:

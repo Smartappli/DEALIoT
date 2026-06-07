@@ -1,4 +1,4 @@
-const CACHE_NAME = "dealiot-pwa-v1";
+const CACHE_NAME = "dealiot-pwa-v3";
 const CORE_ASSETS = [
   "./",
   "./fr/",
