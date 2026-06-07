@@ -1109,7 +1109,7 @@ services:
         max-file: "3"
 
   seaweedfs-init:
-    image: amazon/aws-cli:2.34.61
+    image: amazon/aws-cli:2.34.63
     container_name: seaweedfs-init
     restart: "no"
     depends_on:
@@ -1795,7 +1795,7 @@ services:
       - patroni_frontend
 
   apicurio-registry:
-    image: apicurio/apicurio-registry:3.2.4
+    image: apicurio/apicurio-registry:3.2.5
     container_name: apicurio-registry
     hostname: apicurio-registry
     restart: unless-stopped

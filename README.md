@@ -13,6 +13,22 @@ The platform targets livestock, precision agriculture, and industrial IoT deploy
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
+## Why Teams Adopt DEALIoT
+
+DEALIoT is designed for teams that need to move beyond isolated IoT demos into governed, reproducible, production-ready data flows. The adoption thesis is simple: prove one field data source, one event contract, one useful output, and one operational decision path before scaling the architecture.
+
+Strong first-fit scenarios include livestock telemetry, WildFi decoding, precision agriculture, industrial IoT hardening, research dataset publication, EU data-sharing readiness, managed hosting evaluation, and device or platform integrations.
+
+## Fast Adoption Path
+
+1. Confirm fit with the [use case catalog](docs/community/use-case-catalog.md).
+2. Compare alternatives with the [architecture comparison guide](docs/community/architecture-comparison-guide.md).
+3. Run the [quick evaluation path](docs/community/quick-evaluation-path.md) and capture the first event reaching Kafka.
+4. Help an internal owner make the case with the [internal champion kit](docs/community/internal-champion-kit.md).
+5. Scope one 30-day pilot with the [demo pilot playbook](docs/community/demo-pilot-playbook.md).
+6. Score the pilot with the [validation scorecard](docs/community/validation-scorecard.md).
+7. Publish an approved lesson, adopter story, or integration note using the [public launch kit](docs/community/public-launch-kit.md).
+
 ## Platform Scope
 
 DEALIoT provides six runtime planes:
@@ -30,10 +46,26 @@ DEALIoT provides six runtime planes:
 
 - Public website: `https://smartappli.io/`
 - Adoption playbook: [docs/community/adoption-playbook.md](docs/community/adoption-playbook.md)
+- Architecture popularity playbook: [docs/community/architecture-popularity-playbook.md](docs/community/architecture-popularity-playbook.md)
+- Use case catalog: [docs/community/use-case-catalog.md](docs/community/use-case-catalog.md)
+- Quick evaluation path: [docs/community/quick-evaluation-path.md](docs/community/quick-evaluation-path.md)
+- Architecture comparison guide: [docs/community/architecture-comparison-guide.md](docs/community/architecture-comparison-guide.md)
+- Internal champion kit: [docs/community/internal-champion-kit.md](docs/community/internal-champion-kit.md)
+- Public launch kit: [docs/community/public-launch-kit.md](docs/community/public-launch-kit.md)
+- Adoption funnel: [docs/community/adoption-funnel.md](docs/community/adoption-funnel.md)
+- User community launch plan: [docs/community/user-community-launch-plan.md](docs/community/user-community-launch-plan.md)
+- User onboarding guide: [docs/community/user-onboarding-guide.md](docs/community/user-onboarding-guide.md)
+- Community rituals: [docs/community/community-rituals.md](docs/community/community-rituals.md)
+- User feedback loop: [docs/community/user-feedback-loop.md](docs/community/user-feedback-loop.md)
+- Developer community playbook: [docs/community/developer-community-playbook.md](docs/community/developer-community-playbook.md)
+- Contributor onboarding: [docs/community/contributor-onboarding.md](docs/community/contributor-onboarding.md)
+- Community governance: [docs/community/community-governance.md](docs/community/community-governance.md)
+- Seed discussions: [docs/community/seed-discussions.md](docs/community/seed-discussions.md)
 - Demo pilot playbook: [docs/community/demo-pilot-playbook.md](docs/community/demo-pilot-playbook.md)
 - Integration partner guide: [docs/community/integration-partner-guide.md](docs/community/integration-partner-guide.md)
 - Pilot validation scorecard: [docs/community/validation-scorecard.md](docs/community/validation-scorecard.md)
 - Adopter story template: [docs/community/adopter-story-template.md](docs/community/adopter-story-template.md)
+- Community discussions: `https://github.com/Smartappli/DEALIoT/discussions`
 - Roadmap: [ROADMAP.md](ROADMAP.md)
 - Support policy: [SUPPORT.md](SUPPORT.md)
 - Public references: [ADOPTERS.md](ADOPTERS.md)
@@ -41,6 +73,10 @@ DEALIoT provides six runtime planes:
 The recommended adoption path is: validate the local smoke test, run a 30-day pilot with one data
 source and one value output, then harden the target runtime with the production deployment
 guardrails.
+
+The recommended community path is: ask usage questions in GitHub Discussions, open issues only for
+confirmed bugs or scoped changes, share pilot feedback with the user feedback template, and convert
+repeated questions into documentation or tests.
 
 ## Architecture
 
@@ -255,6 +291,8 @@ References:
 ## Contribution Workflow
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+New contributors should start with the [contributor onboarding guide](docs/community/contributor-onboarding.md). Maintainers use the [developer community playbook](docs/community/developer-community-playbook.md) and [community governance](docs/community/community-governance.md) to keep contribution paths small, reviewable, and aligned with production quality.
 
 1. Create changes with tests.
 2. Run the validation commands above.

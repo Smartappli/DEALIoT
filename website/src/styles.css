@@ -238,9 +238,21 @@ a {
 
 .language-menu {
   position: relative;
+  display: inline-flex;
+  align-items: center;
 }
 
-.language-menu summary,
+.language-menu::after {
+  position: absolute;
+  right: 0.82rem;
+  pointer-events: none;
+  content: "";
+  border-color: var(--acid) transparent transparent;
+  border-style: solid;
+  border-width: 0.36rem 0.3rem 0;
+}
+
+.language-select,
 .star-link,
 .nav-cta {
   display: flex;
@@ -253,57 +265,21 @@ a {
   border-radius: 999px;
 }
 
-.language-menu summary {
+.language-select {
+  width: 9.25rem;
+  padding-right: 2rem;
   color: var(--slate);
   font: 800 0.78rem var(--font-mono);
   cursor: pointer;
+  appearance: none;
   background: rgb(1 150 208 / 7%);
   border: 1px solid rgb(1 150 208 / 14%);
+  outline: none;
 }
 
-.language-menu summary::-webkit-details-marker {
-  display: none;
-}
-
-.language-menu summary::after {
-  margin-left: 0.5rem;
-  content: "";
-  border-color: var(--acid) transparent transparent;
-  border-style: solid;
-  border-width: 0.36rem 0.3rem 0;
-}
-
-.language-panel {
-  position: absolute;
-  top: calc(100% + 0.75rem);
-  bottom: auto;
-  left: 0;
-  z-index: 40;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(8.5rem, 1fr));
-  gap: 0.3rem;
-  width: min(29rem, calc(100vw - 2rem));
-  max-height: min(34rem, 72vh);
-  padding: 0.8rem;
-  overflow: auto;
-  background: rgb(255 255 255 / 96%);
-  border: 1px solid var(--line);
-  border-radius: 24px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
-}
-
-.language-panel a {
-  padding: 0.72rem 0.8rem;
-  color: rgb(36 54 79 / 78%);
-  font-size: 0.88rem;
-  font-weight: 800;
-  border-radius: 15px;
-}
-
-.language-panel a:hover {
-  color: #fff;
-  background: var(--acid);
+.language-select:focus-visible {
+  border-color: var(--acid);
+  box-shadow: 0 0 0 3px rgb(1 150 208 / 18%);
 }
 
 .star-link {
@@ -1083,11 +1059,8 @@ h3 {
     margin-top: 0;
   }
 
-  .language-panel {
-    top: calc(100% + 0.75rem);
-    right: 0;
-    bottom: auto;
-    left: auto;
+  .language-select {
+    width: 8.5rem;
   }
 
   main,
@@ -1156,9 +1129,8 @@ h3 {
     white-space: nowrap;
   }
 
-  .language-panel {
-    grid-template-columns: 1fr;
-    width: min(18rem, calc(100vw - 1rem));
+  .language-select {
+    width: 6.75rem;
   }
 
   .star-link {

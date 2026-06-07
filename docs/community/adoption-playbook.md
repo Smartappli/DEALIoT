@@ -38,6 +38,8 @@ DealData is the governance and value layer for catalogues, controlled sharing, D
 - Versioned wiki source under `docs/wiki/`.
 - Production readiness and audit documents under `docs/architecture/`.
 - GitHub issue forms for bugs, features, demo requests, documentation gaps, and adopter stories.
+- GitHub discussion forms for Q&A, ideas, show-and-tell, and pilot reports.
+- User community launch plan, onboarding guide, rituals, feedback loop, and seed discussions under `docs/community/`.
 - `ADOPTERS.md` with only approved public references.
 
 ## 30-Day Pilot Motion

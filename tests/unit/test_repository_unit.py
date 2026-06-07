@@ -519,13 +519,20 @@ class RepositoryUnitTests(unittest.TestCase):
     def test_public_website_presents_deal_suite(self) -> None:
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
         french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
+        translations = json.loads(
+            (REPO_ROOT / "website" / "src" / "i18n-copy.json").read_text(encoding="utf-8")
+        )
         styles_css = (REPO_ROOT / "website" / "styles.css").read_text(encoding="utf-8")
+        source_styles_css = (REPO_ROOT / "website" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
         app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
         workflow = (REPO_ROOT / ".github" / "workflows" / "website-pages.yml").read_text(
             encoding="utf-8"
         )
+        compact_styles_css = re.sub(r"\s+", "", styles_css)
 
-        for product_name in ("DEALIoT", "DealHost", "DealData"):
+        for product_name in ("DEALIoT", "DEALHost", "DEALData"):
             self.assertIn(product_name, index_html)
             self.assertIn(product_name, french_html)
 
@@ -534,10 +541,15 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('href="https://smartappli.io/fr/"', index_html)
         self.assertIn('href="https://smartappli.io/"', french_html)
         self.assertIn("Operate field data like a production system.", index_html)
-        self.assertIn("Industrialisez vos donn\u00e9es IoT", french_html)
+        self.assertIn(translations["fr"]["h1"], french_html)
         self.assertIn("Star on GitHub", index_html)
-        self.assertIn("language-panel", index_html)
-        self.assertIn("https://github.com/Smartappli/DEALIoT/stargazers", index_html)
+        self.assertIn("language-select", index_html)
+        self.assertIn("data-language-select", index_html)
+        self.assertIn("navigateToSelectedLanguage", app_js)
+        self.assertIn("DOMContentLoaded", app_js)
+        self.assertIn("app.js?v=20260607-language-dropdown-v2", index_html)
+        self.assertIn("styles.css?v=20260607-language-dropdown-v2", index_html)
+        self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
         self.assertIn("mailto:contact@smartappli.com", index_html)
         self.assertIn("actions/upload-pages-artifact@", workflow)
         self.assertIn("actions/deploy-pages@", workflow)
@@ -547,9 +559,9 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('name="twitter:card"', index_html)
         self.assertIn('type="application/ld+json"', index_html)
         self.assertIn("What is DEALIoT?", index_html)
-        self.assertIn("Qu'est-ce que DEALIoT ?", french_html)
-        self.assertIn("@media (max-width: 1120px)", styles_css)
-        self.assertIn("@media (max-width: 720px)", styles_css)
+        self.assertIn(translations["fr"]["q_dealiot"], french_html)
+        self.assertIn("@media(max-width:1120px)", compact_styles_css)
+        self.assertIn("@media(max-width:720px)", compact_styles_css)
         self.assertIn("Bricolage Grotesque", styles_css)
         self.assertIn("Instrument Serif", styles_css)
         self.assertIn("JetBrains Mono", styles_css)
@@ -557,7 +569,7 @@ class RepositoryUnitTests(unittest.TestCase):
         for forbidden_fragment in ("innerHTML", "outerHTML", "document.write", "eval("):
             self.assertNotIn(forbidden_fragment, app_js)
         for forbidden_font in ("Inter", "Roboto", "Arial", "system-ui"):
-            self.assertNotIn(forbidden_font, styles_css)
+            self.assertNotIn(forbidden_font, source_styles_css)
 
     def test_public_website_has_seo_and_geo_assets(self) -> None:
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
@@ -605,7 +617,7 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertEqual("/", manifest["start_url"])
         self.assertEqual("/", manifest["scope"])
         self.assertEqual("en-US", manifest["lang"])
-        self.assertEqual("#050807", manifest["theme_color"])
+        self.assertEqual("#0196d0", manifest["theme_color"])
         self.assertEqual("standalone", manifest["display"])
         self.assertIn("assets/icon-192.png", manifest["icons"][0]["src"])
         self.assertIn("assets/icon-512.png", manifest["icons"][1]["src"])
@@ -625,7 +637,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for expected_type in ("Organization", "WebSite", "SoftwareApplication", "FAQPage"):
             self.assertIn(expected_type, graph_types)
-        for expected_name in ("DEALIoT", "DealHost", "DealData", "DEAL suite"):
+        for expected_name in ("DEALIoT", "DEALHost", "DEALData", "DEAL suite"):
             self.assertIn(expected_name, graph_names)
 
         faq_node = next(node for node in graph if node["@type"] == "FAQPage")
@@ -633,8 +645,8 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for fragment in (
             "What is DEALIoT?",
-            "What is DealHost?",
-            "What is DealData?",
+            "What is DEALHost?",
+            "What is DEALData?",
             "Default language: English US",
             "PWA status: installable",
             "ranking signal",
@@ -646,6 +658,9 @@ class RepositoryUnitTests(unittest.TestCase):
     def test_public_website_supports_all_official_eu_languages(self) -> None:
         languages = json.loads(
             (REPO_ROOT / "website" / "eu-languages.json").read_text(encoding="utf-8")
+        )
+        translations = json.loads(
+            (REPO_ROOT / "website" / "src" / "i18n-copy.json").read_text(encoding="utf-8")
         )
         expected_hreflangs = {
             "en-US",
@@ -675,11 +690,42 @@ class RepositoryUnitTests(unittest.TestCase):
         }
         self.assertEqual(expected_hreflangs, {language["hreflang"] for language in languages})
         self.assertEqual(24, len(languages))
+        self.assertEqual(expected_hreflangs - {"en-US"}, set(translations))
 
         names = {language["hreflang"]: language["name"] for language in languages}
         self.assertEqual("\u010ce\u0161tina", names["cs"])
         self.assertEqual("\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac", names["el"])
         self.assertEqual("Fran\u00e7ais", names["fr"])
+
+        flag_regions = {
+            "en-US": "US",
+            "bg": "BG",
+            "hr": "HR",
+            "cs": "CZ",
+            "da": "DK",
+            "nl": "NL",
+            "et": "EE",
+            "fi": "FI",
+            "fr": "FR",
+            "de": "DE",
+            "el": "GR",
+            "hu": "HU",
+            "ga": "IE",
+            "it": "IT",
+            "lv": "LV",
+            "lt": "LT",
+            "mt": "MT",
+            "pl": "PL",
+            "pt": "PT",
+            "ro": "RO",
+            "sk": "SK",
+            "sl": "SI",
+            "es": "ES",
+            "sv": "SE",
+        }
+
+        def flag_for(region: str) -> str:
+            return "".join(chr(0x1F1E6 + ord(letter) - ord("A")) for letter in region)
 
         for language in languages:
             language_path = language["path"].strip("/")
@@ -690,13 +736,59 @@ class RepositoryUnitTests(unittest.TestCase):
             )
             html = page_path.read_text(encoding="utf-8")
             localized_url = f"https://smartappli.io/{language_path + '/' if language_path else ''}"
+            expected_flag = flag_for(flag_regions[language["hreflang"]])
+            self.assertEqual(expected_flag, language["flag"])
             self.assertIn(f'<html lang="{language["hreflang"]}">', html)
             self.assertIn(f'<link rel="canonical" href="{localized_url}">', html)
             self.assertEqual(25, html.count('rel="alternate"'))
+            self.assertIn("styles.css?v=20260607-language-dropdown-v2", html)
+            self.assertIn("app.js?v=20260607-language-dropdown-v2", html)
             self.assertIn("language-menu", html)
-            self.assertIn("language-panel", html)
-            self.assertIn("Star on GitHub", html)
+            self.assertIn("language-select", html)
+            self.assertIn("data-language-select", html)
+            self.assertNotIn("language-panel", html)
+            self.assertNotIn("<details", html)
+            self.assertIn(
+                f'<option value="{localized_url}" lang="{language["hreflang"]}" selected>'
+                f'{expected_flag} {language["name"]}</option>',
+                html,
+            )
             self.assertNotIn("????", html)
+
+            if language["hreflang"] == "en-US":
+                self.assertIn("Star on GitHub", html)
+                continue
+
+            localized_copy = translations[language["hreflang"]]
+            for key in (
+                "choose_language",
+                "star",
+                "request_demo",
+                "h1",
+                "products_eyebrow",
+                "adoption_path",
+                "q_dealiot",
+                "use_case_catalog",
+                "champion_decision_kit",
+                "open_decision_kit",
+                "llms_context",
+            ):
+                self.assertIn(localized_copy[key], html)
+
+            for english_fragment in (
+                "Star on GitHub",
+                "Request a demo",
+                "Choose language",
+                "One suite, three adoption paths",
+                "A public path to evaluate without friction.",
+                "Short answers for fast evaluation.",
+                "What is DEALIoT?",
+                "Explore the suite",
+                "See the platform",
+                "DEAL ecosystem",
+                "LLMS context",
+            ):
+                self.assertNotIn(english_fragment, html)
 
     def test_public_website_is_installable_pwa(self) -> None:
         app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
@@ -711,6 +803,9 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("navigator.serviceWorker.register", app_js)
         self.assertIn('return "/";', app_js)
         self.assertIn("CACHE_NAME", service_worker)
+        self.assertIn('const CACHE_NAME = "dealiot-pwa-v4"', service_worker)
+        self.assertIn("isMutableAsset", service_worker)
+        self.assertIn('requestUrl.pathname.endsWith("/app.js")', service_worker)
         self.assertIn('"./fr/"', service_worker)
         self.assertIn('"./de/"', service_worker)
         self.assertIn('"./es/"', service_worker)
@@ -724,9 +819,45 @@ class RepositoryUnitTests(unittest.TestCase):
         adoption_playbook = (REPO_ROOT / "docs" / "community" / "adoption-playbook.md").read_text(
             encoding="utf-8"
         )
+        popularity_playbook = (
+            REPO_ROOT / "docs" / "community" / "architecture-popularity-playbook.md"
+        ).read_text(encoding="utf-8")
+        use_case_catalog = (
+            REPO_ROOT / "docs" / "community" / "use-case-catalog.md"
+        ).read_text(encoding="utf-8")
+        quick_evaluation_path = (
+            REPO_ROOT / "docs" / "community" / "quick-evaluation-path.md"
+        ).read_text(encoding="utf-8")
+        comparison_guide = (
+            REPO_ROOT / "docs" / "community" / "architecture-comparison-guide.md"
+        ).read_text(encoding="utf-8")
+        champion_kit = (
+            REPO_ROOT / "docs" / "community" / "internal-champion-kit.md"
+        ).read_text(encoding="utf-8")
+        public_launch_kit = (
+            REPO_ROOT / "docs" / "community" / "public-launch-kit.md"
+        ).read_text(encoding="utf-8")
+        adoption_funnel = (
+            REPO_ROOT / "docs" / "community" / "adoption-funnel.md"
+        ).read_text(encoding="utf-8")
         demo_playbook = (REPO_ROOT / "docs" / "community" / "demo-pilot-playbook.md").read_text(
             encoding="utf-8"
         )
+        community_launch_plan = (
+            REPO_ROOT / "docs" / "community" / "user-community-launch-plan.md"
+        ).read_text(encoding="utf-8")
+        user_onboarding_guide = (
+            REPO_ROOT / "docs" / "community" / "user-onboarding-guide.md"
+        ).read_text(encoding="utf-8")
+        community_rituals = (
+            REPO_ROOT / "docs" / "community" / "community-rituals.md"
+        ).read_text(encoding="utf-8")
+        user_feedback_loop = (
+            REPO_ROOT / "docs" / "community" / "user-feedback-loop.md"
+        ).read_text(encoding="utf-8")
+        seed_discussions = (
+            REPO_ROOT / "docs" / "community" / "seed-discussions.md"
+        ).read_text(encoding="utf-8")
         partner_guide = (
             REPO_ROOT / "docs" / "community" / "integration-partner-guide.md"
         ).read_text(encoding="utf-8")
@@ -738,10 +869,16 @@ class RepositoryUnitTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         website = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        llms_txt = (REPO_ROOT / "website" / "llms.txt").read_text(encoding="utf-8")
         issue_templates = "\n".join(
             path.read_text(encoding="utf-8")
             for path in (REPO_ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml")
         )
+        discussion_templates = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in (REPO_ROOT / ".github" / "DISCUSSION_TEMPLATE").glob("*.yml")
+        )
+        labels = (REPO_ROOT / ".github" / "labels.yml").read_text(encoding="utf-8")
         pull_request_template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(
             encoding="utf-8"
         )
@@ -754,8 +891,49 @@ class RepositoryUnitTests(unittest.TestCase):
         ):
             self.assertIn(fragment, adoption_playbook)
 
+        for fragment in ("Adoption Thesis", "Adoption Flywheel", "Distribution Plan", "Launch Metrics"):
+            self.assertIn(fragment, popularity_playbook)
+
+        for fragment in ("Use Cases", "Priority Matrix", "Public Proof Assets"):
+            self.assertIn(fragment, use_case_catalog)
+
+        for fragment in ("10-Minute Fit Check", "60-Minute Technical Check", "30-Day Decision"):
+            self.assertIn(fragment, quick_evaluation_path)
+
+        for fragment in ("Comparison Matrix", "Anti-Fit Signals", "Adoption Recommendation"):
+            self.assertIn(fragment, comparison_guide)
+
+        for fragment in ("5-Minute Sponsor Brief", "Stakeholder Map", "Objection Handling"):
+            self.assertIn(fragment, champion_kit)
+
+        for fragment in ("Launch Post", "Partner Outreach Email", "Conference Or Meetup Abstract"):
+            self.assertIn(fragment, public_launch_kit)
+
+        for fragment in ("Funnel Stages", "Conversion Assets", "Minimum Viable Popularity"):
+            self.assertIn(fragment, adoption_funnel)
+
         for fragment in ("Pilot Scorecard", "Local Demo Script", "Post-Pilot Decision"):
             self.assertIn(fragment, demo_playbook)
+
+        for fragment in (
+            "Community Promise",
+            "30-Day Launch Motion",
+            "Launch Checklist",
+            "GitHub Discussions",
+        ):
+            self.assertIn(fragment, community_launch_plan)
+
+        for fragment in ("First 60 Minutes", "Community Entry Points", "Good Question Template"):
+            self.assertIn(fragment, user_onboarding_guide)
+
+        for fragment in ("Weekly Triage", "Office Hours Agenda", "Discussion Moderation Rules"):
+            self.assertIn(fragment, community_rituals)
+
+        for fragment in ("Triage Flow", "Prioritization Score", "Feedback Closure"):
+            self.assertIn(fragment, user_feedback_loop)
+
+        for fragment in ("Q&A Seed", "Ideas Seed", "Show And Tell Seed", "Pilot Report Seed"):
+            self.assertIn(fragment, seed_discussions)
 
         for fragment in ("Partner Tracks", "Integration Contract", "Partner Readiness Checklist"):
             self.assertIn(fragment, partner_guide)
@@ -770,13 +948,51 @@ class RepositoryUnitTests(unittest.TestCase):
         for fragment in ("Publication limits", "Outcome", "Remaining gaps"):
             self.assertIn(fragment, adopter_story_template)
 
-        for fragment in ("Demo or pilot request", "Adopter story", "Documentation gap"):
+        for fragment in (
+            "Demo or pilot request",
+            "Adopter story",
+            "Documentation gap",
+            "User feedback",
+            "Use case proposal",
+        ):
             self.assertIn(fragment, issue_templates)
 
+        for fragment in (
+            "Use this for usage questions",
+            "Use this for early feature",
+            "Use this for approved demos",
+            "Use this to share a sanitized 30-day pilot result",
+        ):
+            self.assertIn(fragment, discussion_templates)
+
+        for fragment in ("user-feedback", "show-and-tell", "pilot", "integration", "use-case"):
+            self.assertIn(fragment, labels)
+
         self.assertIn("Operational Impact", pull_request_template)
+        self.assertIn("Why Teams Adopt DEALIoT", readme)
+        self.assertIn("Fast Adoption Path", readme)
+        self.assertIn("Architecture popularity playbook", readme)
+        self.assertIn("Use case catalog", readme)
+        self.assertIn("Quick evaluation path", readme)
+        self.assertIn("Architecture comparison guide", readme)
+        self.assertIn("Internal champion kit", readme)
+        self.assertIn("Public launch kit", readme)
+        self.assertIn("Adoption funnel", readme)
+        self.assertIn("User community launch plan", readme)
+        self.assertIn("Community discussions", readme)
         self.assertIn("Public website", readme)
         self.assertIn("Adoption path", website)
+        self.assertIn("docs/community/user-community-launch-plan.md", website)
         self.assertIn("docs/community/demo-pilot-playbook.md", website)
+        self.assertIn("docs/community/use-case-catalog.md", website)
+        self.assertIn("docs/community/internal-champion-kit.md", website)
+        self.assertIn("architecture-popularity-playbook.md", llms_txt)
+        self.assertIn("use-case-catalog.md", llms_txt)
+        self.assertIn("quick-evaluation-path.md", llms_txt)
+        self.assertIn("architecture-comparison-guide.md", llms_txt)
+        self.assertIn("internal-champion-kit.md", llms_txt)
+        self.assertIn("public-launch-kit.md", llms_txt)
+        self.assertIn("adoption-funnel.md", llms_txt)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:
         app_py = (REPO_ROOT / "management-console" / "management_console" / "app.py").read_text(

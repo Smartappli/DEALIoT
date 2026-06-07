@@ -5,9 +5,9 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="description"
-          content="A DEAL egyesíti a DEALIoT, DEALHost és DEALData megoldásokat IoT telemetriához, üzemeltetett infrastruktúrához és irányított adatmegosztáshoz.">
+          content="A DEAL bemutatja a DEALIoT, DEALHost és DEALData kifejezéseket: termelésre kész IoT-adatplatformot, felügyelt tárhely-útvonalat és adatirányítási réteget a méretezhető terepi adat-ökoszisztémákhoz.">
     <meta name="keywords"
-          content="DEALIoT, DEALHost, DEALData, IoT data platform, Kafka, Flink, Kubernetes, data governance, managed hosting">
+          content="DEALIoT, DEALHost, DEALData, IoT adatplatform, Kafka, Flink, Kubernetes, adatkezelés, menedzselt hosting">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="author" content="Smartappli">
     <meta name="application-name" content="DEAL suite">
@@ -46,12 +46,12 @@
     <link rel="alternate" hreflang="sv" href="https://smartappli.io/sv/">
     <link rel="alternate" hreflang="x-default" href="https://smartappli.io/">
     <meta property="og:type" content="website">
-    <meta property="og:locale" content="en_US">
-    <meta property="og:locale:alternate" content="fr_FR">
+    <meta property="og:locale" content="hu_HU">
+    <meta property="og:locale:alternate" content="en_US">
     <meta property="og:site_name" content="DEAL suite">
     <meta property="og:title" content="DEAL | DEALIoT, DEALHost, DEALData">
     <meta property="og:description"
-          content="A professional IoT data suite for real-time ingestion, operated infrastructure and governed data sharing.">
+          content="Professzionális IoT-adatcsomag valós idejű adatfeldolgozáshoz, működtetett infrastruktúrához és szabályozott adatmegosztáshoz.">
     <meta property="og:url" content="https://smartappli.io/hu/">
     <meta property="og:image"
           content="https://smartappli.io/assets/social-card.png">
@@ -59,14 +59,14 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt"
-          content="DEALIoT, DEALHost and DEALData for scalable IoT data ecosystems.">
+          content="DEALIoT, DEALHost és DEALData méretezhető IoT-adat-ökoszisztémákhoz.">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="DEAL | DEALIoT, DEALHost, DEALData">
     <meta name="twitter:description"
-          content="Real-time IoT ingestion, operated hosting and governed data products with compliance evidence.">
+          content="Valós idejű IoT feldolgozás, üzemeltetett tárhely és szabályozott adattermékek megfelelőségi bizonyítékokkal.">
     <meta name="twitter:image"
           content="https://smartappli.io/assets/social-card.png">
-    <meta name="twitter:image:alt" content="DEAL suite public website preview.">
+    <meta name="twitter:image:alt" content="DEAL csomag nyilvános webhely előnézete.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap"
@@ -75,7 +75,7 @@
     <link rel="apple-touch-icon" href="../assets/icon-192.png">
     <link rel="manifest" href="../site.webmanifest">
     <link rel="author" href="../humans.txt">
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../styles.css?v=20260607-language-dropdown-v2">
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -90,8 +90,8 @@
             }, {
                 "@id": "https://smartappli.io/#website",
                 "@type": "WebSite",
-                "description": "Public website for the DEAL suite: DEALIoT, DEALHost and DEALData.",
-                "inLanguage": "en-US",
+                "description": "Nyilvános webhely a DEAL csomaghoz: DEALIoT, DEALHost és DEALData.",
+                "inLanguage": "hu",
                 "name": "DEAL suite",
                 "publisher": {
                     "@id": "https://smartappli.io/#organization"
@@ -100,9 +100,9 @@
             }, {
                 "@id": "https://smartappli.io/#dealiot",
                 "@type": "SoftwareApplication",
-                "applicationCategory": "IoT data platform",
+                "applicationCategory": "IoT adatplatform",
                 "codeRepository": "https://github.com/Smartappli/DEALIoT",
-                "description": "DEALIoT ingests IoT telemetry and media metadata through MQTT, Kafka, Apicurio, Flink, Beam, Airflow, Prometheus and Grafana.",
+                "description": "A DEALIoT feldolgozza az IoT telemetriai és média metaadatokat a MQTT, Kafka, Apicurio, Flink, Beam, Airflow, __TERM1_1 és ___TER szerint.",
                 "isPartOf": {
                     "@id": "https://smartappli.io/#suite"
                 },
@@ -113,7 +113,7 @@
             }, {
                 "@id": "https://smartappli.io/#dealhost",
                 "@type": "Service",
-                "description": "DEALHost is the operated hosting path for DEAL workloads on hardened cloud, hybrid or on-prem infrastructure.",
+                "description": "A DEALHost a DEAL munkaterhelések működtetett tárhelye a megerősített felhő, hibrid vagy helyszíni infrastruktúrán.",
                 "isPartOf": {
                     "@id": "https://smartappli.io/#suite"
                 },
@@ -121,12 +121,12 @@
                 "provider": {
                     "@id": "https://smartappli.io/#organization"
                 },
-                "serviceType": "Managed data platform hosting",
+                "serviceType": "Felügyelt adatplatform hosting",
                 "url": "https://smartappli.io/#products"
             }, {
                 "@id": "https://smartappli.io/#dealdata",
                 "@type": "Service",
-                "description": "DEALData structures catalogues, controlled sharing, exports, Data Act evidence, DGA workflows, FAIR publication, Zenodo and OpenAIRE.",
+                "description": "A DEALData katalógusokat strukturál, ellenőrzött megosztást, exportálást, Data Act bizonyítékokat, DGA munkafolyamatokat, FAIR kiadványt, Zenodo és OpenAIRE.",
                 "isPartOf": {
                     "@id": "https://smartappli.io/#suite"
                 },
@@ -134,7 +134,7 @@
                 "provider": {
                     "@id": "https://smartappli.io/#organization"
                 },
-                "serviceType": "Data governance and sharing",
+                "serviceType": "Adatkezelés és -megosztás",
                 "url": "https://smartappli.io/#products"
             }, {
                 "@id": "https://smartappli.io/#suite",
@@ -142,129 +142,128 @@
                 "brand": {
                     "@id": "https://smartappli.io/#organization"
                 },
-                "category": "IoT data platform",
-                "description": "DEAL suite combines IoT ingestion, operated hosting and governed data products.",
+                "category": "IoT adatplatform",
+                "description": "A DEAL csomag egyesíti az IoT-feldolgozást, a működtetett tárhelyszolgáltatást és a szabályozott adattermékeket.",
                 "name": "DEAL suite",
                 "url": "https://smartappli.io/"
             }, {
                 "@id": "https://smartappli.io/#faq",
-                "@type": "FAQPage",
+                "@type": "GYIKPage",
                 "mainEntity": [{
                     "@type": "Question",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "DEALIoT is a production-oriented IoT data platform for MQTT ingestion, Kafka transport, schema governance, stream processing and operational evidence."
+                        "text": "DEALIoT is a production-oriented IoT adatplatform for MQTT ingestion, Kafka transport, schema governance, stream processing and operational evidence."
                     },
-                    "name": "What is DEALIoT?"
+                    "name": "Mi az a DEALIoT?"
                 }, {
                     "@type": "Question",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "DEALHost is the hosting and operations path for running DEAL workloads on Kubernetes, cloud, hybrid or on-prem infrastructure."
+                        "text": "A DEALHost a DEAL munkaterhelések Kubernetes, felhő, hibrid vagy on-prem infrastruktúrán történő futtatásához szükséges tárhely és műveleti útvonal."
                     },
-                    "name": "What is DEALHost?"
+                    "name": "Mi az a DEALHost?"
                 }, {
                     "@type": "Question",
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text": "DEALData is the governance layer for catalogues, controlled sharing, exports and Data Act, DGA and FAIR evidence."
+                        "text": "A DEALData a katalógusok, a szabályozott megosztás, az exportálás és a Data Act, DGA és FAIR bizonyítékok irányítási rétege."
                     },
-                    "name": "What is DEALData?"
+                    "name": "Mi az a DEALData?"
                 }]
             }]
         }
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Ugrás a tartalomra</a>
+    <a class="skip-link" href="#main">Ugrás a tartalomhoz</a>
     <header class="site-header" data-header>
-      <a class="brand" href="#top" aria-label="DEAL home">
+      <a class="brand" href="#top" aria-label="DEAL otthon">
         <span class="brand-mark" aria-hidden="true">D</span>
         <span>
           <strong>DEAL</strong>
-          <small>Data ecosystems that scale</small>
+          <small>Méretező adatökoszisztémák</small>
         </span>
       </a>
-      <nav class="site-nav" aria-label="Primary navigation">
-        <a href="#products">Products</a>
+      <nav class="site-nav" aria-label="Elsődleges navigáció">
+        <a href="#products">Termékek</a>
         <a href="#architecture">Platform</a>
-        <a href="#proof">Proof</a>
-        <a href="#adoption">Adoption</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
+        <a href="#proof">Bizonyítás</a>
+        <a href="#adoption">Bevezetés</a>
+        <a href="#faq">GYIK</a>
+        <a href="#contact">Kapcsolatfelvétel</a>
       </nav>
       <div class="header-actions">
-        <details class="language-menu">
-          <summary>HU</summary>
-          <div class="language-panel" aria-label="Available languages">
-            <a href="https://smartappli.io/" hreflang="en-US" lang="en-US">English</a>
-            <a href="https://smartappli.io/bg/" hreflang="bg" lang="bg">Български</a>
-            <a href="https://smartappli.io/hr/" hreflang="hr" lang="hr">Hrvatski</a>
-            <a href="https://smartappli.io/cs/" hreflang="cs" lang="cs">Čeština</a>
-            <a href="https://smartappli.io/da/" hreflang="da" lang="da">Dansk</a>
-            <a href="https://smartappli.io/nl/" hreflang="nl" lang="nl">Nederlands</a>
-            <a href="https://smartappli.io/et/" hreflang="et" lang="et">Eesti</a>
-            <a href="https://smartappli.io/fi/" hreflang="fi" lang="fi">Suomi</a>
-            <a href="https://smartappli.io/fr/" hreflang="fr" lang="fr">Français</a>
-            <a href="https://smartappli.io/de/" hreflang="de" lang="de">Deutsch</a>
-            <a href="https://smartappli.io/el/" hreflang="el" lang="el">Ελληνικά</a>
-            <a href="https://smartappli.io/hu/" hreflang="hu" lang="hu">Magyar</a>
-            <a href="https://smartappli.io/ga/" hreflang="ga" lang="ga">Gaeilge</a>
-            <a href="https://smartappli.io/it/" hreflang="it" lang="it">Italiano</a>
-            <a href="https://smartappli.io/lv/" hreflang="lv" lang="lv">Latviešu</a>
-            <a href="https://smartappli.io/lt/" hreflang="lt" lang="lt">Lietuvių</a>
-            <a href="https://smartappli.io/mt/" hreflang="mt" lang="mt">Malti</a>
-            <a href="https://smartappli.io/pl/" hreflang="pl" lang="pl">Polski</a>
-            <a href="https://smartappli.io/pt/" hreflang="pt" lang="pt">Português</a>
-            <a href="https://smartappli.io/ro/" hreflang="ro" lang="ro">Română</a>
-            <a href="https://smartappli.io/sk/" hreflang="sk" lang="sk">Slovenčina</a>
-            <a href="https://smartappli.io/sl/" hreflang="sl" lang="sl">Slovenščina</a>
-            <a href="https://smartappli.io/es/" hreflang="es" lang="es">Español</a>
-            <a href="https://smartappli.io/sv/" hreflang="sv" lang="sv">Svenska</a>
-          </div>
-        </details>
+        <div class="language-menu">
+          <select class="language-select" data-language-select aria-label="Válasszon nyelvet">
+            <option value="https://smartappli.io/" lang="en-US">🇺🇸 English</option>
+            <option value="https://smartappli.io/bg/" lang="bg">🇧🇬 Български</option>
+            <option value="https://smartappli.io/hr/" lang="hr">🇭🇷 Hrvatski</option>
+            <option value="https://smartappli.io/cs/" lang="cs">🇨🇿 Čeština</option>
+            <option value="https://smartappli.io/da/" lang="da">🇩🇰 Dansk</option>
+            <option value="https://smartappli.io/nl/" lang="nl">🇳🇱 Nederlands</option>
+            <option value="https://smartappli.io/et/" lang="et">🇪🇪 Eesti</option>
+            <option value="https://smartappli.io/fi/" lang="fi">🇫🇮 Suomi</option>
+            <option value="https://smartappli.io/fr/" lang="fr">🇫🇷 Français</option>
+            <option value="https://smartappli.io/de/" lang="de">🇩🇪 Deutsch</option>
+            <option value="https://smartappli.io/el/" lang="el">🇬🇷 Ελληνικά</option>
+            <option value="https://smartappli.io/hu/" lang="hu" selected>🇭🇺 Magyar</option>
+            <option value="https://smartappli.io/ga/" lang="ga">🇮🇪 Gaeilge</option>
+            <option value="https://smartappli.io/it/" lang="it">🇮🇹 Italiano</option>
+            <option value="https://smartappli.io/lv/" lang="lv">🇱🇻 Latviešu</option>
+            <option value="https://smartappli.io/lt/" lang="lt">🇱🇹 Lietuvių</option>
+            <option value="https://smartappli.io/mt/" lang="mt">🇲🇹 Malti</option>
+            <option value="https://smartappli.io/pl/" lang="pl">🇵🇱 Polski</option>
+            <option value="https://smartappli.io/pt/" lang="pt">🇵🇹 Português</option>
+            <option value="https://smartappli.io/ro/" lang="ro">🇷🇴 Română</option>
+            <option value="https://smartappli.io/sk/" lang="sk">🇸🇰 Slovenčina</option>
+            <option value="https://smartappli.io/sl/" lang="sl">🇸🇮 Slovenščina</option>
+            <option value="https://smartappli.io/es/" lang="es">🇪🇸 Español</option>
+            <option value="https://smartappli.io/sv/" lang="sv">🇸🇪 Svenska</option>
+          </select>
+        </div>
         <a class="star-link"
-           href="https://github.com/Smartappli/DEALIoT/stargazers">Star on GitHub</a>
-        <a class="nav-cta" href="#contact">Request a demo</a>
+           href="https://github.com/Smartappli/DEALIoT">Csillag a GitHub</a>
+        <a class="nav-cta" href="#contact">Kérjen bemutatót</a>
       </div>
     </header>
     <main id="main">
       <section id="top" class="hero section-shell">
         <div class="hero-copy reveal">
           <p class="eyebrow">DEALIoT + DEALHost + DEALData</p>
-          <h1>Üzemeltesse a terepi adatokat úgy, mint egy éles rendszert.</h1>
+          <h1>A terepi adatokat termelési rendszerként kezelje.</h1>
           <p class="hero-lede">
-            A DEAL egyesíti a DEALIoT, DEALHost és DEALData megoldásokat IoT telemetriához, üzemeltetett infrastruktúrához és irányított adatmegosztáshoz.
+            A DEAL egyesíti a DEALIoT, DEALHost és DEALData kifejezéseket az IoT-telemetria, az üzemeltetett infrastruktúra és a szabályozott adatmegosztás területén.
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="#products">Explore the suite</a>
-            <a class="button secondary" href="#architecture">See the platform</a>
+            <a class="button primary" href="#products">Fedezze fel a csomagot</a>
+            <a class="button secondary" href="#architecture">Lásd a platformot</a>
           </div>
-          <dl class="hero-metrics" aria-label="Platform promises">
+          <dl class="hero-metrics" aria-label="Platform ígéretek">
             <div>
               <dt>3</dt>
               <dd>
-                coordinated products
+                összehangolt termékek
               </dd>
             </div>
             <div>
               <dt>24/7</dt>
               <dd>
-                operations view
+                műveletek nézete
               </dd>
             </div>
             <div>
               <dt>EU</dt>
               <dd>
-                compliance evidence
+                megfelelőségi bizonyíték
               </dd>
             </div>
           </dl>
         </div>
-        <div class="hero-orbit reveal" aria-label="DEAL suite overview">
+        <div class="hero-orbit reveal" aria-label="DEAL csomag áttekintése">
           <div class="orbit-card core-card">
             <span>DEAL</span>
-            <strong>Operate data with trust</strong>
+            <strong>Bizalommal kezelje az adatokat</strong>
           </div>
           <div class="orbit-node node-iot">DEALIoT</div>
           <div class="orbit-node node-host">DEALHost</div>
@@ -276,10 +275,10 @@
       </section>
       <section id="products" class="products section-shell">
         <div class="section-heading reveal">
-          <p class="eyebrow">One suite, three adoption paths</p>
-          <h2>Build, host and govern.</h2>
+          <p class="eyebrow">Egy csomag, három bevezetési út</p>
+          <h2>Építs, fogadj és irányíts.</h2>
           <p>
-            Each product can be adopted independently. Together, they cover the full cycle from field ingestion to operated infrastructure, governance and controlled data sharing.
+            Minden termék önállóan alkalmazható. Együtt lefedik a teljes ciklust a helyszíni feldolgozástól a működtetett infrastruktúráig, az irányításig és az ellenőrzött adatmegosztásig.
           </p>
         </div>
         <div class="product-grid">
@@ -287,195 +286,211 @@
             <span class="product-index">01</span>
             <h3>DEALIoT</h3>
             <p>
-              Real-time IoT platform for sensors, media metadata and industrial streams. MQTT, Kafka, Flink, Airflow and Kubernetes are assembled to move from prototype to scalable operations.
+              Valós idejű IoT platform érzékelőkhöz, média metaadatokhoz és ipari adatfolyamokhoz. A MQTT, Kafka, Flink, Airflow és Kubernetes úgy vannak összeállítva, hogy a prototípusról a méretezhető műveletekre lépjenek.
             </p>
             <ul>
-              <li>MQTT to Kafka ingestion</li>
-              <li>Stream processing and backfill</li>
-              <li>Integrated observability and DLQ</li>
+              <li>MQTT - Kafka feldolgozás</li>
+              <li>Streamfeldolgozás és háttérkitöltés</li>
+              <li>Integrált megfigyelhetőség és DLQ</li>
             </ul>
           </article>
           <article class="product-card card-host reveal">
             <span class="product-index">02</span>
             <h3>DEALHost</h3>
             <p>
-              Operated hosting for critical data workloads: Kubernetes, object storage, monitoring, backups, hardening and continuous operations.
+              Üzemelt hosting kritikus adatterhelésekhez: Kubernetes, objektumtárolás, figyelés, biztonsági mentések, keményítés és folyamatos műveletek.
             </p>
             <ul>
-              <li>Secured application clusters</li>
-              <li>Runbooks, alerts and backups</li>
-              <li>Cloud, hybrid or on-prem paths</li>
+              <li>Biztonságos alkalmazásfürtök</li>
+              <li>Runbookok, riasztások és biztonsági mentések</li>
+              <li>Felhő, hibrid vagy on-prem útvonalak</li>
             </ul>
           </article>
           <article class="product-card card-data reveal">
             <span class="product-index">03</span>
             <h3>DEALData</h3>
             <p>
-              Governance and value layer: catalogues, evidence topics, controlled exports, Data Act, DGA, FAIR, Zenodo and OpenAIRE.
+              Irányítási és értékréteg: katalógusok, bizonyítékok, ellenőrzött exportok, Data Act, DGA, FAIR, Zenodo és OpenAIRE.
             </p>
             <ul>
-              <li>Catalogues and data products</li>
-              <li>Controlled sharing and traceability</li>
-              <li>Usable compliance evidence</li>
+              <li>Katalógusok és adattermékek</li>
+              <li>Ellenőrzött megosztás és nyomon követhetőség</li>
+              <li>Használható megfelelőségi bizonyíték</li>
             </ul>
           </article>
         </div>
       </section>
       <section id="architecture" class="architecture section-shell">
         <div class="section-heading reveal">
-          <p class="eyebrow">Target platform</p>
-          <h2>An open foundation that avoids vendor lock-in.</h2>
+          <p class="eyebrow">Cél platform</p>
+          <h2>Nyílt alap, amely elkerüli az eladók bezárását.</h2>
         </div>
         <div class="architecture-board reveal">
           <div class="flow-column">
             <span>01</span>
-            <strong>Capture</strong>
-            <p>Connected devices, WildFi, MQTT gateways and media producers.</p>
+            <strong>Rögzítés</strong>
+            <p>Csatlakoztatott eszközök, WildFi, MQTT átjárók és médiakészítők.</p>
           </div>
           <div class="flow-column">
             <span>02</span>
-            <strong>Transport</strong>
-            <p>Kafka, schema registry, business topics, DLQ and event contracts.</p>
+            <strong>Közlekedés</strong>
+            <p>Kafka, séma-nyilvántartás, üzleti témák, DLQ és eseményszerződések.</p>
           </div>
           <div class="flow-column">
             <span>03</span>
-            <strong>Operate</strong>
-            <p>Kubernetes, DEALHost, observability, security and SLOs.</p>
+            <strong>Működtessen</strong>
+            <p>Kubernetes, DEALHost, megfigyelhetőség, biztonság és SLOs.</p>
           </div>
           <div class="flow-column">
             <span>04</span>
-            <strong>Value</strong>
-            <p>DEALData, catalogues, exports, compliance evidence and controlled sharing.</p>
+            <strong>Érték</strong>
+            <p>DEALData, katalógusok, exportok, megfelelőségi bizonyítékok és ellenőrzött megosztás.</p>
           </div>
         </div>
       </section>
       <section id="proof" class="proof section-shell">
         <div class="proof-panel reveal">
-          <p class="eyebrow">Why adopt</p>
-          <h2>The difference: an auditable architecture before production.</h2>
+          <p class="eyebrow">Miért érdemes bevezetni</p>
+          <h2>A különbség: auditálható architektúra a gyártás előtt.</h2>
           <p>
-            The DEAL suite does not only sell a diagram. It provides manifests, tests, workflows, runbooks, security evidence and documentation that reduce adoption risk.
+            A DEAL csomag nem csak diagramokat árul. Manifesteket, teszteket, munkafolyamatokat, runbookokat, biztonsági bizonyítékokat és dokumentációt biztosít, amelyek csökkentik az elfogadás kockázatát.
           </p>
         </div>
         <div class="proof-list reveal">
           <article>
-            <span>Tests</span>
-            <strong>CI/CD guardrails</strong>
-            <p>Unit, integration, deployment, Kustomize, Swarm and supply-chain validation.</p>
+            <span>Tesztek</span>
+            <strong>CI/CD védőkorlátok</strong>
+            <p>Egység, integráció, üzembe helyezés, Kustomize, Swarm és ellátási lánc érvényesítése.</p>
           </article>
           <article>
-            <span>Scalability</span>
-            <strong>Horizontal by design</strong>
-            <p>Shared MQTT subscriptions, Kafka partitions, Flink task managers, HPA and PDB.</p>
+            <span>Méretezhetőség</span>
+            <strong>Tervezés szerint vízszintes</strong>
+            <p>Megosztott MQTT előfizetések, Kafka partíciók, Flink feladatkezelők, HPA és PDB.</p>
           </article>
           <article>
-            <span>Trust</span>
+            <span>Bizalom</span>
             <strong>Compliance evidence</strong>
-            <p>Dedicated topics for governance, security, resilience and European obligations.</p>
+            <p>Dedikált témák a kormányzásról, a biztonságról, az ellenálló képességről és az európai kötelezettségekről.</p>
           </article>
         </div>
       </section>
       <section id="adoption" class="adoption section-shell">
         <div class="section-heading reveal">
-          <p class="eyebrow">Adoption path</p>
-          <h2>A public path to evaluate without friction.</h2>
+          <p class="eyebrow">Bevezetési út</p>
+          <h2>Nyilvános út a súrlódások nélküli értékeléshez.</h2>
           <p>
-            The DEAL suite exposes a clear path: test locally, scope a 30-day pilot, document integrations and contribute without breaking production guardrails.
+            A DEAL csomag világos utat kínál: tesztelje helyileg, terjedjen ki egy 30 napos próbaverzióra, dokumentálja az integrációkat, és járuljon hozzá a gyártási védőkorlátok megtörése nélkül.
           </p>
         </div>
         <div class="adoption-grid">
           <article class="adoption-card reveal">
-            <span>Evaluate</span>
-            <h3>Reproducible demo</h3>
+            <span>Értékelje</span>
+            <h3>Reprodukálható demó</h3>
             <p>
-              Run the smoke test, choose one field stream, measure the first usable event and capture decision evidence.
+              Futtassa le a füsttesztet, válasszon egy terepi patakot, mérje meg az első használható eseményt, és rögzítse a döntés bizonyítékait.
             </p>
-            <a href="https://github.com/Smartappli/DEALIoT/blob/main/docs/community/demo-pilot-playbook.md">Read the pilot playbook</a>
+            <a href="https://github.com/Smartappli/DEALIoT/blob/main/docs/community/demo-pilot-playbook.md">Olvassa el a kísérleti útmutatót</a>
           </article>
           <article class="adoption-card reveal">
-            <span>Contribute</span>
-            <h3>Structured community</h3>
+            <span>Hozzájárulni</span>
+            <h3>Strukturált közösség</h3>
             <p>
-              Specialized issues, pull request template, support, security and roadmap make contributions readable and maintainable.
+              A megbeszélések, a visszajelzési űrlapok, a támogatási szabályok, a közösségi rituálék és az ütemterv szerinti osztályozás olvashatóvá és karbantarthatóvá teszik a felhasználók elfogadását.
             </p>
-            <a href="https://github.com/Smartappli/DEALIoT/blob/main/CONTRIBUTING.md">Contribution guide</a>
+            <a href="https://github.com/Smartappli/DEALIoT/blob/main/docs/community/user-community-launch-plan.md">közösségi terv</a>
           </article>
           <article class="adoption-card reveal">
-            <span>Integrate</span>
-            <h3>Partners and use cases</h3>
+            <span>Integrálni</span>
+            <h3>Partnerek és használati esetek</h3>
             <p>
-              Device adapters, DEALHost hosting, DEALData exports and compliance workflows follow an explicit integration contract.
+              A konkrét állattenyésztési, kutatási, mezőgazdasági, ipari, publikációs és partnerforgatókönyvek megkönnyítik az illeszkedés érvényesítését.
             </p>
-            <a href="https://github.com/Smartappli/DEALIoT/blob/main/docs/community/integration-partner-guide.md">Partner guide</a>
+            <a href="https://github.com/Smartappli/DEALIoT/blob/main/docs/community/use-case-catalog.md">Használati esetek katalógusa</a>
+          </article>
+          <article class="adoption-card reveal">
+            <span>Döntse el</span>
+            <h3>Bajnok döntési készlet</h3>
+            <p>
+              Az összehasonlítás, a gyors értékelés és a belső bajnoki anyagok segítenek a csapatoknak abban, hogy az érdeklődést mérsékelt elfogadási döntéssé alakítsák.
+            </p>
+            <a href="https://github.com/Smartappli/DEALIoT/blob/main/docs/community/internal-champion-kit.md">Nyissa meg a döntési csomagot</a>
+          </article>
+          <article class="adoption-card reveal">
+            <span>Fejlesztés</span>
+            <h3>Közreműködői közösség</h3>
+            <p>
+              Hozzájárulási útvonalak, mentorálási címkék, irányítási szabályok és segítségkérő beszélgetések könnyítik meg a fejlesztés támogatását.
+            </p>
+            <a href="https://github.com/Smartappli/DEALIoT/blob/main/docs/community/contributor-onboarding.md">Kezdj el hozzájárulni</a>
           </article>
         </div>
       </section>
       <section id="faq" class="faq section-shell">
         <div class="section-heading reveal">
-          <p class="eyebrow">Direct answers</p>
-          <h2>Short answers for fast evaluation.</h2>
+          <p class="eyebrow">Közvetlen válaszok</p>
+          <h2>Rövid válaszok a gyors értékelésért.</h2>
           <p>
-            This section gives decision-makers, integrators and answer engines the canonical definitions of DEALIoT, DEALHost and DEALData.
+            Ez a szakasz megadja a döntéshozóknak, az integrátoroknak és a válaszmotoroknak a DEALIoT, DEALHost és DEALData kanonikus definícióit.
           </p>
         </div>
         <div class="faq-grid">
           <article class="faq-item reveal">
-            <h3>What is DEALIoT?</h3>
+            <h3>Mi az a DEALIoT?</h3>
             <p>
-              DEALIoT is a production-oriented IoT data platform for MQTT ingestion, Kafka transport, schema governance, stream processing, backfill and operational evidence.
+              A DEALIoT egy termelés-orientált IoT-adatplatform a MQTT feldolgozáshoz, Kafka szállításhoz, sémairányításhoz, adatfolyam-feldolgozáshoz, háttérkitöltéshez és működési bizonyítékokhoz.
             </p>
           </article>
           <article class="faq-item reveal">
-            <h3>What is DEALHost?</h3>
+            <h3>Mi az a DEALHost?</h3>
             <p>
-              DEALHost operates the DEAL suite on hardened infrastructure: Kubernetes, monitoring, backups, runbooks, security and support boundaries.
+              A DEALHost a DEAL csomagot keményített infrastruktúrán működteti: Kubernetes, figyelés, biztonsági mentések, runbookok, biztonsági és támogatási határok.
             </p>
           </article>
           <article class="faq-item reveal">
-            <h3>What is DEALData?</h3>
+            <h3>Mi az a DEALData?</h3>
             <p>
-              DEALData structures catalogues, data products, controlled sharing, FAIR exports, Zenodo, OpenAIRE and Data Act or Data Governance Act evidence.
+              DEALData strukturálja a katalógusokat, adattermékeket, ellenőrzött megosztást, FAIR exportot, Zenodo, OpenAIRE és Data Act vagy Data Governance Act bizonyítékot.
             </p>
           </article>
           <article class="faq-item reveal">
-            <h3>How do I start an evaluation?</h3>
+            <h3>Hogyan kezdjem el az értékelést?</h3>
             <p>
-              The recommended path is to run the local smoke test, choose one representative field stream, scope a 30-day pilot and score the evidence before production.
+              Az ajánlott út a helyi füstteszt lefuttatása, egy reprezentatív terepi patak kiválasztása, egy 30 napos kísérlet végrehajtása és a bizonyítékok pontozása a gyártás előtt.
             </p>
           </article>
           <article class="faq-item reveal">
-            <h3>Which use cases fit?</h3>
+            <h3>Mely használati esetek megfelelőek?</h3>
             <p>
-              The suite targets research teams, precision agriculture, connected livestock, industrial IoT, public projects and integrators that must industrialize field data.
+              A csomag a kutatócsoportokat, a precíziós mezőgazdaságot, a kapcsolódó állattenyésztést, az ipari IoT-t, a nyilvános projekteket és az integrátorokat célozza meg, akiknek iparosítaniuk kell a terepi adatokat.
             </p>
           </article>
           <article class="faq-item reveal">
-            <h3>Is the platform compliance-certified?</h3>
+            <h3>A platform megfelelőségi tanúsítvánnyal rendelkezik?</h3>
             <p>
-              The repository provides compliance evidence, workflows, topics and templates. These assets support audits, but do not replace organization-specific certification.
+              Az adattár megfelelőségi bizonyítékokat, munkafolyamatokat, témákat és sablonokat biztosít. Ezek az eszközök támogatják az auditokat, de nem helyettesítik a szervezetspecifikus tanúsítást.
             </p>
           </article>
         </div>
       </section>
       <section class="launch section-shell" id="contact">
         <div class="launch-card reveal">
-          <p class="eyebrow">Start a pilot</p>
-          <h2>A measurable first use case in 30 days.</h2>
+          <p class="eyebrow">Indíts el egy pilótát</p>
+          <h2>Mérhető első használati eset 30 nap alatt.</h2>
           <p>
-            Select a field stream, define value indicators, deploy the pilot chain and measure time to the first usable event.
+            Válasszon ki egy terepi adatfolyamot, határozzon meg értékmutatókat, telepítse a kísérleti láncot, és mérje meg az első használható eseményig eltelt időt.
           </p>
           <div class="launch-actions">
             <a class="button primary"
-               href="mailto:contact@smartappli.com?subject=Demo%20DEAL%20suite">Contact the team</a>
-            <a class="button secondary" href="https://github.com/Smartappli/DEALIoT">Open the GitHub repository</a>
+               href="mailto:contact@smartappli.com?subject=Demo%20DEAL%20suite">Vegye fel a kapcsolatot a csapattal</a>
+            <a class="button secondary" href="https://github.com/Smartappli/DEALIoT">Nyissa meg a GitHub tárolót</a>
           </div>
         </div>
       </section>
     </main>
     <footer class="site-footer">
-      <span>DEAL ecosystem</span>
-      <span><a href="https://smartappli.io/fr/" hreflang="fr" lang="fr">Français</a> / <a href="https://smartappli.io/llms.txt">LLMS context</a></span>
+      <span>DEAL ökoszisztéma</span>
+      <span><a href="https://smartappli.io/" hreflang="en-US" lang="en-US">English</a> / <a href="https://smartappli.io/llms.txt">LLMS-környezet</a></span>
     </footer>
-    <script src="../app.js" defer></script>
+    <script src="../app.js?v=20260607-language-dropdown-v2" defer></script>
   </body>
 </html>

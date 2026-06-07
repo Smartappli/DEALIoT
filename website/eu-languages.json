@@ -2,121 +2,145 @@
   {
     "hreflang": "en-US",
     "path": "/",
-    "name": "English"
+    "name": "English",
+    "flag": "🇺🇸"
   },
   {
     "hreflang": "bg",
     "path": "bg",
-    "name": "Български"
+    "name": "Български",
+    "flag": "🇧🇬"
   },
   {
     "hreflang": "hr",
     "path": "hr",
-    "name": "Hrvatski"
+    "name": "Hrvatski",
+    "flag": "🇭🇷"
   },
   {
     "hreflang": "cs",
     "path": "cs",
-    "name": "Čeština"
+    "name": "Čeština",
+    "flag": "🇨🇿"
   },
   {
     "hreflang": "da",
     "path": "da",
-    "name": "Dansk"
+    "name": "Dansk",
+    "flag": "🇩🇰"
   },
   {
     "hreflang": "nl",
     "path": "nl",
-    "name": "Nederlands"
+    "name": "Nederlands",
+    "flag": "🇳🇱"
   },
   {
     "hreflang": "et",
     "path": "et",
-    "name": "Eesti"
+    "name": "Eesti",
+    "flag": "🇪🇪"
   },
   {
     "hreflang": "fi",
     "path": "fi",
-    "name": "Suomi"
+    "name": "Suomi",
+    "flag": "🇫🇮"
   },
   {
     "hreflang": "fr",
     "path": "fr",
-    "name": "Français"
+    "name": "Français",
+    "flag": "🇫🇷"
   },
   {
     "hreflang": "de",
     "path": "de",
-    "name": "Deutsch"
+    "name": "Deutsch",
+    "flag": "🇩🇪"
   },
   {
     "hreflang": "el",
     "path": "el",
-    "name": "Ελληνικά"
+    "name": "Ελληνικά",
+    "flag": "🇬🇷"
   },
   {
     "hreflang": "hu",
     "path": "hu",
-    "name": "Magyar"
+    "name": "Magyar",
+    "flag": "🇭🇺"
   },
   {
     "hreflang": "ga",
     "path": "ga",
-    "name": "Gaeilge"
+    "name": "Gaeilge",
+    "flag": "🇮🇪"
   },
   {
     "hreflang": "it",
     "path": "it",
-    "name": "Italiano"
+    "name": "Italiano",
+    "flag": "🇮🇹"
   },
   {
     "hreflang": "lv",
     "path": "lv",
-    "name": "Latviešu"
+    "name": "Latviešu",
+    "flag": "🇱🇻"
   },
   {
     "hreflang": "lt",
     "path": "lt",
-    "name": "Lietuvių"
+    "name": "Lietuvių",
+    "flag": "🇱🇹"
   },
   {
     "hreflang": "mt",
     "path": "mt",
-    "name": "Malti"
+    "name": "Malti",
+    "flag": "🇲🇹"
   },
   {
     "hreflang": "pl",
     "path": "pl",
-    "name": "Polski"
+    "name": "Polski",
+    "flag": "🇵🇱"
   },
   {
     "hreflang": "pt",
     "path": "pt",
-    "name": "Português"
+    "name": "Português",
+    "flag": "🇵🇹"
   },
   {
     "hreflang": "ro",
     "path": "ro",
-    "name": "Română"
+    "name": "Română",
+    "flag": "🇷🇴"
   },
   {
     "hreflang": "sk",
     "path": "sk",
-    "name": "Slovenčina"
+    "name": "Slovenčina",
+    "flag": "🇸🇰"
   },
   {
     "hreflang": "sl",
     "path": "sl",
-    "name": "Slovenščina"
+    "name": "Slovenščina",
+    "flag": "🇸🇮"
   },
   {
     "hreflang": "es",
     "path": "es",
-    "name": "Español"
+    "name": "Español",
+    "flag": "🇪🇸"
   },
   {
     "hreflang": "sv",
     "path": "sv",
-    "name": "Svenska"
+    "name": "Svenska",
+    "flag": "🇸🇪"
   }
 ]
