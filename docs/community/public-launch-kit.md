@@ -125,4 +125,4 @@ Capture these after a representative smoke test or pilot:
 - Grafana or management console health view.
 - Export manifest or compliance evidence payload.
 
-Store public-safe screenshots under a future `website/assets/community/` folder only after checking that no secrets, endpoint values, or private data are visible.
+Store public-safe screenshots under a future `assets/community/` folder in `https://github.com/Smartappli/DEALWebsite` only after checking that no secrets, endpoint values, or private data are visible.

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ast
 import json
-import re
 import subprocess
 import unittest
 from pathlib import Path
@@ -83,28 +82,7 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "adopter_story.yml",
             REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "documentation.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
-            REPO_ROOT / ".github" / "workflows" / "website-pages.yml",
             REPO_ROOT / "bandit.yaml",
-            REPO_ROOT / "website" / "index.html",
-            REPO_ROOT / "website" / "fr" / "index.html",
-            REPO_ROOT / "website" / "offline.html",
-            REPO_ROOT / "website" / "styles.css",
-            REPO_ROOT / "website" / "app.js",
-            REPO_ROOT / "website" / "sw.js",
-            REPO_ROOT / "website" / "README.md",
-            REPO_ROOT / "website" / "robots.txt",
-            REPO_ROOT / "website" / "sitemap.xml",
-            REPO_ROOT / "website" / "CNAME",
-            REPO_ROOT / "website" / "eu-languages.json",
-            REPO_ROOT / "website" / "llms.txt",
-            REPO_ROOT / "website" / "humans.txt",
-            REPO_ROOT / "website" / "site.webmanifest",
-            REPO_ROOT / "website" / "assets" / "mark.svg",
-            REPO_ROOT / "website" / "assets" / "icon-192.png",
-            REPO_ROOT / "website" / "assets" / "icon-512.png",
-            REPO_ROOT / "website" / "assets" / "icon-maskable-512.png",
-            REPO_ROOT / "website" / "assets" / "social-card.svg",
-            REPO_ROOT / "website" / "assets" / "social-card.png",
             REPO_ROOT / "wildfi-decoder" / "Dockerfile",
             REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
             REPO_ROOT / "management-console" / "Dockerfile",
@@ -533,357 +511,21 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('fetch("/api/health"', app_js)
         self.assertNotIn("fetch(endpoint", app_js)
 
-    def test_public_website_presents_deal_suite(self) -> None:
-        index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
-        french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
-        translations = json.loads(
-            (REPO_ROOT / "website" / "src" / "i18n-copy.json").read_text(encoding="utf-8")
-        )
-        styles_css = (REPO_ROOT / "website" / "styles.css").read_text(encoding="utf-8")
-        source_styles_css = (REPO_ROOT / "website" / "src" / "styles.css").read_text(
-            encoding="utf-8"
-        )
-        app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
-        workflow = (REPO_ROOT / ".github" / "workflows" / "website-pages.yml").read_text(
-            encoding="utf-8"
-        )
-        compact_styles_css = re.sub(r"\s+", "", styles_css)
-        index_without_noscript = re.sub(
-            r"<noscript>.*?</noscript>",
-            "",
-            index_html,
-            flags=re.DOTALL,
-        )
-
-        for product_name in ("DEALIoT", "DEALHost", "DEALData"):
-            self.assertIn(product_name, index_html)
-            self.assertIn(product_name, french_html)
-
-        self.assertIn('<html lang="en-US">', index_html)
-        self.assertIn('<html lang="fr">', french_html)
-        self.assertIn('href="https://smartappli.io/fr/"', index_html)
-        self.assertIn('href="https://smartappli.io/"', french_html)
-        self.assertIn("Operate field data like a production system.", index_html)
-        self.assertIn(translations["fr"]["h1"], french_html)
-        self.assertIn("Star on GitHub", index_html)
-        self.assertIn("language-select", index_html)
-        self.assertIn("data-language-select", index_html)
-        self.assertIn("navigateToSelectedLanguage", app_js)
-        self.assertIn("DOMContentLoaded", app_js)
-        self.assertIn("app.js?v=20260607-render-blocking-v1", index_html)
-        self.assertIn("styles.css?v=20260607-render-blocking-v1", index_html)
-        self.assertIn('<link rel="preload"', index_html)
-        self.assertIn('as="style"', index_html)
-        self.assertIn('as="script"', index_html)
-        self.assertIn("data-critical-css", index_html)
-        self.assertIn("data-deferred-stylesheet", index_html)
-        self.assertIn('fetchpriority="high"', index_html)
-        self.assertIn('media="print"', index_html)
-        self.assertNotIn("onload=", index_html)
-        self.assertIn("<noscript>", index_html)
-        self.assertNotIn(
-            '<link rel="stylesheet" href="styles.css?v=20260607-render-blocking-v1">',
-            index_without_noscript,
-        )
-        self.assertIn("deferredStylesheets", app_js)
-        self.assertIn('stylesheet.media = "all"', app_js)
-        self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
-        self.assertIn("mailto:contact@smartappli.com", index_html)
-        self.assertIn("actions/upload-pages-artifact@", workflow)
-        self.assertIn("actions/deploy-pages@", workflow)
-        self.assertIn("Prepare website artifact", workflow)
-        self.assertIn("--exclude='./node_modules'", workflow)
-        self.assertIn("--exclude='./src'", workflow)
-        self.assertIn("path: website-dist", workflow)
-        self.assertIn('href="https://smartappli.io/"', index_html)
-        self.assertIn('property="og:title"', index_html)
-        self.assertIn('name="twitter:card"', index_html)
-        self.assertIn('type="application/ld+json"', index_html)
-        self.assertIn("What is DEALIoT?", index_html)
-        self.assertIn(translations["fr"]["q_dealiot"], french_html)
-        self.assertIn("@media(max-width:1120px)", compact_styles_css)
-        self.assertIn("@media(max-width:720px)", compact_styles_css)
-        self.assertIn(
-            "grid-template-columns:minmax(10rem,auto)minmax(18rem,1fr)max-content",
-            compact_styles_css,
-        )
-        self.assertIn("overflow-x:auto", compact_styles_css)
-        self.assertIn("white-space:nowrap", compact_styles_css)
-        self.assertIn("min-width:max-content", compact_styles_css)
-        self.assertIn("Bricolage Grotesque", styles_css)
-        self.assertIn("Instrument Serif", styles_css)
-        self.assertIn("JetBrains Mono", styles_css)
-
-        for forbidden_fragment in ("innerHTML", "outerHTML", "document.write", "eval("):
-            self.assertNotIn(forbidden_fragment, app_js)
-        for forbidden_font in ("Inter", "Roboto", "Arial", "system-ui"):
-            self.assertNotIn(forbidden_font, source_styles_css)
-
-    def test_public_website_has_seo_and_geo_assets(self) -> None:
-        index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
-        french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
-        robots = (REPO_ROOT / "website" / "robots.txt").read_text(encoding="utf-8")
-        sitemap = (REPO_ROOT / "website" / "sitemap.xml").read_text(encoding="utf-8")
-        llms = (REPO_ROOT / "website" / "llms.txt").read_text(encoding="utf-8")
-        htaccess = (REPO_ROOT / "website" / ".htaccess").read_text(encoding="utf-8")
-        languages = json.loads(
-            (REPO_ROOT / "website" / "eu-languages.json").read_text(encoding="utf-8")
-        )
-        manifest = json.loads(
-            (REPO_ROOT / "website" / "site.webmanifest").read_text(encoding="utf-8")
-        )
-
-        base_url = "https://smartappli.io/"
-
-        def localized_url(language: dict[str, str]) -> str:
-            language_path = language["path"].strip("/")
-            return f"{base_url}{language_path + '/' if language_path else ''}"
-
-        canonical_url = base_url
-        french_url = f"{base_url}fr/"
-        expected_urls = [localized_url(language) for language in languages]
-
-        self.assertIn(f'<link rel="canonical" href="{canonical_url}">', index_html)
-        self.assertIn(f'<link rel="canonical" href="{french_url}">', french_html)
-        self.assertIn('hreflang="fr"', index_html)
-        self.assertIn(f'href="{french_url}"', index_html)
-        self.assertIn('hreflang="en-US"', french_html)
-        self.assertIn(f'href="{canonical_url}"', french_html)
-        self.assertIn(f'<meta property="og:url" content="{canonical_url}">', index_html)
-        self.assertIn('content="https://smartappli.io/assets/social-card.png"', index_html)
-        self.assertIn('<meta property="og:image:width" content="1200">', index_html)
-        self.assertIn('<meta property="og:image:height" content="630">', index_html)
-        self.assertIn("Sitemap: https://smartappli.io/sitemap.xml", robots)
-        self.assertIn("Allow: /assets/", robots)
-        self.assertIn("Disallow: /src/", robots)
-        self.assertIn("Disallow: /package.json", robots)
-        self.assertIn("Options -Indexes", htaccess)
-        self.assertIn("max-age=31536000, immutable", htaccess)
-        self.assertIn("no-cache, must-revalidate", htaccess)
-        self.assertIn("BROTLI_COMPRESS", htaccess)
-        self.assertIn("DEFLATE", htaccess)
-        self.assertIn("X-Content-Type-Options", htaccess)
-
-        sitemap_urls = re.findall(r"<loc>(.*?)</loc>", sitemap)
-        self.assertEqual(expected_urls, sitemap_urls)
-        for language in languages:
-            self.assertIn(f'hreflang="{language["hreflang"]}"', sitemap)
-            self.assertIn(f'href="{localized_url(language)}"', sitemap)
-        self.assertIn('hreflang="x-default" href="https://smartappli.io/"', sitemap)
-
-        self.assertEqual("/", manifest["id"])
-        self.assertEqual("/", manifest["start_url"])
-        self.assertEqual("/", manifest["scope"])
-        self.assertEqual("en-US", manifest["lang"])
-        self.assertEqual("#0196d0", manifest["theme_color"])
-        self.assertEqual("standalone", manifest["display"])
-        self.assertIn("assets/icon-192.png", manifest["icons"][0]["src"])
-        self.assertIn("assets/icon-512.png", manifest["icons"][1]["src"])
-        self.assertEqual("maskable", manifest["icons"][2]["purpose"])
-
-        json_ld_match = re.search(
-            r'<script type="application/ld\+json">\s*(.*?)\s*</script>',
-            index_html,
-            flags=re.DOTALL,
-        )
-        if json_ld_match is None:
-            self.fail("Missing JSON-LD script")
-        json_ld = json.loads(json_ld_match.group(1))
-        graph = json_ld["@graph"]
-        graph_types = {node["@type"] for node in graph}
-        graph_names = {node.get("name") for node in graph}
-
-        for expected_type in ("Organization", "WebSite", "SoftwareApplication", "FAQPage"):
-            self.assertIn(expected_type, graph_types)
-        for expected_name in ("DEALIoT", "DEALHost", "DEALData", "DEAL suite"):
-            self.assertIn(expected_name, graph_names)
-
-        faq_node = next(node for node in graph if node["@type"] == "FAQPage")
-        self.assertGreaterEqual(len(faq_node["mainEntity"]), 3)
-
-        for fragment in (
-            "What is DEALIoT?",
-            "What is DEALHost?",
-            "What is DEALData?",
-            "Default language: English US",
-            "PWA status: installable",
-            "ranking signal",
-            "https://github.com/Smartappli/DEALIoT",
-            "All 24 official EU language routes",
-        ):
-            self.assertIn(fragment, llms)
-
-    def test_public_website_supports_all_official_eu_languages(self) -> None:
-        languages = json.loads(
-            (REPO_ROOT / "website" / "eu-languages.json").read_text(encoding="utf-8")
-        )
-        translations = json.loads(
-            (REPO_ROOT / "website" / "src" / "i18n-copy.json").read_text(encoding="utf-8")
-        )
-        expected_hreflangs = {
-            "en-US",
-            "bg",
-            "hr",
-            "cs",
-            "da",
-            "nl",
-            "et",
-            "fi",
-            "fr",
-            "de",
-            "el",
-            "hu",
-            "ga",
-            "it",
-            "lv",
-            "lt",
-            "mt",
-            "pl",
-            "pt",
-            "ro",
-            "sk",
-            "sl",
-            "es",
-            "sv",
-        }
-        self.assertEqual(expected_hreflangs, {language["hreflang"] for language in languages})
-        self.assertEqual(24, len(languages))
-        self.assertEqual(expected_hreflangs - {"en-US"}, set(translations))
-
-        names = {language["hreflang"]: language["name"] for language in languages}
-        self.assertEqual("\u010ce\u0161tina", names["cs"])
-        self.assertEqual("\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac", names["el"])
-        self.assertEqual("Fran\u00e7ais", names["fr"])
-
-        flag_regions = {
-            "en-US": "US",
-            "bg": "BG",
-            "hr": "HR",
-            "cs": "CZ",
-            "da": "DK",
-            "nl": "NL",
-            "et": "EE",
-            "fi": "FI",
-            "fr": "FR",
-            "de": "DE",
-            "el": "GR",
-            "hu": "HU",
-            "ga": "IE",
-            "it": "IT",
-            "lv": "LV",
-            "lt": "LT",
-            "mt": "MT",
-            "pl": "PL",
-            "pt": "PT",
-            "ro": "RO",
-            "sk": "SK",
-            "sl": "SI",
-            "es": "ES",
-            "sv": "SE",
-        }
-
-        def flag_for(region: str) -> str:
-            return "".join(chr(0x1F1E6 + ord(letter) - ord("A")) for letter in region)
-
-        for language in languages:
-            language_path = language["path"].strip("/")
-            page_path = (
-                REPO_ROOT / "website" / "index.html"
-                if not language_path
-                else REPO_ROOT / "website" / language_path / "index.html"
-            )
-            html = page_path.read_text(encoding="utf-8")
-            localized_url = f"https://smartappli.io/{language_path + '/' if language_path else ''}"
-            expected_flag = flag_for(flag_regions[language["hreflang"]])
-            self.assertEqual(expected_flag, language["flag"])
-            self.assertIn(f'<html lang="{language["hreflang"]}">', html)
-            self.assertIn(f'<link rel="canonical" href="{localized_url}">', html)
-            self.assertEqual(25, html.count('rel="alternate"'))
-            self.assertIn("styles.css?v=20260607-render-blocking-v1", html)
-            self.assertIn("app.js?v=20260607-render-blocking-v1", html)
-            self.assertIn('<link rel="preload"', html)
-            self.assertIn("data-critical-css", html)
-            self.assertIn("data-deferred-stylesheet", html)
-            self.assertIn('media="print"', html)
-            self.assertIn("language-menu", html)
-            self.assertIn("language-select", html)
-            self.assertIn("data-language-select", html)
-            self.assertNotIn("language-panel", html)
-            self.assertNotIn("<details", html)
-            self.assertIn(
-                f'<option value="{localized_url}" lang="{language["hreflang"]}" selected>'
-                f"{expected_flag} {language['name']}</option>",
-                html,
-            )
-            self.assertNotIn("????", html)
-
-            if language["hreflang"] == "en-US":
-                self.assertIn("Star on GitHub", html)
-                continue
-
-            localized_copy = translations[language["hreflang"]]
-            for key in (
-                "choose_language",
-                "star",
-                "request_demo",
-                "h1",
-                "products_eyebrow",
-                "adoption_path",
-                "q_dealiot",
-                "use_case_catalog",
-                "champion_decision_kit",
-                "open_decision_kit",
-                "contributor_community",
-                "start_contributing",
-                "llms_context",
-            ):
-                self.assertIn(localized_copy[key], html)
-
-            for english_fragment in (
-                "Star on GitHub",
-                "Request a demo",
-                "Choose language",
-                "One suite, three adoption paths",
-                "A public path to evaluate without friction.",
-                "Short answers for fast evaluation.",
-                "What is DEALIoT?",
-                "Explore the suite",
-                "See the platform",
-                "DEAL ecosystem",
-                "LLMS context",
-                "Contributor community",
-                "Start contributing",
-            ):
-                self.assertNotIn(english_fragment, html)
-
-    def test_public_website_is_installable_pwa(self) -> None:
-        app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
-        service_worker = (REPO_ROOT / "website" / "sw.js").read_text(encoding="utf-8")
-        offline_html = (REPO_ROOT / "website" / "offline.html").read_text(encoding="utf-8")
-        index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
-        french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
+    def test_public_website_is_externalized_to_dealwebsite(self) -> None:
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        dependabot = (REPO_ROOT / ".github" / "dependabot.yml").read_text(encoding="utf-8")
+        codeowners = (REPO_ROOT / ".github" / "CODEOWNERS").read_text(encoding="utf-8")
         gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
 
-        self.assertIn('rel="manifest"', index_html)
-        self.assertIn('rel="apple-touch-icon"', index_html)
-        self.assertIn("navigator.serviceWorker.register", app_js)
-        self.assertIn('return "/";', app_js)
-        self.assertIn("CACHE_NAME", service_worker)
-        self.assertIn('const CACHE_NAME = "dealiot-pwa-v6"', service_worker)
-        self.assertIn('const ASSET_VERSION = "20260607-render-blocking-v1"', service_worker)
-        self.assertIn("isNetworkFirstAsset", service_worker)
-        self.assertIn("staleWhileRevalidate", service_worker)
-        self.assertIn("networkFirst", service_worker)
-        self.assertIn("`./app.js?v=${ASSET_VERSION}`", service_worker)
-        self.assertIn('requestUrl.pathname.endsWith("/sw.js")', service_worker)
-        self.assertIn('"./fr/"', service_worker)
-        self.assertIn('"./de/"', service_worker)
-        self.assertIn('"./es/"', service_worker)
-        self.assertIn('"./offline.html"', service_worker)
-        self.assertIn('request.mode === "navigate"', service_worker)
-        self.assertIn("The DEAL site is available offline.", offline_html)
-        self.assertIn('<link rel="manifest" href="../site.webmanifest">', french_html)
-        self.assertIn("website/", gitignore)
+        self.assertFalse((REPO_ROOT / "website").exists())
+        self.assertFalse((REPO_ROOT / ".github" / "workflows" / "website-pages.yml").exists())
+        self.assertFalse((REPO_ROOT / "scripts" / "localize_website.py").exists())
+        self.assertIn("https://smartappli.io/", readme)
+        self.assertIn("https://github.com/Smartappli/DEALWebsite", readme)
+        self.assertIn("Website source repository", readme)
+        self.assertNotIn('directory: "/website"', dependabot)
+        self.assertNotIn("/website/", codeowners)
+        self.assertNotIn("website/node_modules/", gitignore)
 
     def test_repository_has_adoption_assets(self) -> None:
         adoption_playbook = (REPO_ROOT / "docs" / "community" / "adoption-playbook.md").read_text(
@@ -953,8 +595,6 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "community" / "adopter-story-template.md"
         ).read_text(encoding="utf-8")
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
-        website = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
-        llms_txt = (REPO_ROOT / "website" / "llms.txt").read_text(encoding="utf-8")
         issue_templates = "\n".join(
             path.read_text(encoding="utf-8")
             for path in (REPO_ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml")
@@ -1107,7 +747,7 @@ class RepositoryUnitTests(unittest.TestCase):
         ):
             self.assertIn(fragment, labels)
 
-        for fragment in ("@Smartappli", "/docs/community/", "/website/"):
+        for fragment in ("@Smartappli", "/docs/community/"):
             self.assertIn(fragment, codeowners)
 
         for fragment in (
@@ -1136,24 +776,8 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("Community governance", readme)
         self.assertIn("Community discussions", readme)
         self.assertIn("Public website", readme)
-        self.assertIn("Adoption path", website)
-        self.assertIn("docs/community/user-community-launch-plan.md", website)
-        self.assertIn("docs/community/demo-pilot-playbook.md", website)
-        self.assertIn("docs/community/use-case-catalog.md", website)
-        self.assertIn("docs/community/internal-champion-kit.md", website)
-        self.assertIn("docs/community/contributor-onboarding.md", website)
-        self.assertIn("architecture-popularity-playbook.md", llms_txt)
-        self.assertIn("github-star-growth-plan.md", llms_txt)
-        self.assertIn("use-case-catalog.md", llms_txt)
-        self.assertIn("quick-evaluation-path.md", llms_txt)
-        self.assertIn("architecture-comparison-guide.md", llms_txt)
-        self.assertIn("internal-champion-kit.md", llms_txt)
-        self.assertIn("developer-community-playbook.md", llms_txt)
-        self.assertIn("contributor-onboarding.md", llms_txt)
-        self.assertIn("community-governance.md", llms_txt)
-        self.assertIn("public-launch-kit.md", llms_txt)
-        self.assertIn("first-github-discussion.md", llms_txt)
-        self.assertIn("adoption-funnel.md", llms_txt)
+        self.assertIn("Website source repository", readme)
+        self.assertIn("https://github.com/Smartappli/DEALWebsite", readme)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:
         app_py = (REPO_ROOT / "management-console" / "management_console" / "app.py").read_text(

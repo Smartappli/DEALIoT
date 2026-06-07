@@ -31,7 +31,7 @@ DealData is the governance and value layer for catalogues, controlled sharing, D
 
 ## Proof Assets To Maintain
 
-- Public website under `website/`.
+- Public website source under `https://github.com/Smartappli/DEALWebsite`.
 - Professional README with architecture, quickstart, production deployment, and quality gates.
 - Demo pilot playbook under `docs/community/demo-pilot-playbook.md`.
 - Partner integration guide under `docs/community/integration-partner-guide.md`.

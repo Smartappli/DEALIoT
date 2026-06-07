@@ -18,7 +18,7 @@ This funnel converts attention into adoption decisions. It should guide README s
 | Asset | Stage |
 |---|---|
 | `README.md` | Awareness, fit, trial |
-| `website/index.html` | Awareness, fit |
+| `https://github.com/Smartappli/DEALWebsite` | Awareness, fit |
 | `docs/community/github-star-growth-plan.md` | Awareness, expansion |
 | `docs/community/first-github-discussion.md` | Awareness, fit |
 | `docs/community/use-case-catalog.md` | Fit |

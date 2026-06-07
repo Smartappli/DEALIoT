@@ -58,7 +58,6 @@ class ApplicationSmokeTests(unittest.TestCase):
             "renovate.yml",
             "shellcheck.yml",
             "sonarqube.yml",
-            "website-pages.yml",
         ]
 
         for workflow in expected_workflows:

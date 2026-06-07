@@ -48,6 +48,3 @@ airflow/logs/
 *.tgz
 *.zip
 *.7z
-
-# Website build artifacts
-website/node_modules/

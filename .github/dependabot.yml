@@ -27,15 +27,6 @@ updates:
       - "🤖 Dependabot"
       - "docker-compose"
 
-  - package-ecosystem: "npm"
-    directory: "/website"
-    schedule:
-      interval: "daily"
-    labels:
-      - "Dependencies"
-      - "Dependabot"
-      - "npm"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

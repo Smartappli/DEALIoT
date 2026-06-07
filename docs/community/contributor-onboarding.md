@@ -39,13 +39,13 @@ uv run python -m unittest discover -s tests/unit -p "test_*.py" -v
 uvx pre-commit run --all-files --show-diff-on-failure
 ```
 
-For website-only copy changes:
+For website-only copy changes, work in the dedicated website repository:
 
 ```bash
-python scripts/localize_website.py
-node --check website/app.js
-node --check website/sw.js
-uv run python -m pytest tests/unit/test_repository_unit.py::RepositoryUnitTests::test_public_website_supports_all_official_eu_languages -q
+cd ../DEALWebsite
+npm run build
+node --check app.js
+node --check sw.js
 ```
 
 ## Asking For Help
