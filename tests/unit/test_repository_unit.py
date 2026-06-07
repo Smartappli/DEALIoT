@@ -778,6 +778,18 @@ class RepositoryUnitTests(unittest.TestCase):
         adoption_playbook = (REPO_ROOT / "docs" / "community" / "adoption-playbook.md").read_text(
             encoding="utf-8"
         )
+        popularity_playbook = (
+            REPO_ROOT / "docs" / "community" / "architecture-popularity-playbook.md"
+        ).read_text(encoding="utf-8")
+        use_case_catalog = (
+            REPO_ROOT / "docs" / "community" / "use-case-catalog.md"
+        ).read_text(encoding="utf-8")
+        public_launch_kit = (
+            REPO_ROOT / "docs" / "community" / "public-launch-kit.md"
+        ).read_text(encoding="utf-8")
+        adoption_funnel = (
+            REPO_ROOT / "docs" / "community" / "adoption-funnel.md"
+        ).read_text(encoding="utf-8")
         demo_playbook = (REPO_ROOT / "docs" / "community" / "demo-pilot-playbook.md").read_text(
             encoding="utf-8"
         )
@@ -807,6 +819,7 @@ class RepositoryUnitTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
         website = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        llms_txt = (REPO_ROOT / "website" / "llms.txt").read_text(encoding="utf-8")
         issue_templates = "\n".join(
             path.read_text(encoding="utf-8")
             for path in (REPO_ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml")
@@ -827,6 +840,18 @@ class RepositoryUnitTests(unittest.TestCase):
             "Success Metrics",
         ):
             self.assertIn(fragment, adoption_playbook)
+
+        for fragment in ("Adoption Thesis", "Adoption Flywheel", "Distribution Plan", "Launch Metrics"):
+            self.assertIn(fragment, popularity_playbook)
+
+        for fragment in ("Use Cases", "Priority Matrix", "Public Proof Assets"):
+            self.assertIn(fragment, use_case_catalog)
+
+        for fragment in ("Launch Post", "Partner Outreach Email", "Conference Or Meetup Abstract"):
+            self.assertIn(fragment, public_launch_kit)
+
+        for fragment in ("Funnel Stages", "Conversion Assets", "Minimum Viable Popularity"):
+            self.assertIn(fragment, adoption_funnel)
 
         for fragment in ("Pilot Scorecard", "Local Demo Script", "Post-Pilot Decision"):
             self.assertIn(fragment, demo_playbook)
@@ -864,7 +889,13 @@ class RepositoryUnitTests(unittest.TestCase):
         for fragment in ("Publication limits", "Outcome", "Remaining gaps"):
             self.assertIn(fragment, adopter_story_template)
 
-        for fragment in ("Demo or pilot request", "Adopter story", "Documentation gap", "User feedback"):
+        for fragment in (
+            "Demo or pilot request",
+            "Adopter story",
+            "Documentation gap",
+            "User feedback",
+            "Use case proposal",
+        ):
             self.assertIn(fragment, issue_templates)
 
         for fragment in (
@@ -875,16 +906,27 @@ class RepositoryUnitTests(unittest.TestCase):
         ):
             self.assertIn(fragment, discussion_templates)
 
-        for fragment in ("user-feedback", "show-and-tell", "pilot", "integration"):
+        for fragment in ("user-feedback", "show-and-tell", "pilot", "integration", "use-case"):
             self.assertIn(fragment, labels)
 
         self.assertIn("Operational Impact", pull_request_template)
+        self.assertIn("Why Teams Adopt DEALIoT", readme)
+        self.assertIn("Fast Adoption Path", readme)
+        self.assertIn("Architecture popularity playbook", readme)
+        self.assertIn("Use case catalog", readme)
+        self.assertIn("Public launch kit", readme)
+        self.assertIn("Adoption funnel", readme)
         self.assertIn("User community launch plan", readme)
         self.assertIn("Community discussions", readme)
         self.assertIn("Public website", readme)
         self.assertIn("Adoption path", website)
         self.assertIn("docs/community/user-community-launch-plan.md", website)
         self.assertIn("docs/community/demo-pilot-playbook.md", website)
+        self.assertIn("docs/community/use-case-catalog.md", website)
+        self.assertIn("architecture-popularity-playbook.md", llms_txt)
+        self.assertIn("use-case-catalog.md", llms_txt)
+        self.assertIn("public-launch-kit.md", llms_txt)
+        self.assertIn("adoption-funnel.md", llms_txt)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:
         app_py = (REPO_ROOT / "management-console" / "management_console" / "app.py").read_text(
