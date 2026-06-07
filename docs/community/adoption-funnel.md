@@ -19,6 +19,8 @@ This funnel converts attention into adoption decisions. It should guide README s
 |---|---|
 | `README.md` | Awareness, fit, trial |
 | `website/index.html` | Awareness, fit |
+| `docs/community/github-star-growth-plan.md` | Awareness, expansion |
+| `docs/community/first-github-discussion.md` | Awareness, fit |
 | `docs/community/use-case-catalog.md` | Fit |
 | `docs/community/architecture-comparison-guide.md` | Fit, trust |
 | `docs/community/quick-evaluation-path.md` | Trial |
@@ -28,6 +30,8 @@ This funnel converts attention into adoption decisions. It should guide README s
 | `docs/community/demo-pilot-playbook.md` | Adoption |
 | `docs/community/validation-scorecard.md` | Adoption |
 | `docs/community/integration-partner-guide.md` | Expansion |
+| `docs/community/contributor-onboarding.md` | Expansion |
+| `docs/community/developer-community-playbook.md` | Expansion |
 
 ## Weekly Funnel Review
 

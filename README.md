@@ -47,11 +47,13 @@ DEALIoT provides six runtime planes:
 - Public website: `https://smartappli.io/`
 - Adoption playbook: [docs/community/adoption-playbook.md](docs/community/adoption-playbook.md)
 - Architecture popularity playbook: [docs/community/architecture-popularity-playbook.md](docs/community/architecture-popularity-playbook.md)
+- GitHub star growth plan: [docs/community/github-star-growth-plan.md](docs/community/github-star-growth-plan.md)
 - Use case catalog: [docs/community/use-case-catalog.md](docs/community/use-case-catalog.md)
 - Quick evaluation path: [docs/community/quick-evaluation-path.md](docs/community/quick-evaluation-path.md)
 - Architecture comparison guide: [docs/community/architecture-comparison-guide.md](docs/community/architecture-comparison-guide.md)
 - Internal champion kit: [docs/community/internal-champion-kit.md](docs/community/internal-champion-kit.md)
 - Public launch kit: [docs/community/public-launch-kit.md](docs/community/public-launch-kit.md)
+- First GitHub discussion: [docs/community/first-github-discussion.md](docs/community/first-github-discussion.md)
 - Adoption funnel: [docs/community/adoption-funnel.md](docs/community/adoption-funnel.md)
 - User community launch plan: [docs/community/user-community-launch-plan.md](docs/community/user-community-launch-plan.md)
 - User onboarding guide: [docs/community/user-onboarding-guide.md](docs/community/user-onboarding-guide.md)

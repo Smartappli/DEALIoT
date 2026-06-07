@@ -4,11 +4,13 @@ This directory contains the versioned adoption assets for DEALIoT, DealHost, and
 
 - `adoption-playbook.md`: public positioning, audience strategy, adoption ladder, and success metrics.
 - `architecture-popularity-playbook.md`: repeatable plan to make the architecture discoverable, explainable, testable, trusted, and shareable.
+- `github-star-growth-plan.md`: 7-day launch motion, distribution channels, star conversion assets, metrics, and anti-patterns for earning legitimate GitHub stars.
 - `use-case-catalog.md`: concrete scenarios and proof assets for evaluators, partners, and public launch material.
 - `quick-evaluation-path.md`: 10-minute, 60-minute, 1-day, and 30-day evaluation path for new technical evaluators.
 - `architecture-comparison-guide.md`: comparison against custom scripts, cloud-only IoT services, dashboards, data lakes, and bespoke research pipelines.
 - `internal-champion-kit.md`: sponsor brief, objection handling, stakeholder map, and internal email template for adoption champions.
 - `public-launch-kit.md`: reusable announcement, partner outreach, conference, badge, and screenshot copy.
+- `first-github-discussion.md`: exact title, body, category guidance, and follow-up actions for the first public GitHub Discussion.
 - `adoption-funnel.md`: funnel stages, conversion assets, weekly review questions, and minimum viable popularity metrics.
 - `user-community-launch-plan.md`: channel strategy, 30-day launch motion, cadence, and success metrics for the user community.
 - `user-onboarding-guide.md`: first path for evaluators, pilot teams, operators, partners, and data stewards.

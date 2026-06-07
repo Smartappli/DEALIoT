@@ -771,6 +771,8 @@ class RepositoryUnitTests(unittest.TestCase):
                 "use_case_catalog",
                 "champion_decision_kit",
                 "open_decision_kit",
+                "contributor_community",
+                "start_contributing",
                 "llms_context",
             ):
                 self.assertIn(localized_copy[key], html)
@@ -787,6 +789,8 @@ class RepositoryUnitTests(unittest.TestCase):
                 "See the platform",
                 "DEAL ecosystem",
                 "LLMS context",
+                "Contributor community",
+                "Start contributing",
             ):
                 self.assertNotIn(english_fragment, html)
 
@@ -822,6 +826,9 @@ class RepositoryUnitTests(unittest.TestCase):
         popularity_playbook = (
             REPO_ROOT / "docs" / "community" / "architecture-popularity-playbook.md"
         ).read_text(encoding="utf-8")
+        star_growth_plan = (
+            REPO_ROOT / "docs" / "community" / "github-star-growth-plan.md"
+        ).read_text(encoding="utf-8")
         use_case_catalog = (
             REPO_ROOT / "docs" / "community" / "use-case-catalog.md"
         ).read_text(encoding="utf-8")
@@ -837,6 +844,9 @@ class RepositoryUnitTests(unittest.TestCase):
         public_launch_kit = (
             REPO_ROOT / "docs" / "community" / "public-launch-kit.md"
         ).read_text(encoding="utf-8")
+        first_github_discussion = (
+            REPO_ROOT / "docs" / "community" / "first-github-discussion.md"
+        ).read_text(encoding="utf-8")
         adoption_funnel = (
             REPO_ROOT / "docs" / "community" / "adoption-funnel.md"
         ).read_text(encoding="utf-8")
@@ -848,6 +858,15 @@ class RepositoryUnitTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         user_onboarding_guide = (
             REPO_ROOT / "docs" / "community" / "user-onboarding-guide.md"
+        ).read_text(encoding="utf-8")
+        developer_community_playbook = (
+            REPO_ROOT / "docs" / "community" / "developer-community-playbook.md"
+        ).read_text(encoding="utf-8")
+        contributor_onboarding = (
+            REPO_ROOT / "docs" / "community" / "contributor-onboarding.md"
+        ).read_text(encoding="utf-8")
+        community_governance = (
+            REPO_ROOT / "docs" / "community" / "community-governance.md"
         ).read_text(encoding="utf-8")
         community_rituals = (
             REPO_ROOT / "docs" / "community" / "community-rituals.md"
@@ -879,6 +898,8 @@ class RepositoryUnitTests(unittest.TestCase):
             for path in (REPO_ROOT / ".github" / "DISCUSSION_TEMPLATE").glob("*.yml")
         )
         labels = (REPO_ROOT / ".github" / "labels.yml").read_text(encoding="utf-8")
+        codeowners = (REPO_ROOT / ".github" / "CODEOWNERS").read_text(encoding="utf-8")
+        contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
         pull_request_template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(
             encoding="utf-8"
         )
@@ -894,6 +915,14 @@ class RepositoryUnitTests(unittest.TestCase):
         for fragment in ("Adoption Thesis", "Adoption Flywheel", "Distribution Plan", "Launch Metrics"):
             self.assertIn(fragment, popularity_playbook)
 
+        for fragment in (
+            "Star Conversion Assets",
+            "7-Day Launch Motion",
+            "Distribution Channels",
+            "Do Not Do",
+        ):
+            self.assertIn(fragment, star_growth_plan)
+
         for fragment in ("Use Cases", "Priority Matrix", "Public Proof Assets"):
             self.assertIn(fragment, use_case_catalog)
 
@@ -908,6 +937,17 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for fragment in ("Launch Post", "Partner Outreach Email", "Conference Or Meetup Abstract"):
             self.assertIn(fragment, public_launch_kit)
+
+        self.assertIn("First GitHub Discussion", public_launch_kit)
+        self.assertIn("Show DEALIoT", public_launch_kit)
+
+        for fragment in (
+            "Title",
+            "Body",
+            "Show DEALIoT",
+            "If this looks useful, star the repository",
+        ):
+            self.assertIn(fragment, first_github_discussion)
 
         for fragment in ("Funnel Stages", "Conversion Assets", "Minimum Viable Popularity"):
             self.assertIn(fragment, adoption_funnel)
@@ -926,13 +966,28 @@ class RepositoryUnitTests(unittest.TestCase):
         for fragment in ("First 60 Minutes", "Community Entry Points", "Good Question Template"):
             self.assertIn(fragment, user_onboarding_guide)
 
+        for fragment in ("Contributor Tracks", "Contribution Ladder", "Good First Issue Criteria"):
+            self.assertIn(fragment, developer_community_playbook)
+
+        for fragment in ("First Contribution Paths", "Validation Shortcuts", "Asking For Help"):
+            self.assertIn(fragment, contributor_onboarding)
+
+        for fragment in ("Principles", "Roles", "Decision Process", "Recognition"):
+            self.assertIn(fragment, community_governance)
+
         for fragment in ("Weekly Triage", "Office Hours Agenda", "Discussion Moderation Rules"):
             self.assertIn(fragment, community_rituals)
 
         for fragment in ("Triage Flow", "Prioritization Score", "Feedback Closure"):
             self.assertIn(fragment, user_feedback_loop)
 
-        for fragment in ("Q&A Seed", "Ideas Seed", "Show And Tell Seed", "Pilot Report Seed"):
+        for fragment in (
+            "Launch Discussion",
+            "Q&A Seed",
+            "Ideas Seed",
+            "Show And Tell Seed",
+            "Pilot Report Seed",
+        ):
             self.assertIn(fragment, seed_discussions)
 
         for fragment in ("Partner Tracks", "Integration Contract", "Partner Readiness Checklist"):
@@ -962,23 +1017,52 @@ class RepositoryUnitTests(unittest.TestCase):
             "Use this for early feature",
             "Use this for approved demos",
             "Use this to share a sanitized 30-day pilot result",
+            "Use this when you want to contribute",
+            "Use this for launch announcements",
         ):
             self.assertIn(fragment, discussion_templates)
 
-        for fragment in ("user-feedback", "show-and-tell", "pilot", "integration", "use-case"):
+        for fragment in (
+            "user-feedback",
+            "show-and-tell",
+            "pilot",
+            "integration",
+            "use-case",
+            "contributor",
+            "good first issue",
+            "help wanted",
+            "mentored",
+            "community",
+        ):
             self.assertIn(fragment, labels)
+
+        for fragment in ("@Smartappli", "/docs/community/", "/website/"):
+            self.assertIn(fragment, codeowners)
+
+        for fragment in (
+            "Contributor onboarding",
+            "Developer community playbook",
+            "Community governance",
+            "good first issue",
+        ):
+            self.assertIn(fragment, contributing)
 
         self.assertIn("Operational Impact", pull_request_template)
         self.assertIn("Why Teams Adopt DEALIoT", readme)
         self.assertIn("Fast Adoption Path", readme)
         self.assertIn("Architecture popularity playbook", readme)
+        self.assertIn("GitHub star growth plan", readme)
         self.assertIn("Use case catalog", readme)
         self.assertIn("Quick evaluation path", readme)
         self.assertIn("Architecture comparison guide", readme)
         self.assertIn("Internal champion kit", readme)
         self.assertIn("Public launch kit", readme)
+        self.assertIn("First GitHub discussion", readme)
         self.assertIn("Adoption funnel", readme)
         self.assertIn("User community launch plan", readme)
+        self.assertIn("Developer community playbook", readme)
+        self.assertIn("Contributor onboarding", readme)
+        self.assertIn("Community governance", readme)
         self.assertIn("Community discussions", readme)
         self.assertIn("Public website", readme)
         self.assertIn("Adoption path", website)
@@ -986,12 +1070,18 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("docs/community/demo-pilot-playbook.md", website)
         self.assertIn("docs/community/use-case-catalog.md", website)
         self.assertIn("docs/community/internal-champion-kit.md", website)
+        self.assertIn("docs/community/contributor-onboarding.md", website)
         self.assertIn("architecture-popularity-playbook.md", llms_txt)
+        self.assertIn("github-star-growth-plan.md", llms_txt)
         self.assertIn("use-case-catalog.md", llms_txt)
         self.assertIn("quick-evaluation-path.md", llms_txt)
         self.assertIn("architecture-comparison-guide.md", llms_txt)
         self.assertIn("internal-champion-kit.md", llms_txt)
+        self.assertIn("developer-community-playbook.md", llms_txt)
+        self.assertIn("contributor-onboarding.md", llms_txt)
+        self.assertIn("community-governance.md", llms_txt)
         self.assertIn("public-launch-kit.md", llms_txt)
+        self.assertIn("first-github-discussion.md", llms_txt)
         self.assertIn("adoption-funnel.md", llms_txt)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:

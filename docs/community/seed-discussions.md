@@ -2,6 +2,19 @@
 
 Use these posts to seed the first community discussions after GitHub Discussions is enabled.
 
+## Launch Discussion: Show DEALIoT
+
+Category: Announcements. If Announcements is not available, use General. If neither exists, use Show and tell.
+
+Use the exact title and body from `docs/community/first-github-discussion.md`.
+
+The first reply should ask readers to choose one path:
+
+- Try the quick evaluation path and report the first blocker.
+- Propose one device, gateway, or data source integration.
+- Share one production requirement that would decide adoption.
+- Pick one mentored good-first issue.
+
 ## Q&A Seed: How do I validate DEALIoT locally?
 
 Category: Q&A

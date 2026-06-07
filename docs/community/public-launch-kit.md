@@ -39,6 +39,26 @@ Start here:
 We are looking for evaluators with one concrete field data source and one measurable output.
 ```
 
+## First GitHub Discussion
+
+Use `docs/community/first-github-discussion.md` for the first public Discussion. Recommended category: Announcements. Fallback category: General, then Show and tell.
+
+Title:
+
+```text
+Show DEALIoT: production-oriented IoT data architecture from MQTT to governed data products
+```
+
+The discussion body should ask for one concrete use case, one evaluation blocker, or one integration proposal. It should also link to:
+
+- Repository: https://github.com/Smartappli/DEALIoT
+- Website: https://smartappli.io/
+- Quick evaluation path: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/quick-evaluation-path.md
+- Use case catalog: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/use-case-catalog.md
+- Contributor onboarding: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/contributor-onboarding.md
+
+If the discussion creates useful feedback, convert repeated blockers into documentation, tests, or scoped issues within the same week.
+
 ## Partner Outreach Email
 
 ```text
