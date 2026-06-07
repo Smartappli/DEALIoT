@@ -519,6 +519,9 @@ class RepositoryUnitTests(unittest.TestCase):
     def test_public_website_presents_deal_suite(self) -> None:
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
         french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
+        translations = json.loads(
+            (REPO_ROOT / "website" / "src" / "i18n-copy.json").read_text(encoding="utf-8")
+        )
         styles_css = (REPO_ROOT / "website" / "styles.css").read_text(encoding="utf-8")
         source_styles_css = (REPO_ROOT / "website" / "src" / "styles.css").read_text(
             encoding="utf-8"
@@ -538,7 +541,7 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('href="https://smartappli.io/fr/"', index_html)
         self.assertIn('href="https://smartappli.io/"', french_html)
         self.assertIn("Operate field data like a production system.", index_html)
-        self.assertIn("Industrialisez vos donn\u00e9es IoT", french_html)
+        self.assertIn(translations["fr"]["h1"], french_html)
         self.assertIn("Star on GitHub", index_html)
         self.assertIn("language-select", index_html)
         self.assertIn("data-language-select", index_html)
@@ -556,7 +559,7 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('name="twitter:card"', index_html)
         self.assertIn('type="application/ld+json"', index_html)
         self.assertIn("What is DEALIoT?", index_html)
-        self.assertIn("Qu'est-ce que DEALIoT ?", french_html)
+        self.assertIn(translations["fr"]["q_dealiot"], french_html)
         self.assertIn("@media(max-width:1120px)", compact_styles_css)
         self.assertIn("@media(max-width:720px)", compact_styles_css)
         self.assertIn("Bricolage Grotesque", styles_css)
