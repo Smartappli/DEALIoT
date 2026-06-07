@@ -93,6 +93,8 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "website" / "README.md",
             REPO_ROOT / "website" / "robots.txt",
             REPO_ROOT / "website" / "sitemap.xml",
+            REPO_ROOT / "website" / "CNAME",
+            REPO_ROOT / "website" / "eu-languages.json",
             REPO_ROOT / "website" / "llms.txt",
             REPO_ROOT / "website" / "humans.txt",
             REPO_ROOT / "website" / "site.webmanifest",
@@ -529,16 +531,18 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn('<html lang="en-US">', index_html)
         self.assertIn('<html lang="fr">', french_html)
-        self.assertIn('href="https://smartappli.github.io/DEALIoT/fr/"', index_html)
-        self.assertIn('href="https://smartappli.github.io/DEALIoT/"', french_html)
+        self.assertIn('href="https://smartappli.io/fr/"', index_html)
+        self.assertIn('href="https://smartappli.io/"', french_html)
         self.assertIn("Operate field data like a production system.", index_html)
-        self.assertIn("Industrialisez vos donnees IoT", french_html)
-        self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
+        self.assertIn("Industrialisez vos donn\u00e9es IoT", french_html)
+        self.assertIn("Star on GitHub", index_html)
+        self.assertIn("language-panel", index_html)
+        self.assertIn("https://github.com/Smartappli/DEALIoT/stargazers", index_html)
         self.assertIn("mailto:contact@smartappli.com", index_html)
         self.assertIn("actions/upload-pages-artifact@", workflow)
         self.assertIn("actions/deploy-pages@", workflow)
         self.assertIn("path: website", workflow)
-        self.assertIn('href="https://smartappli.github.io/DEALIoT/"', index_html)
+        self.assertIn('href="https://smartappli.io/"', index_html)
         self.assertIn('property="og:title"', index_html)
         self.assertIn('name="twitter:card"', index_html)
         self.assertIn('type="application/ld+json"', index_html)
@@ -559,12 +563,23 @@ class RepositoryUnitTests(unittest.TestCase):
         robots = (REPO_ROOT / "website" / "robots.txt").read_text(encoding="utf-8")
         sitemap = (REPO_ROOT / "website" / "sitemap.xml").read_text(encoding="utf-8")
         llms = (REPO_ROOT / "website" / "llms.txt").read_text(encoding="utf-8")
+        languages = json.loads(
+            (REPO_ROOT / "website" / "eu-languages.json").read_text(encoding="utf-8")
+        )
         manifest = json.loads(
             (REPO_ROOT / "website" / "site.webmanifest").read_text(encoding="utf-8")
         )
 
-        canonical_url = "https://smartappli.github.io/DEALIoT/"
-        french_url = "https://smartappli.github.io/DEALIoT/fr/"
+        base_url = "https://smartappli.io/"
+
+        def localized_url(language: dict[str, str]) -> str:
+            language_path = language["path"].strip("/")
+            return f"{base_url}{language_path + '/' if language_path else ''}"
+
+        canonical_url = base_url
+        french_url = f"{base_url}fr/"
+        expected_urls = [localized_url(language) for language in languages]
+
         self.assertIn(f'<link rel="canonical" href="{canonical_url}">', index_html)
         self.assertIn(f'<link rel="canonical" href="{french_url}">', french_html)
         self.assertIn('hreflang="fr"', index_html)
@@ -572,20 +587,21 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('hreflang="en-US"', french_html)
         self.assertIn(f'href="{canonical_url}"', french_html)
         self.assertIn(f'<meta property="og:url" content="{canonical_url}">', index_html)
-        self.assertIn(
-            'content="https://smartappli.github.io/DEALIoT/assets/social-card.png"',
-            index_html,
-        )
+        self.assertIn('content="https://smartappli.io/assets/social-card.png"', index_html)
         self.assertIn('<meta property="og:image:width" content="1200">', index_html)
         self.assertIn('<meta property="og:image:height" content="630">', index_html)
-        self.assertIn("Sitemap: https://smartappli.github.io/DEALIoT/sitemap.xml", robots)
+        self.assertIn("Sitemap: https://smartappli.io/sitemap.xml", robots)
 
         sitemap_urls = re.findall(r"<loc>(.*?)</loc>", sitemap)
-        self.assertEqual([canonical_url, french_url], sitemap_urls)
-        self.assertIn('hreflang="en-US"', sitemap)
-        self.assertIn('hreflang="fr"', sitemap)
+        self.assertEqual(expected_urls, sitemap_urls)
+        for language in languages:
+            self.assertIn(f'hreflang="{language["hreflang"]}"', sitemap)
+            self.assertIn(f'href="{localized_url(language)}"', sitemap)
+        self.assertIn('hreflang="x-default" href="https://smartappli.io/"', sitemap)
 
-        self.assertEqual("/DEALIoT/", manifest["start_url"])
+        self.assertEqual("/", manifest["id"])
+        self.assertEqual("/", manifest["start_url"])
+        self.assertEqual("/", manifest["scope"])
         self.assertEqual("en-US", manifest["lang"])
         self.assertEqual("#0b1110", manifest["theme_color"])
         self.assertEqual("standalone", manifest["display"])
@@ -621,8 +637,64 @@ class RepositoryUnitTests(unittest.TestCase):
             "PWA status: installable",
             "ranking signal",
             "https://github.com/Smartappli/DEALIoT",
+            "All 24 official EU language routes",
         ):
             self.assertIn(fragment, llms)
+
+    def test_public_website_supports_all_official_eu_languages(self) -> None:
+        languages = json.loads(
+            (REPO_ROOT / "website" / "eu-languages.json").read_text(encoding="utf-8")
+        )
+        expected_hreflangs = {
+            "en-US",
+            "bg",
+            "hr",
+            "cs",
+            "da",
+            "nl",
+            "et",
+            "fi",
+            "fr",
+            "de",
+            "el",
+            "hu",
+            "ga",
+            "it",
+            "lv",
+            "lt",
+            "mt",
+            "pl",
+            "pt",
+            "ro",
+            "sk",
+            "sl",
+            "es",
+            "sv",
+        }
+        self.assertEqual(expected_hreflangs, {language["hreflang"] for language in languages})
+        self.assertEqual(24, len(languages))
+
+        names = {language["hreflang"]: language["name"] for language in languages}
+        self.assertEqual("\u010ce\u0161tina", names["cs"])
+        self.assertEqual("\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac", names["el"])
+        self.assertEqual("Fran\u00e7ais", names["fr"])
+
+        for language in languages:
+            language_path = language["path"].strip("/")
+            page_path = (
+                REPO_ROOT / "website" / "index.html"
+                if not language_path
+                else REPO_ROOT / "website" / language_path / "index.html"
+            )
+            html = page_path.read_text(encoding="utf-8")
+            localized_url = f"https://smartappli.io/{language_path + '/' if language_path else ''}"
+            self.assertIn(f'<html lang="{language["hreflang"]}">', html)
+            self.assertIn(f'<link rel="canonical" href="{localized_url}">', html)
+            self.assertEqual(25, html.count('rel="alternate"'))
+            self.assertIn("language-menu", html)
+            self.assertIn("language-panel", html)
+            self.assertIn("Star on GitHub", html)
+            self.assertNotIn("????", html)
 
     def test_public_website_is_installable_pwa(self) -> None:
         app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
@@ -630,17 +702,21 @@ class RepositoryUnitTests(unittest.TestCase):
         offline_html = (REPO_ROOT / "website" / "offline.html").read_text(encoding="utf-8")
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
         french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
+        gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
 
         self.assertIn('rel="manifest"', index_html)
         self.assertIn('rel="apple-touch-icon"', index_html)
         self.assertIn("navigator.serviceWorker.register", app_js)
-        self.assertIn('"/DEALIoT/"', app_js)
+        self.assertIn('return "/";', app_js)
         self.assertIn("CACHE_NAME", service_worker)
         self.assertIn('"./fr/"', service_worker)
+        self.assertIn('"./de/"', service_worker)
+        self.assertIn('"./es/"', service_worker)
         self.assertIn('"./offline.html"', service_worker)
         self.assertIn('request.mode === "navigate"', service_worker)
         self.assertIn("The DEAL site is available offline.", offline_html)
         self.assertIn('<link rel="manifest" href="../site.webmanifest">', french_html)
+        self.assertIn("website/", gitignore)
 
     def test_repository_has_adoption_assets(self) -> None:
         adoption_playbook = (REPO_ROOT / "docs" / "community" / "adoption-playbook.md").read_text(

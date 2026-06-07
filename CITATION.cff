@@ -5,7 +5,7 @@ type: software
 authors:
   - name: "Smartappli"
 repository-code: "https://github.com/Smartappli/DEALIoT"
-url: "https://smartappli.github.io/DEALIoT/"
+url: "https://smartappli.io/"
 license: "AGPL-3.0-only"
 version: "0.1.0"
 date-released: "2026-06-07"

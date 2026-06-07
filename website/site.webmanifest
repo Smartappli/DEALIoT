@@ -4,14 +4,18 @@
   "description": "DEALIoT, DealHost and DealData: IoT data platform, managed hosting and data governance suite.",
   "lang": "en-US",
   "dir": "ltr",
-  "id": "/DEALIoT/",
-  "start_url": "/DEALIoT/",
-  "scope": "/DEALIoT/",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#f6f0e2",
+  "background_color": "#eef7ef",
   "theme_color": "#0b1110",
-  "categories": ["business", "productivity", "utilities"],
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "assets/icon-192.png",
@@ -34,16 +38,16 @@
   ],
   "shortcuts": [
     {
-      "name": "Francais",
+      "name": "Français",
       "short_name": "FR",
       "description": "Open the French version of the DEAL suite website.",
-      "url": "/DEALIoT/fr/"
+      "url": "/fr/"
     },
     {
       "name": "GitHub repository",
       "short_name": "Repo",
       "description": "Open the repository link section on the DEAL suite website.",
-      "url": "/DEALIoT/#contact"
+      "url": "/#contact"
     }
   ]
 }

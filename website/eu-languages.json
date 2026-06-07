@@ -1,0 +1,122 @@
+[
+  {
+    "hreflang": "en-US",
+    "path": "/",
+    "name": "English"
+  },
+  {
+    "hreflang": "bg",
+    "path": "bg",
+    "name": "Български"
+  },
+  {
+    "hreflang": "hr",
+    "path": "hr",
+    "name": "Hrvatski"
+  },
+  {
+    "hreflang": "cs",
+    "path": "cs",
+    "name": "Čeština"
+  },
+  {
+    "hreflang": "da",
+    "path": "da",
+    "name": "Dansk"
+  },
+  {
+    "hreflang": "nl",
+    "path": "nl",
+    "name": "Nederlands"
+  },
+  {
+    "hreflang": "et",
+    "path": "et",
+    "name": "Eesti"
+  },
+  {
+    "hreflang": "fi",
+    "path": "fi",
+    "name": "Suomi"
+  },
+  {
+    "hreflang": "fr",
+    "path": "fr",
+    "name": "Français"
+  },
+  {
+    "hreflang": "de",
+    "path": "de",
+    "name": "Deutsch"
+  },
+  {
+    "hreflang": "el",
+    "path": "el",
+    "name": "Ελληνικά"
+  },
+  {
+    "hreflang": "hu",
+    "path": "hu",
+    "name": "Magyar"
+  },
+  {
+    "hreflang": "ga",
+    "path": "ga",
+    "name": "Gaeilge"
+  },
+  {
+    "hreflang": "it",
+    "path": "it",
+    "name": "Italiano"
+  },
+  {
+    "hreflang": "lv",
+    "path": "lv",
+    "name": "Latviešu"
+  },
+  {
+    "hreflang": "lt",
+    "path": "lt",
+    "name": "Lietuvių"
+  },
+  {
+    "hreflang": "mt",
+    "path": "mt",
+    "name": "Malti"
+  },
+  {
+    "hreflang": "pl",
+    "path": "pl",
+    "name": "Polski"
+  },
+  {
+    "hreflang": "pt",
+    "path": "pt",
+    "name": "Português"
+  },
+  {
+    "hreflang": "ro",
+    "path": "ro",
+    "name": "Română"
+  },
+  {
+    "hreflang": "sk",
+    "path": "sk",
+    "name": "Slovenčina"
+  },
+  {
+    "hreflang": "sl",
+    "path": "sl",
+    "name": "Slovenščina"
+  },
+  {
+    "hreflang": "es",
+    "path": "es",
+    "name": "Español"
+  },
+  {
+    "hreflang": "sv",
+    "path": "sv",
+    "name": "Svenska"
+  }
+]

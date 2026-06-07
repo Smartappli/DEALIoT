@@ -11,7 +11,7 @@ function updateHeaderShadow() {
 }
 
 function getSiteBasePath() {
-  return window.location.pathname.startsWith("/DEALIoT/") ? "/DEALIoT/" : "/";
+  return "/";
 }
 
 function registerServiceWorker() {

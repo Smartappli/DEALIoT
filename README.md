@@ -28,7 +28,7 @@ DEALIoT provides six runtime planes:
 
 ## Website And Adoption
 
-- Public website: `https://smartappli.github.io/DEALIoT/`
+- Public website: `https://smartappli.io/`
 - Adoption playbook: [docs/community/adoption-playbook.md](docs/community/adoption-playbook.md)
 - Demo pilot playbook: [docs/community/demo-pilot-playbook.md](docs/community/demo-pilot-playbook.md)
 - Integration partner guide: [docs/community/integration-partner-guide.md](docs/community/integration-partner-guide.md)

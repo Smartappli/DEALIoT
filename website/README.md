@@ -13,7 +13,7 @@ Open `http://localhost:8080`.
 ## Languages
 
 - Default language: English US at `/`.
-- French version: `/fr/`.
+- All 24 official EU languages are available as static localized routes.
 - `sitemap.xml` and page headers expose `hreflang` alternates.
 
 ## PWA Assets
@@ -32,9 +32,9 @@ The website ships with:
 The public website ships with:
 
 - `index.html`: default English canonical page, Open Graph, Twitter Card and schema.org JSON-LD.
-- `fr/index.html`: French localized page with its own canonical and JSON-LD.
+- `fr/index.html` and every EU language route: localized page with its own canonical URL and `hreflang` alternates.
 - `robots.txt`: crawler access plus sitemap discovery.
-- `sitemap.xml`: canonical GitHub Pages URLs and language alternates.
+- `sitemap.xml`: canonical `smartappli.io` URLs and EU language alternates.
 - `llms.txt`: concise machine-readable context for generative engines and AI agents.
 - `humans.txt`: maintainer and repository reference.
 - `assets/social-card.png`: primary 1200x630 social preview image for link sharing.
@@ -44,4 +44,4 @@ The public website ships with:
 
 ## Deployment
 
-The GitHub Pages workflow publishes the `website/` directory as a static artifact on pushes to `main` when website files or the workflow change.
+The website is externalized on `smartappli.io`. The GitHub Pages workflow can still publish the `website/` directory as a static artifact on pushes to `main` when website files or the workflow change.

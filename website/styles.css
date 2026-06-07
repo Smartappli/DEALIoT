@@ -1,18 +1,18 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 :root {
-  --ink: #0b1110;
-  --ink-soft: #42524b;
-  --paper: #f6f0e2;
-  --paper-deep: #ebe0c8;
-  --copper: #c86f32;
-  --copper-dark: #8f461f;
-  --moss: #2f6b57;
-  --aqua: #46b5a7;
-  --sun: #e6ba55;
-  --line: rgb(16 22 20 / 14%);
-  --white: #fffaf0;
-  --shadow: 0 28px 80px rgb(16 22 20 / 18%);
+  --ink: #07110f;
+  --ink-soft: #395149;
+  --paper: #eef7ef;
+  --paper-deep: #d8e8dd;
+  --copper: #21c47b;
+  --copper-dark: #0b7a4b;
+  --moss: #0f8f60;
+  --aqua: #1dd6a3;
+  --sun: #c9ff6a;
+  --line: rgb(12 130 86 / 18%);
+  --white: #f7fff9;
+  --shadow: 0 30px 90px rgb(3 25 17 / 20%);
   --radius-lg: 36px;
   --radius-md: 24px;
   --radius-sm: 16px;
@@ -35,9 +35,9 @@ body {
   color: var(--ink);
   font-family: var(--font-body);
   background:
-    radial-gradient(circle at 5% 12%, rgb(200 111 50 / 24%), transparent 34rem),
-    radial-gradient(circle at 92% 8%, rgb(70 181 167 / 24%), transparent 32rem),
-    linear-gradient(135deg, var(--paper), #efe4cb 45%, #dcd0b6);
+    radial-gradient(circle at 7% 10%, rgb(29 214 163 / 26%), transparent 34rem),
+    radial-gradient(circle at 92% 8%, rgb(201 255 106 / 22%), transparent 32rem),
+    linear-gradient(135deg, #f3fff4, var(--paper) 42%, var(--paper-deep));
   overflow-x: hidden;
 }
 
@@ -62,7 +62,7 @@ body::after {
   height: 38rem;
   pointer-events: none;
   content: "";
-  background: conic-gradient(from 120deg, var(--moss), var(--aqua), var(--sun), var(--copper), var(--moss));
+  background: conic-gradient(from 120deg, var(--moss), var(--aqua), var(--sun), #123c2f, var(--moss));
   border-radius: 50%;
   filter: blur(70px);
   opacity: 0.24;
@@ -100,16 +100,17 @@ a {
   width: min(1180px, calc(100% - 2rem));
   margin: 1rem auto 0;
   padding: 0.8rem;
-  background: rgb(244 238 223 / 78%);
-  border: 1px solid var(--line);
+  color: var(--white);
+  background: linear-gradient(135deg, rgb(5 20 16 / 88%), rgb(8 45 33 / 82%));
+  border: 1px solid rgb(201 255 106 / 16%);
   border-radius: 999px;
   box-shadow: 0 20px 70px rgb(16 22 20 / 10%);
   backdrop-filter: blur(18px);
 }
 
 .site-header.is-scrolled {
-  background: rgb(244 238 223 / 90%);
-  box-shadow: 0 22px 80px rgb(16 22 20 / 16%);
+  background: linear-gradient(135deg, rgb(5 20 16 / 94%), rgb(8 45 33 / 90%));
+  box-shadow: 0 24px 86px rgb(3 25 17 / 26%);
 }
 
 .header-actions {
@@ -117,6 +118,82 @@ a {
   gap: 0.5rem;
   align-items: center;
   justify-self: end;
+}
+
+.language-menu {
+  position: relative;
+}
+
+.language-menu summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3.2rem;
+  min-height: 2.85rem;
+  padding: 0 0.85rem;
+  color: var(--white);
+  font: 800 0.78rem var(--font-mono);
+  cursor: pointer;
+  background: rgb(247 255 249 / 10%);
+  border: 1px solid rgb(247 255 249 / 16%);
+  border-radius: 999px;
+}
+
+.language-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.language-menu summary::after {
+  margin-left: 0.45rem;
+  content: "";
+  border-color: var(--sun) transparent transparent;
+  border-style: solid;
+  border-width: 0.35rem 0.28rem 0;
+}
+
+.language-panel {
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(8.5rem, 1fr));
+  gap: 0.25rem;
+  width: min(28rem, calc(100vw - 1.5rem));
+  max-height: min(34rem, 72vh);
+  padding: 0.75rem;
+  overflow: auto;
+  background: rgb(5 20 16 / 96%);
+  border: 1px solid rgb(201 255 106 / 18%);
+  border-radius: 22px;
+  box-shadow: 0 24px 80px rgb(3 25 17 / 36%);
+  backdrop-filter: blur(18px);
+}
+
+.language-panel a {
+  padding: 0.72rem 0.8rem;
+  color: rgb(247 255 249 / 78%);
+  font-weight: 700;
+  border-radius: 14px;
+}
+
+.language-panel a:hover {
+  color: var(--ink);
+  background: linear-gradient(135deg, var(--sun), var(--aqua));
+}
+
+.star-link {
+  padding: 0.78rem 1rem;
+  color: var(--sun);
+  font-weight: 800;
+  border: 1px solid rgb(201 255 106 / 28%);
+  border-radius: 999px;
+  background: rgb(247 255 249 / 8%);
+}
+
+.star-link:hover {
+  color: var(--ink);
+  background: var(--sun);
 }
 
 .brand {
@@ -130,9 +207,9 @@ a {
   display: grid;
   width: 2.55rem;
   height: 2.55rem;
-  color: var(--white);
+  color: var(--ink);
   font: 900 1.1rem var(--font-display);
-  background: var(--ink);
+  background: linear-gradient(135deg, var(--sun), var(--aqua));
   border-radius: 50%;
   place-items: center;
 }
@@ -143,7 +220,7 @@ a {
 }
 
 .brand small {
-  color: var(--ink-soft);
+  color: rgb(247 255 249 / 68%);
   font: 600 0.72rem var(--font-mono);
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -153,30 +230,31 @@ a {
   display: flex;
   gap: 0.25rem;
   padding: 0.25rem;
-  background: rgb(255 250 240 / 55%);
-  border: 1px solid var(--line);
+  background: rgb(247 255 249 / 8%);
+  border: 1px solid rgb(247 255 249 / 12%);
   border-radius: 999px;
 }
 
 .site-nav a {
   padding: 0.65rem 0.95rem;
-  color: var(--ink-soft);
+  color: rgb(247 255 249 / 72%);
   border-radius: 999px;
 }
 
 .site-nav a:hover,
 .site-nav a.is-active {
-  color: var(--white);
-  background: var(--moss);
+  color: var(--ink);
+  background: var(--sun);
 }
 
 .nav-cta {
   justify-self: end;
   padding: 0.78rem 1rem;
-  color: var(--white);
+  color: var(--ink);
   font-weight: 700;
-  background: var(--copper-dark);
+  background: linear-gradient(135deg, var(--sun), var(--aqua));
   border-radius: 999px;
+  box-shadow: 0 16px 42px rgb(29 214 163 / 24%);
 }
 
 .language-link {
@@ -828,6 +906,20 @@ h3 {
 
   .header-actions {
     justify-self: end;
+  }
+
+  .language-panel {
+    grid-template-columns: 1fr;
+    width: min(18rem, calc(100vw - 1rem));
+  }
+
+  .star-link {
+    max-width: 6.2rem;
+    padding-inline: 0.8rem;
+    overflow: hidden;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .site-nav {
