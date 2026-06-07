@@ -153,9 +153,15 @@ def kafka_security_config() -> dict[str, Any]:
     config: dict[str, Any] = {"security_protocol": security_protocol}
 
     if security_protocol.startswith("SASL_"):
+        username = os.getenv("KAFKA_SASL_USERNAME")
+        password = env_or_secret_file("KAFKA_SASL_PASSWORD")
+        if not username or not password:
+            raise ValueError(
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when Kafka SASL is enabled",
+            )
         config["sasl_mechanism"] = os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
-        config["sasl_plain_username"] = os.getenv("KAFKA_SASL_USERNAME")
-        config["sasl_plain_password"] = env_or_secret_file("KAFKA_SASL_PASSWORD")
+        config["sasl_plain_username"] = username
+        config["sasl_plain_password"] = password
 
     if "SSL" in security_protocol:
         ssl_cafile = os.getenv("KAFKA_SSL_CAFILE")

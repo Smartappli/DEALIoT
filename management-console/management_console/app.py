@@ -317,9 +317,16 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
             return True
         return self.headers.get("Authorization") == f"Bearer {token}"
 
-    def require_authorization(self) -> bool:
+    def discard_request_body(self) -> None:
+        length = int(self.headers.get("Content-Length", "0") or "0")
+        if length > 0:
+            self.rfile.read(min(length, MAX_REQUEST_BYTES + 1))
+
+    def require_authorization(self, *, discard_body: bool = False) -> bool:
         if self.request_authorized():
             return True
+        if discard_body:
+            self.discard_request_body()
         self.respond_json({"error": "unauthorized"}, status=HTTPStatus.UNAUTHORIZED)
         return False
 
@@ -354,7 +361,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
         self.serve_static()
 
     def do_POST(self) -> None:
-        if not self.require_authorization():
+        if not self.require_authorization(discard_body=True):
             return
 
         actions = {
