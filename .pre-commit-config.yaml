@@ -18,7 +18,7 @@ repos:
         args: ["-s"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.14
+    rev: v0.15.16
     hooks:
       - id: ruff-check
         args: ["--fix", "--config", "pyproject.toml"]
@@ -35,7 +35,7 @@ repos:
           - types-PyYAML==6.0.12.20260408
 
   - repo: https://github.com/Riverside-Healthcare/djLint
-    rev: v1.36.4
+    rev: v1.39.0
     hooks:
       - id: djlint
         args: ["--configuration", "pyproject.toml"]
