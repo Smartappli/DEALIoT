@@ -107,6 +107,11 @@ a {
   backdrop-filter: blur(18px);
 }
 
+.site-header.is-scrolled {
+  background: rgb(244 238 223 / 90%);
+  box-shadow: 0 22px 80px rgb(16 22 20 / 16%);
+}
+
 .brand {
   display: inline-flex;
   gap: 0.75rem;
