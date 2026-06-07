@@ -55,6 +55,7 @@ EVENT_TYPE = Types.ROW_NAMED(
 DEFAULT_SOURCE_TOPICS = (
     "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,raw.video2d.meta,raw.video3d.meta"
 )
+TRUTHY_VALUES = {"1", "true", "yes", "on"}
 
 SOURCE_TOPIC_EVENT_KINDS = {
     "raw.sensor": "sensor",
@@ -99,6 +100,73 @@ def env_or_default(name: str, default: str) -> str:
     if value is None or not value.strip():
         return default
     return value.strip()
+
+
+def bool_env(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in TRUTHY_VALUES
+
+
+def parse_kafka_client_properties(value: str) -> dict[str, str]:
+    properties: dict[str, str] = {}
+    for item in value.replace("\n", ",").split(","):
+        if not item.strip():
+            continue
+        key, separator, prop_value = item.partition("=")
+        if not separator or not key.strip():
+            raise ValueError("KAFKA_CLIENT_PROPERTIES entries must use key=value syntax")
+        properties[key.strip()] = prop_value.strip()
+    return properties
+
+
+def kafka_client_properties() -> dict[str, str]:
+    security_protocol = env_or_default("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT")
+    properties = {"security.protocol": security_protocol}
+
+    if security_protocol.startswith("SASL_"):
+        mechanism = env_or_default("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
+        username = os.getenv("KAFKA_SASL_USERNAME")
+        password = os.getenv("KAFKA_SASL_PASSWORD")
+        properties["sasl.mechanism"] = mechanism
+        if username and password:
+            properties["sasl.jaas.config"] = (
+                "org.apache.kafka.common.security.scram.ScramLoginModule required "
+                f'username="{username}" password="{password}";'
+            )
+
+    if "SSL" in security_protocol:
+        for env_name, property_name in (
+            ("KAFKA_SSL_TRUSTSTORE_LOCATION", "ssl.truststore.location"),
+            ("KAFKA_SSL_TRUSTSTORE_PASSWORD", "ssl.truststore.password"),
+            ("KAFKA_SSL_KEYSTORE_LOCATION", "ssl.keystore.location"),
+            ("KAFKA_SSL_KEYSTORE_PASSWORD", "ssl.keystore.password"),
+            ("KAFKA_SSL_KEY_PASSWORD", "ssl.key.password"),
+        ):
+            value = os.getenv(env_name)
+            if value:
+                properties[property_name] = value
+        if not bool_env("KAFKA_SSL_CHECK_HOSTNAME", True):
+            properties["ssl.endpoint.identification.algorithm"] = ""
+
+    properties.update(parse_kafka_client_properties(os.getenv("KAFKA_CLIENT_PROPERTIES", "")))
+    return properties
+
+
+def apply_kafka_properties(builder, properties: dict[str, str]):
+    for key, value in sorted(properties.items()):
+        builder.set_property(key, value)
+    return builder
+
+
+def kafka_delivery_guarantee():
+    value = env_or_default("FLINK_KAFKA_DELIVERY_GUARANTEE", "AT_LEAST_ONCE").upper()
+    if value == "NONE":
+        return DeliveryGuarantee.NONE
+    if value == "AT_LEAST_ONCE":
+        return DeliveryGuarantee.AT_LEAST_ONCE
+    raise ValueError("FLINK_KAFKA_DELIVERY_GUARANTEE must be NONE or AT_LEAST_ONCE")
 
 
 def kafka_offset_reset_strategy(value: str):
@@ -229,8 +297,9 @@ def build_topic_stream(
     bootstrap_servers: str,
     group_id: str,
     topic_name: str,
+    kafka_properties: dict[str, str] | None = None,
 ):
-    source = (
+    source_builder = (
         KafkaSource.builder()
         .set_bootstrap_servers(bootstrap_servers)
         .set_topics(topic_name)
@@ -243,8 +312,8 @@ def build_topic_stream(
         .set_value_only_deserializer(SimpleStringSchema())
         .set_property("enable.auto.commit", "false")
         .set_property("commit.offsets.on.checkpoint", "true")
-        .build()
     )
+    source = apply_kafka_properties(source_builder, kafka_properties or kafka_client_properties()).build()
 
     return env.from_source(
         source,
@@ -268,6 +337,7 @@ def build_kafka_sink(
     topic_name: str,
     *,
     include_key: bool = False,
+    kafka_properties: dict[str, str] | None = None,
 ):
     serializer_builder = (
         KafkaRecordSerializationSchema.builder()
@@ -277,14 +347,14 @@ def build_kafka_sink(
     if include_key:
         serializer_builder.set_key_serialization_schema(SimpleStringSchema())
 
-    return (
+    sink_builder = (
         KafkaSink.builder()
         .set_bootstrap_servers(bootstrap_servers)
         .set_record_serializer(serializer_builder.build())
-        .set_delivery_guarantee(DeliveryGuarantee.NONE)
+        .set_delivery_guarantee(kafka_delivery_guarantee())
         .set_property("acks", "all")
-        .build()
     )
+    return apply_kafka_properties(sink_builder, kafka_properties or kafka_client_properties()).build()
 
 
 def main():
@@ -304,6 +374,7 @@ def main():
         ).split(",")
         if topic.strip()
     ]
+    kafka_properties = kafka_client_properties()
 
     env = StreamExecutionEnvironment.get_execution_environment()
     env.set_runtime_mode(RuntimeExecutionMode.STREAMING)
@@ -319,6 +390,7 @@ def main():
             bootstrap_servers=bootstrap_servers,
             group_id=consumer_group,
             topic_name=topic,
+            kafka_properties=kafka_properties,
         )
         for topic in source_topics
     ]
@@ -347,6 +419,7 @@ def main():
         build_kafka_sink(
             bootstrap_servers,
             env_or_default("FEATURES_TOPIC", "features.events"),
+            kafka_properties=kafka_properties,
         )
     )
 
@@ -358,6 +431,7 @@ def main():
             bootstrap_servers,
             env_or_default("STATE_TOPIC", "state.latest"),
             include_key=True,
+            kafka_properties=kafka_properties,
         )
     )
 

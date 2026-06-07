@@ -1,8 +1,12 @@
 import atexit
 import base64
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import logging
 import os
+import ssl
+import threading
 import time
 import uuid
 from datetime import UTC, datetime
@@ -61,6 +65,7 @@ DEFAULT_SECRET_DIRECTORIES = (
     Path("/var/run/dealiot-secrets"),
     Path.cwd() / "secrets",
 )
+TRUTHY_VALUES = {"1", "true", "yes", "on"}
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:
@@ -110,10 +115,23 @@ def csv_env_or_default(name: str, default: str) -> tuple[str, ...]:
     return topics
 
 
+def bool_env(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in TRUTHY_VALUES
+
+
 MQTT_HOST = os.getenv("MQTT_HOST", "vernemq1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME")
 MQTT_PASSWORD = env_or_secret_file("MQTT_PASSWORD")
+MQTT_TLS_ENABLED = bool_env("MQTT_TLS_ENABLED", MQTT_PORT == 8883)
+MQTT_TLS_CA_FILE = os.getenv("MQTT_TLS_CA_FILE")
+MQTT_TLS_CERT_FILE = os.getenv("MQTT_TLS_CERT_FILE")
+MQTT_TLS_KEY_FILE = os.getenv("MQTT_TLS_KEY_FILE")
+MQTT_TLS_INSECURE_SKIP_VERIFY = bool_env("MQTT_TLS_INSECURE_SKIP_VERIFY")
+BRIDGE_HEALTH_PORT = int(os.getenv("BRIDGE_HEALTH_PORT", "8080"))
 legacy_mqtt_topic = os.getenv("MQTT_TOPIC")
 MQTT_TOPICS_DEFAULT = (
     legacy_mqtt_topic if legacy_mqtt_topic and legacy_mqtt_topic.strip() else DEFAULT_MQTT_TOPICS
@@ -128,6 +146,30 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv(
 ).split(",")
 
 DEFAULT_KAFKA_TOPIC = os.getenv("DEFAULT_KAFKA_TOPIC", RAW_SENSOR_TOPIC)
+
+
+def kafka_security_config() -> dict[str, Any]:
+    security_protocol = os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT").strip()
+    config: dict[str, Any] = {"security_protocol": security_protocol}
+
+    if security_protocol.startswith("SASL_"):
+        config["sasl_mechanism"] = os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
+        config["sasl_plain_username"] = os.getenv("KAFKA_SASL_USERNAME")
+        config["sasl_plain_password"] = env_or_secret_file("KAFKA_SASL_PASSWORD")
+
+    if "SSL" in security_protocol:
+        ssl_cafile = os.getenv("KAFKA_SSL_CAFILE")
+        ssl_certfile = os.getenv("KAFKA_SSL_CERTFILE")
+        ssl_keyfile = os.getenv("KAFKA_SSL_KEYFILE")
+        if ssl_cafile:
+            config["ssl_cafile"] = ssl_cafile
+        if ssl_certfile:
+            config["ssl_certfile"] = ssl_certfile
+        if ssl_keyfile:
+            config["ssl_keyfile"] = ssl_keyfile
+        config["ssl_check_hostname"] = bool_env("KAFKA_SSL_CHECK_HOSTNAME", True)
+
+    return {key: value for key, value in config.items() if value not in (None, "")}
 
 
 def decode_payload(payload: bytes) -> Any:
@@ -232,6 +274,7 @@ producer = KafkaProducer(
     buffer_memory=67108864,
     compression_type="lz4",
     max_in_flight_requests_per_connection=1,
+    **kafka_security_config(),
 )
 
 atexit.register(lambda: producer.flush(timeout=10))
@@ -351,6 +394,45 @@ def run_bridge(client: mqtt_client.Client) -> None:
             time.sleep(5)
 
 
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        if self.path != "/healthz":
+            self.send_response(HTTPStatus.NOT_FOUND)
+            self.end_headers()
+            return
+
+        payload = b'{"status":"ok"}'
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
+        LOGGER.debug("health probe: " + format, *args)
+
+
+def start_health_server() -> None:
+    server = ThreadingHTTPServer(("0.0.0.0", BRIDGE_HEALTH_PORT), HealthHandler)
+    thread = threading.Thread(target=server.serve_forever, name="bridge-health", daemon=True)
+    thread.start()
+
+
+def configure_mqtt_tls(client: mqtt_client.Client) -> None:
+    if not MQTT_TLS_ENABLED:
+        return
+
+    cert_reqs = ssl.CERT_NONE if MQTT_TLS_INSECURE_SKIP_VERIFY else ssl.CERT_REQUIRED
+    client.tls_set(
+        ca_certs=MQTT_TLS_CA_FILE,
+        certfile=MQTT_TLS_CERT_FILE,
+        keyfile=MQTT_TLS_KEY_FILE,
+        cert_reqs=cert_reqs,
+    )
+    if MQTT_TLS_INSECURE_SKIP_VERIFY:
+        client.tls_insecure_set(True)
+
+
 def main() -> None:
     logging.basicConfig(
         level=os.getenv("LOG_LEVEL", "INFO").upper(),
@@ -367,9 +449,11 @@ def main() -> None:
         raise ValueError(
             "MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled",
         )
+    configure_mqtt_tls(client)
     client.on_connect = on_connect
     client.on_message = on_message
 
+    start_health_server()
     run_bridge(client)
 
 

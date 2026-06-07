@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 FROM eclipse-temurin:21-jre-jammy AS source
 
 ARG WILDFI_DECODER_GIT_REF=b4002eb9a6111de140b95e5a35c3f3bd552d51be

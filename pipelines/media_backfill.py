@@ -26,6 +26,38 @@ TOPIC_BY_MEDIA_KIND = {
     "video2d": RAW_VIDEO2D_META_TOPIC,
     "video3d": RAW_VIDEO3D_META_TOPIC,
 }
+TRUTHY_VALUES = {"1", "true", "yes", "on"}
+
+
+def bool_env(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in TRUTHY_VALUES
+
+
+def kafka_security_config() -> dict:
+    security_protocol = os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT").strip()
+    config = {"security_protocol": security_protocol}
+
+    if security_protocol.startswith("SASL_"):
+        config["sasl_mechanism"] = os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
+        config["sasl_plain_username"] = os.getenv("KAFKA_SASL_USERNAME")
+        config["sasl_plain_password"] = os.getenv("KAFKA_SASL_PASSWORD")
+
+    if "SSL" in security_protocol:
+        ssl_cafile = os.getenv("KAFKA_SSL_CAFILE")
+        ssl_certfile = os.getenv("KAFKA_SSL_CERTFILE")
+        ssl_keyfile = os.getenv("KAFKA_SSL_KEYFILE")
+        if ssl_cafile:
+            config["ssl_cafile"] = ssl_cafile
+        if ssl_certfile:
+            config["ssl_certfile"] = ssl_certfile
+        if ssl_keyfile:
+            config["ssl_keyfile"] = ssl_keyfile
+        config["ssl_check_hostname"] = bool_env("KAFKA_SSL_CHECK_HOSTNAME", True)
+
+    return {key: value for key, value in config.items() if value not in (None, "")}
 
 
 def parse_iso8601(value: str) -> datetime:
@@ -59,6 +91,7 @@ def get_kafka_producer() -> KafkaProducer:
         retries=10,
         linger_ms=50,
         compression_type="lz4",
+        **kafka_security_config(),
     )
 
 

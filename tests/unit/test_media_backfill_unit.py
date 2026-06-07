@@ -176,6 +176,11 @@ class MediaBackfillUnitTests(unittest.TestCase):
                     "AWS_ACCESS_KEY_ID": "k",
                     "AWS_SECRET_ACCESS_KEY": aws_key_material,  # nosec B105
                     "KAFKA_BOOTSTRAP_SERVERS": "k1:9092,k2:9092",
+                    "KAFKA_SECURITY_PROTOCOL": "SASL_SSL",
+                    "KAFKA_SASL_MECHANISM": "SCRAM-SHA-512",
+                    "KAFKA_SASL_USERNAME": "backfill",
+                    "KAFKA_SASL_PASSWORD": "secret",
+                    "KAFKA_SSL_CAFILE": "/etc/ssl/kafka/ca.pem",
                 },
                 clear=True,
             ),
@@ -187,6 +192,13 @@ class MediaBackfillUnitTests(unittest.TestCase):
 
         mock_client.assert_called_once()
         mock_prod.assert_called_once()
+        producer_kwargs = mock_prod.call_args.kwargs
+        self.assertEqual(producer_kwargs["security_protocol"], "SASL_SSL")
+        self.assertEqual(producer_kwargs["sasl_mechanism"], "SCRAM-SHA-512")
+        self.assertEqual(producer_kwargs["sasl_plain_username"], "backfill")
+        self.assertEqual(producer_kwargs["sasl_plain_password"], "secret")
+        self.assertEqual(producer_kwargs["ssl_cafile"], "/etc/ssl/kafka/ca.pem")
+        self.assertTrue(producer_kwargs["ssl_check_hostname"])
 
     def test_main_sends_records_and_prints_summary(self):
         args = argparse.Namespace(
