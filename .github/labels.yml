@@ -10,6 +10,9 @@
 - name: integration
   color: "FBCA04"
   description: Device, platform, hosting, data export, or partner integration.
+- name: use-case
+  color: "B60205"
+  description: Concrete scenario proposed for pilots, documentation, demos, or launch material.
 - name: question
   color: "D4C5F9"
   description: Usage question or evaluation blocker.
