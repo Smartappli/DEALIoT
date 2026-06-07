@@ -70,7 +70,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("Normalize SARIF for GitHub code scanning", workflow_text)
         self.assertIn("automationDetails", workflow_text)
         self.assertIn("del(.partialFingerprints)", workflow_text)
-        self.assertIn("results.normalized.sarif", workflow_text)
+        self.assertIn("run_count=\"$(jq '.runs | length' results.sarif)\"", workflow_text)
+        self.assertIn("end=$((start + 20))", workflow_text)
+        self.assertIn("to_entries[$start:$end]", workflow_text)
+        self.assertIn("sarif-results", workflow_text)
 
     def test_e2e_workflow_runs_smoke_script_and_cleans_up(self) -> None:
         workflow_text = (REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml").read_text(
