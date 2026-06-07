@@ -23,6 +23,9 @@ spec:
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: jobmanager
           image: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
@@ -103,6 +106,11 @@ spec:
             limits:
               cpu: "2"
               memory: 3Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
 ---
 apiVersion: v1
 kind: Service
@@ -148,6 +156,9 @@ spec:
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: taskmanager
           image: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
@@ -221,6 +232,11 @@ spec:
             limits:
               cpu: "2"
               memory: 3Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget
