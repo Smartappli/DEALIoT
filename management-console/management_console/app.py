@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import concurrent.futures
 import http.client
+import ipaddress
 import json
 import os
 import socket
@@ -42,11 +43,32 @@ from management_console.zenodo import (
 STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
 DEFAULT_TIMEOUT_SECONDS = 2.0
 MAX_REQUEST_BYTES = 65536
+TRUTHY_ENV_VALUES = {"1", "true", "yes", "on"}
 
 
 def management_console_token() -> str | None:
     value = os.getenv("MANAGEMENT_CONSOLE_TOKEN", "").strip()
     return value or None
+
+
+def bool_env(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in TRUTHY_ENV_VALUES
+
+
+def is_wildcard_bind(host: str) -> bool:
+    try:
+        return ipaddress.ip_address(host).is_unspecified
+    except ValueError:
+        return False
+
+
+def configured_bind_host() -> str:
+    host = os.getenv("MANAGEMENT_CONSOLE_BIND", "127.0.0.1").strip() or "127.0.0.1"
+    if is_wildcard_bind(host) and not bool_env("MANAGEMENT_CONSOLE_ALLOW_WILDCARD_BIND"):
+        raise ValueError(
+            "Wildcard bind requires MANAGEMENT_CONSOLE_ALLOW_WILDCARD_BIND=true",
+        )
+    return host
 
 
 class SimpleHttpResponse:
@@ -462,7 +484,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
 
 
 def run() -> None:
-    host = os.getenv("MANAGEMENT_CONSOLE_BIND", "127.0.0.1")
+    host = configured_bind_host()
     port = int(os.getenv("MANAGEMENT_CONSOLE_PORT", "8080"))
     with ThreadingHTTPServer((host, port), ManagementConsoleHandler) as server:
         print(f"management-console listening on {host}:{port}")

@@ -313,6 +313,24 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             app.read_json_body(FakeBodyHandler(b"{}", app.MAX_REQUEST_BYTES + 1))
 
+    def test_configured_bind_host_rejects_wildcard_without_explicit_opt_in(self) -> None:
+        with patch.dict("os.environ", {}, clear=True):
+            self.assertEqual(app.configured_bind_host(), "127.0.0.1")
+
+        with patch.dict("os.environ", {"MANAGEMENT_CONSOLE_BIND": "0.0.0.0"}, clear=True):
+            with self.assertRaisesRegex(ValueError, "Wildcard bind requires"):
+                app.configured_bind_host()
+
+        with patch.dict(
+            "os.environ",
+            {
+                "MANAGEMENT_CONSOLE_BIND": "::",
+                "MANAGEMENT_CONSOLE_ALLOW_WILDCARD_BIND": "true",
+            },
+            clear=True,
+        ):
+            self.assertEqual(app.configured_bind_host(), "::")
+
     def test_http_handler_serves_api_static_post_and_errors(self) -> None:
         with running_console_server() as base_url:
             health = read_json(f"{base_url}/healthz")
