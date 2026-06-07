@@ -342,7 +342,7 @@
     "contact_team": "Kontaktujte tým",
     "open_repo": "Otevřete úložiště GitHub",
     "deal_ecosystem": "DEAL ekosystém",
-    "llms_context": "LLMS kontextu"
+    "llms_context": "LLMS kontext"
   },
   "da": {
     "meta_description": "DEAL præsenterer DEALIoT, DEALHost og DEALData: en produktionsklar IoT-dataplatform, administreret hostingsti og datastyringslag til skalerbare feltdataøkosystemer.",
@@ -457,7 +457,7 @@
     "contact_team": "Kontakt holdet",
     "open_repo": "Åbn GitHub-lageret",
     "deal_ecosystem": "DEAL økosystem",
-    "llms_context": "LLMS kontekst"
+    "llms_context": "LLMS-kontekst"
   },
   "nl": {
     "meta_description": "DEAL presenteert DEALIoT, DEALHost en DEALData: een productieklaar IoT-dataplatform, een beheerd hostingpad en een data-governancelaag voor schaalbare velddata-ecosystemen.",
@@ -572,7 +572,7 @@
     "contact_team": "Neem contact op met het team",
     "open_repo": "Open de GitHub-repository",
     "deal_ecosystem": "DEAL ecosysteem",
-    "llms_context": "LLMS context"
+    "llms_context": "LLMS-context"
   },
   "et": {
     "meta_description": "DEAL esitleb DEALIoT, DEALHost ja DEALData: tootmisvalmis IoT andmeplatvormi, hallatavat hostimisteed ja andmete halduskihti skaleeritavate põlluandmete ökosüsteemide jaoks.",
@@ -687,7 +687,7 @@
     "contact_team": "Võtke meeskonnaga ühendust",
     "open_repo": "Avage hoidla GitHub",
     "deal_ecosystem": "DEAL ökosüsteem",
-    "llms_context": "LLMS kontekstis"
+    "llms_context": "LLMS kontekst"
   },
   "fi": {
     "meta_description": "DEAL esittelee DEALIoT, DEALHost ja DEALData: tuotantovalmiin IoT-tietoalustan, hallitun isännöintipolun ja tiedonhallintakerroksen skaalautuville kenttätietoekosysteemeille.",
@@ -802,7 +802,7 @@
     "contact_team": "Ota yhteyttä tiimiin",
     "open_repo": "Avaa GitHub-arkisto",
     "deal_ecosystem": "DEAL ekosysteemi",
-    "llms_context": "LLMS kontekstissa"
+    "llms_context": "LLMS-konteksti"
   },
   "fr": {
     "meta_description": "DEAL présente DEALIoT, DEALHost et DEALData : une plate-forme de données IoT prête pour la production, un chemin d'hébergement géré et une couche de gouvernance des données pour des écosystèmes de données de terrain évolutifs.",
@@ -1032,7 +1032,7 @@
     "contact_team": "Kontaktieren Sie das Team",
     "open_repo": "Öffnen Sie das GitHub-Repository",
     "deal_ecosystem": "DEAL Ökosystem",
-    "llms_context": "LLMS Kontext"
+    "llms_context": "LLMS-Kontext"
   },
   "el": {
     "meta_description": "Το DEAL παρουσιάζει τα DEALIoT, DEALHost και DEALData: μια πλατφόρμα δεδομένων IoT έτοιμη για παραγωγή, διαδρομή διαχειριζόμενης φιλοξενίας και επίπεδο διακυβέρνησης δεδομένων για κλιμακούμενα οικοσυστήματα δεδομένων πεδίου.",
@@ -1147,7 +1147,7 @@
     "contact_team": "Επικοινωνήστε με την ομάδα",
     "open_repo": "Ανοίξτε το αποθετήριο GitHub",
     "deal_ecosystem": "DEAL οικοσύστημα",
-    "llms_context": "LLMS πλαίσιο"
+    "llms_context": "Πλαίσιο LLMS"
   },
   "hu": {
     "meta_description": "A DEAL bemutatja a DEALIoT, DEALHost és DEALData kifejezéseket: termelésre kész IoT-adatplatformot, felügyelt tárhely-útvonalat és adatirányítási réteget a méretezhető terepi adat-ökoszisztémákhoz.",
@@ -1262,7 +1262,7 @@
     "contact_team": "Vegye fel a kapcsolatot a csapattal",
     "open_repo": "Nyissa meg a GitHub tárolót",
     "deal_ecosystem": "DEAL ökoszisztéma",
-    "llms_context": "LLMS kontextusban"
+    "llms_context": "LLMS-környezet"
   },
   "ga": {
     "meta_description": "Cuireann DEAL DEALIoT, DEALHost agus DEALData i láthair: ardán sonraí IoT atá réidh le haghaidh táirgeadh, cosán óstála bainistithe agus ciseal rialachais sonraí le haghaidh éiceachórais sonraí allamuigh inscálaithe.",
@@ -1377,7 +1377,7 @@
     "contact_team": "Déan teagmháil leis an bhfoireann",
     "open_repo": "Oscail an stór GitHub",
     "deal_ecosystem": "DEAL éiceachóras",
-    "llms_context": "LLMS comhthéacs"
+    "llms_context": "Comhthéacs LLMS"
   },
   "it": {
     "meta_description": "DEAL presenta DEALIoT, DEALHost e DEALData: una piattaforma dati IoT pronta per la produzione, percorso di hosting gestito e livello di governance dei dati per ecosistemi di dati sul campo scalabili.",
@@ -1492,7 +1492,7 @@
     "contact_team": "Contatta la squadra",
     "open_repo": "Apri il repository GitHub",
     "deal_ecosystem": "DEAL ecosistema",
-    "llms_context": "LLMS contesto"
+    "llms_context": "Contesto LLMS"
   },
   "lv": {
     "meta_description": "DEAL piedāvā DEALIoT, DEALHost un DEALData: ražošanai gatavu IoT datu platformu, pārvaldītu mitināšanas ceļu un datu pārvaldības slāni mērogojamām lauka datu ekosistēmām.",
@@ -1607,7 +1607,7 @@
     "contact_team": "Sazinieties ar komandu",
     "open_repo": "Atveriet repozitoriju GitHub",
     "deal_ecosystem": "DEAL ekosistēma",
-    "llms_context": "LLMS kontekstā"
+    "llms_context": "LLMS konteksts"
   },
   "lt": {
     "meta_description": "DEAL pristato DEALIoT, DEALHost ir DEALData: gamybai paruoštą IoT duomenų platformą, valdomą prieglobos kelią ir duomenų valdymo sluoksnį, skirtą keičiamo dydžio lauko duomenų ekosistemoms.",
@@ -1722,7 +1722,7 @@
     "contact_team": "Susisiekite su komanda",
     "open_repo": "Atidarykite GitHub saugyklą",
     "deal_ecosystem": "DEAL ekosistema",
-    "llms_context": "LLMS kontekste"
+    "llms_context": "LLMS kontekstas"
   },
   "mt": {
     "meta_description": "DEAL jippreżenta DEALIoT, DEALHost u DEALData: pjattaforma tad-dejta tal-IoT lesta għall-produzzjoni, passaġġ ta’ hosting ġestit u saff ta’ governanza tad-dejta għal ekosistemi ta’ dejta fuq il-post skalabbli.",
@@ -1837,7 +1837,7 @@
     "contact_team": "Ikkuntattja lit-tim",
     "open_repo": "Iftaħ ir-repożitorju GitHub",
     "deal_ecosystem": "DEAL ekosistema",
-    "llms_context": "LLMS kuntest"
+    "llms_context": "Kuntest LLMS"
   },
   "pl": {
     "meta_description": "DEAL przedstawia DEALIoT, DEALHost i DEALData: gotową do produkcji platformę danych IoT, zarządzaną ścieżkę hostingu i warstwę zarządzania danymi dla skalowalnych ekosystemów danych terenowych.",
@@ -1952,7 +1952,7 @@
     "contact_team": "Skontaktuj się z zespołem",
     "open_repo": "Otwórz repozytorium GitHub",
     "deal_ecosystem": "DEAL ekosystem",
-    "llms_context": "kontekst LLMS"
+    "llms_context": "Kontekst LLMS"
   },
   "pt": {
     "meta_description": "DEAL apresenta DEALIoT, DEALHost e DEALData: uma plataforma de dados IoT pronta para produção, caminho de hospedagem gerenciado e camada de governança de dados para ecossistemas escalonáveis ​​de dados de campo.",
@@ -2182,7 +2182,7 @@
     "contact_team": "Contactați echipa",
     "open_repo": "Deschideți depozitul GitHub",
     "deal_ecosystem": "DEAL ecosistem",
-    "llms_context": "LLMS context"
+    "llms_context": "Context LLMS"
   },
   "sk": {
     "meta_description": "DEAL predstavuje DEALIoT, DEALHost a DEALData: dátovú platformu IoT pripravenú na produkčnú prevádzku, riadenú hostiteľskú cestu a vrstvu správy údajov pre škálovateľné terénne dátové ekosystémy.",
@@ -2297,7 +2297,7 @@
     "contact_team": "Kontaktujte tím",
     "open_repo": "Otvorte úložisko GitHub",
     "deal_ecosystem": "DEAL ekosystém",
-    "llms_context": "LLMS kontext"
+    "llms_context": "Kontext LLMS"
   },
   "sl": {
     "meta_description": "DEAL predstavlja DEALIoT, DEALHost in DEALData: podatkovno platformo IoT, pripravljeno za proizvodnjo, upravljano gostiteljsko pot in plast upravljanja podatkov za razširljive terenske podatkovne ekosisteme.",
@@ -2412,7 +2412,7 @@
     "contact_team": "Obrnite se na ekipo",
     "open_repo": "Odprite repozitorij GitHub",
     "deal_ecosystem": "DEAL ekosistem",
-    "llms_context": "LLMS kontekst"
+    "llms_context": "Kontekst LLMS"
   },
   "es": {
     "meta_description": "DEAL presenta DEALIoT, DEALHost y DEALData: una plataforma de datos de IoT lista para producción, una ruta de alojamiento administrada y una capa de gobernanza de datos para ecosistemas de datos de campo escalables.",
@@ -2527,7 +2527,7 @@
     "contact_team": "Contacta con el equipo",
     "open_repo": "Abra el repositorio GitHub",
     "deal_ecosystem": "DEAL ecosistema",
-    "llms_context": "LLMS contexto"
+    "llms_context": "Contexto LLMS"
   },
   "sv": {
     "meta_description": "DEAL presenterar DEALIoT, DEALHost och DEALData: en produktionsklar IoT-dataplattform, hanterad värdväg och datastyrningslager för skalbara fältdataekosystem.",
@@ -2642,6 +2642,6 @@
     "contact_team": "Kontakta teamet",
     "open_repo": "Öppna GitHub-förvaret",
     "deal_ecosystem": "DEAL ekosystem",
-    "llms_context": "LLMS sammanhang"
+    "llms_context": "LLMS-kontext"
   }
 }

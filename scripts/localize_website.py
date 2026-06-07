@@ -166,6 +166,11 @@ def localized_url(path: str) -> str:
 
 
 def apply_translations(html: str, lang: str, copy: dict[str, str]) -> str:
+    html = html.replace(
+        '<span><a href="https://smartappli.io/fr/" hreflang="fr" lang="fr">Français</a> / <a href="https://smartappli.io/llms.txt">LLMS context</a></span>',
+        f'<span><a href="https://smartappli.io/" hreflang="en-US" lang="en-US">English</a> / <a href="https://smartappli.io/llms.txt">{copy["llms_context"]}</a></span>',
+    )
+
     replacements = {ENGLISH[key]: value for key, value in copy.items() if key in ENGLISH}
     for source, target in sorted(replacements.items(), key=lambda item: len(item[0]), reverse=True):
         html = html.replace(source, target)
@@ -189,10 +194,6 @@ def apply_translations(html: str, lang: str, copy: dict[str, str]) -> str:
 
     html = html.replace('<option value="https://smartappli.io/" lang="en-US" selected>', '<option value="https://smartappli.io/" lang="en-US">')
     html = html.replace(f'<option value="{url}" lang="{lang}">', f'<option value="{url}" lang="{lang}" selected>')
-    html = html.replace(
-        '<span><a href="https://smartappli.io/fr/" hreflang="fr" lang="fr">Français</a> / <a href="https://smartappli.io/llms.txt">LLMS context</a></span>',
-        f'<span><a href="https://smartappli.io/" hreflang="en-US" lang="en-US">English</a> / <a href="https://smartappli.io/llms.txt">{copy["llms_context"]}</a></span>',
-    )
     return html
 
 

@@ -656,6 +656,9 @@ class RepositoryUnitTests(unittest.TestCase):
         languages = json.loads(
             (REPO_ROOT / "website" / "eu-languages.json").read_text(encoding="utf-8")
         )
+        translations = json.loads(
+            (REPO_ROOT / "website" / "src" / "i18n-copy.json").read_text(encoding="utf-8")
+        )
         expected_hreflangs = {
             "en-US",
             "bg",
@@ -684,6 +687,7 @@ class RepositoryUnitTests(unittest.TestCase):
         }
         self.assertEqual(expected_hreflangs, {language["hreflang"] for language in languages})
         self.assertEqual(24, len(languages))
+        self.assertEqual(expected_hreflangs - {"en-US"}, set(translations))
 
         names = {language["hreflang"]: language["name"] for language in languages}
         self.assertEqual("\u010ce\u0161tina", names["cs"])
@@ -746,8 +750,40 @@ class RepositoryUnitTests(unittest.TestCase):
                 f'{expected_flag} {language["name"]}</option>',
                 html,
             )
-            self.assertIn("Star on GitHub", html)
             self.assertNotIn("????", html)
+
+            if language["hreflang"] == "en-US":
+                self.assertIn("Star on GitHub", html)
+                continue
+
+            localized_copy = translations[language["hreflang"]]
+            for key in (
+                "choose_language",
+                "star",
+                "request_demo",
+                "h1",
+                "products_eyebrow",
+                "adoption_path",
+                "q_dealiot",
+                "use_case_catalog",
+                "llms_context",
+            ):
+                self.assertIn(localized_copy[key], html)
+
+            for english_fragment in (
+                "Star on GitHub",
+                "Request a demo",
+                "Choose language",
+                "One suite, three adoption paths",
+                "A public path to evaluate without friction.",
+                "Short answers for fast evaluation.",
+                "What is DEALIoT?",
+                "Explore the suite",
+                "See the platform",
+                "DEAL ecosystem",
+                "LLMS context",
+            ):
+                self.assertNotIn(english_fragment, html)
 
     def test_public_website_is_installable_pwa(self) -> None:
         app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")

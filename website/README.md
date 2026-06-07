@@ -27,6 +27,8 @@ Use `npm run watch` while editing styles locally.
 - Default language: English US at `/`.
 - All 24 official EU languages are available as static localized routes.
 - `sitemap.xml` and page headers expose `hreflang` alternates.
+- Localized page copy is maintained in `src/i18n-copy.json`.
+- Run `python ../scripts/localize_website.py` from `website/` or `python scripts/localize_website.py` from the repository root to regenerate every localized `index.html` page from the English canonical page.
 
 ## PWA Assets
 
