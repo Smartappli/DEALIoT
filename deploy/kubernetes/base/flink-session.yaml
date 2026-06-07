@@ -11,15 +11,15 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: flink-jobmanager
-    template:
-      metadata:
-        annotations:
-          prometheus.io/path: /metrics
-          prometheus.io/port: "9250"
-          prometheus.io/scrape: "true"
-        labels:
-          app.kubernetes.io/name: flink-jobmanager
-          app.kubernetes.io/part-of: dealiot
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9250"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/name: flink-jobmanager
+        app.kubernetes.io/part-of: dealiot
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
@@ -136,15 +136,15 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: flink-taskmanager
-    template:
-      metadata:
-        annotations:
-          prometheus.io/path: /metrics
-          prometheus.io/port: "9250"
-          prometheus.io/scrape: "true"
-        labels:
-          app.kubernetes.io/name: flink-taskmanager
-          app.kubernetes.io/part-of: dealiot
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "9250"
+        prometheus.io/scrape: "true"
+      labels:
+        app.kubernetes.io/name: flink-taskmanager
+        app.kubernetes.io/part-of: dealiot
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
