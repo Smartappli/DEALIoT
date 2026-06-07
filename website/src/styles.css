@@ -276,8 +276,10 @@ a {
 .language-panel {
   position: absolute;
   top: calc(100% + 0.75rem);
+  right: auto;
   bottom: auto;
   left: 0;
+  transform-origin: top left;
   z-index: 40;
   display: grid;
   grid-template-columns: repeat(2, minmax(8.5rem, 1fr));
@@ -1088,6 +1090,7 @@ h3 {
     right: 0;
     bottom: auto;
     left: auto;
+    transform-origin: top right;
   }
 
   main,

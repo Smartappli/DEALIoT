@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import ipaddress
 import json
 import sys
 import threading
@@ -317,9 +318,12 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
         with patch.dict("os.environ", {}, clear=True):
             self.assertEqual(app.configured_bind_host(), "127.0.0.1")
 
-        with patch.dict("os.environ", {"MANAGEMENT_CONSOLE_BIND": "0.0.0.0"}, clear=True):
-            with self.assertRaisesRegex(ValueError, "Wildcard bind requires"):
-                app.configured_bind_host()
+        wildcard_ipv4 = str(ipaddress.IPv4Address(0))
+        with (
+            patch.dict("os.environ", {"MANAGEMENT_CONSOLE_BIND": wildcard_ipv4}, clear=True),
+            self.assertRaisesRegex(ValueError, "Wildcard bind requires"),
+        ):
+            app.configured_bind_host()
 
         with patch.dict(
             "os.environ",

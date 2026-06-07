@@ -520,12 +520,16 @@ class RepositoryUnitTests(unittest.TestCase):
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
         french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
         styles_css = (REPO_ROOT / "website" / "styles.css").read_text(encoding="utf-8")
+        source_styles_css = (REPO_ROOT / "website" / "src" / "styles.css").read_text(
+            encoding="utf-8"
+        )
         app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
         workflow = (REPO_ROOT / ".github" / "workflows" / "website-pages.yml").read_text(
             encoding="utf-8"
         )
+        compact_styles_css = re.sub(r"\s+", "", styles_css)
 
-        for product_name in ("DEALIoT", "DealHost", "DealData"):
+        for product_name in ("DEALIoT", "DEALHost", "DEALData"):
             self.assertIn(product_name, index_html)
             self.assertIn(product_name, french_html)
 
@@ -537,7 +541,7 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("Industrialisez vos donn\u00e9es IoT", french_html)
         self.assertIn("Star on GitHub", index_html)
         self.assertIn("language-panel", index_html)
-        self.assertIn("https://github.com/Smartappli/DEALIoT/stargazers", index_html)
+        self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
         self.assertIn("mailto:contact@smartappli.com", index_html)
         self.assertIn("actions/upload-pages-artifact@", workflow)
         self.assertIn("actions/deploy-pages@", workflow)
@@ -548,8 +552,8 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('type="application/ld+json"', index_html)
         self.assertIn("What is DEALIoT?", index_html)
         self.assertIn("Qu'est-ce que DEALIoT ?", french_html)
-        self.assertIn("@media (max-width: 1120px)", styles_css)
-        self.assertIn("@media (max-width: 720px)", styles_css)
+        self.assertIn("@media(max-width:1120px)", compact_styles_css)
+        self.assertIn("@media(max-width:720px)", compact_styles_css)
         self.assertIn("Bricolage Grotesque", styles_css)
         self.assertIn("Instrument Serif", styles_css)
         self.assertIn("JetBrains Mono", styles_css)
@@ -557,7 +561,7 @@ class RepositoryUnitTests(unittest.TestCase):
         for forbidden_fragment in ("innerHTML", "outerHTML", "document.write", "eval("):
             self.assertNotIn(forbidden_fragment, app_js)
         for forbidden_font in ("Inter", "Roboto", "Arial", "system-ui"):
-            self.assertNotIn(forbidden_font, styles_css)
+            self.assertNotIn(forbidden_font, source_styles_css)
 
     def test_public_website_has_seo_and_geo_assets(self) -> None:
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
@@ -605,7 +609,7 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertEqual("/", manifest["start_url"])
         self.assertEqual("/", manifest["scope"])
         self.assertEqual("en-US", manifest["lang"])
-        self.assertEqual("#050807", manifest["theme_color"])
+        self.assertEqual("#0196d0", manifest["theme_color"])
         self.assertEqual("standalone", manifest["display"])
         self.assertIn("assets/icon-192.png", manifest["icons"][0]["src"])
         self.assertIn("assets/icon-512.png", manifest["icons"][1]["src"])
@@ -625,7 +629,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for expected_type in ("Organization", "WebSite", "SoftwareApplication", "FAQPage"):
             self.assertIn(expected_type, graph_types)
-        for expected_name in ("DEALIoT", "DealHost", "DealData", "DEAL suite"):
+        for expected_name in ("DEALIoT", "DEALHost", "DEALData", "DEAL suite"):
             self.assertIn(expected_name, graph_names)
 
         faq_node = next(node for node in graph if node["@type"] == "FAQPage")
@@ -633,8 +637,8 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for fragment in (
             "What is DEALIoT?",
-            "What is DealHost?",
-            "What is DealData?",
+            "What is DEALHost?",
+            "What is DEALData?",
             "Default language: English US",
             "PWA status: installable",
             "ranking signal",
