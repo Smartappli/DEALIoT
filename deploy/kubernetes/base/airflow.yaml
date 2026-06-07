@@ -18,6 +18,9 @@ spec:
       restartPolicy: OnFailure
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: airflow-migrate
           image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
@@ -39,6 +42,18 @@ spec:
                 name: dealiot-runtime-config
             - secretRef:
                 name: dealiot-secrets
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -64,6 +79,9 @@ spec:
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: airflow
           image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
@@ -113,6 +131,11 @@ spec:
             limits:
               cpu: "2"
               memory: 3Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
 ---
 apiVersion: v1
 kind: Service
@@ -156,6 +179,9 @@ spec:
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: airflow
           image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
@@ -173,6 +199,11 @@ spec:
             limits:
               cpu: "2"
               memory: 3Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -198,6 +229,9 @@ spec:
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: airflow
           image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
@@ -218,6 +252,11 @@ spec:
             limits:
               cpu: "2"
               memory: 3Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -243,6 +282,9 @@ spec:
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: airflow
           image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
@@ -260,6 +302,11 @@ spec:
             limits:
               cpu: "1"
               memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -285,6 +332,9 @@ spec:
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: airflow
           image: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
@@ -302,3 +352,8 @@ spec:
             limits:
               cpu: "1"
               memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            runAsNonRoot: true
