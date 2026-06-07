@@ -42,6 +42,21 @@ Native WildFi binary logs should be decoded with the packaged `wildfi-decoder` i
 publication or stored as object artifacts with metadata. They should not become an implicit binary
 telemetry contract inside the bridge.
 
+## Runtime Security
+
+Production runtime clients are expected to use authenticated and encrypted dependency connections:
+
+- Kafka defaults to `SASL_SSL` with SCRAM credentials provided by `dealiot-secrets`.
+- MQTT defaults to TLS on port `8883`; certificates can be mounted and referenced through runtime
+  config.
+- Management Console mutation and API routes require a bearer token when
+  `MANAGEMENT_CONSOLE_TOKEN` is set.
+- Airflow, Flink, Apicurio, the MQTT bridge, and media backfill share the same Kafka security
+  environment contract.
+
+The production manifests wire readiness/liveness probes for application services and expose Flink
+Prometheus metrics on port `9250`.
+
 ## CI Gates
 
 The repository currently enforces:
@@ -49,9 +64,11 @@ The repository currently enforces:
 - Kubernetes base render and server-side dry-run.
 - Kubernetes production overlay render and server-side dry-run.
 - Rejection of mutable `latest` tags in the production overlay.
+- Rejection of unresolved production placeholders in the rendered production overlay.
 - Swarm production stack render.
 - Swarm smoke deployment.
 - kind smoke deployment for the bridge image.
+- Runtime unit tests for Kafka SASL/SSL, MQTT TLS, and Management Console bearer-token auth.
 - Python coverage threshold of 90% in the Sonar workflow.
 
 ## Remaining Before Real Go-Live
@@ -60,5 +77,7 @@ The repository currently enforces:
 - Narrow production `ipBlock` ranges in NetworkPolicies to the real private endpoint CIDRs.
 - Add runtime E2E tests against a staging cluster with real Kafka/MQTT/S3 dependencies.
 - Add image signature verification policy at cluster admission.
+- Decide whether to migrate the Flink session deployment to a Flink Operator CRD model for
+  savepoint-driven upgrades and native checkpoint lifecycle management.
 - Define SLOs and alert thresholds for ingest latency, Kafka lag, DLQ rate, Flink checkpointing,
   Airflow DAG failures, and storage availability.
