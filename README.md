@@ -30,10 +30,16 @@ DEALIoT provides six runtime planes:
 
 - Public website: `https://smartappli.io/`
 - Adoption playbook: [docs/community/adoption-playbook.md](docs/community/adoption-playbook.md)
+- User community launch plan: [docs/community/user-community-launch-plan.md](docs/community/user-community-launch-plan.md)
+- User onboarding guide: [docs/community/user-onboarding-guide.md](docs/community/user-onboarding-guide.md)
+- Community rituals: [docs/community/community-rituals.md](docs/community/community-rituals.md)
+- User feedback loop: [docs/community/user-feedback-loop.md](docs/community/user-feedback-loop.md)
+- Seed discussions: [docs/community/seed-discussions.md](docs/community/seed-discussions.md)
 - Demo pilot playbook: [docs/community/demo-pilot-playbook.md](docs/community/demo-pilot-playbook.md)
 - Integration partner guide: [docs/community/integration-partner-guide.md](docs/community/integration-partner-guide.md)
 - Pilot validation scorecard: [docs/community/validation-scorecard.md](docs/community/validation-scorecard.md)
 - Adopter story template: [docs/community/adopter-story-template.md](docs/community/adopter-story-template.md)
+- Community discussions: `https://github.com/Smartappli/DEALIoT/discussions`
 - Roadmap: [ROADMAP.md](ROADMAP.md)
 - Support policy: [SUPPORT.md](SUPPORT.md)
 - Public references: [ADOPTERS.md](ADOPTERS.md)
@@ -41,6 +47,10 @@ DEALIoT provides six runtime planes:
 The recommended adoption path is: validate the local smoke test, run a 30-day pilot with one data
 source and one value output, then harden the target runtime with the production deployment
 guardrails.
+
+The recommended community path is: ask usage questions in GitHub Discussions, open issues only for
+confirmed bugs or scoped changes, share pilot feedback with the user feedback template, and convert
+repeated questions into documentation or tests.
 
 ## Architecture
 

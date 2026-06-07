@@ -1,7 +1,6 @@
 const header = document.querySelector("[data-header]");
 const navLinks = Array.from(document.querySelectorAll(".site-nav a"));
 const revealTargets = Array.from(document.querySelectorAll(".reveal"));
-const languageSelects = Array.from(document.querySelectorAll("[data-language-select]"));
 const allowedLanguageRoutes = new Map([
   ["/", "https://smartappli.io/"],
   ["/bg/", "https://smartappli.io/bg/"],
@@ -67,11 +66,18 @@ function navigateToSelectedLanguage(value) {
 }
 
 function setupLanguageSelects() {
+  const languageSelects = Array.from(document.querySelectorAll("[data-language-select]"));
+
   for (const select of languageSelects) {
     select.addEventListener("change", (event) => {
       navigateToSelectedLanguage(event.currentTarget.value);
     });
   }
+}
+
+function startInteractiveControls() {
+  setupLanguageSelects();
+  updateHeaderShadow();
 }
 
 if ("IntersectionObserver" in window) {
@@ -117,5 +123,9 @@ if ("IntersectionObserver" in window) {
 
 window.addEventListener("scroll", updateHeaderShadow, { passive: true });
 window.addEventListener("load", registerServiceWorker);
-setupLanguageSelects();
-updateHeaderShadow();
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startInteractiveControls, { once: true });
+} else {
+  startInteractiveControls();
+}

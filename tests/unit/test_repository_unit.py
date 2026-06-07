@@ -543,6 +543,9 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("language-select", index_html)
         self.assertIn("data-language-select", index_html)
         self.assertIn("navigateToSelectedLanguage", app_js)
+        self.assertIn("DOMContentLoaded", app_js)
+        self.assertIn("app.js?v=20260607-language-dropdown-v2", index_html)
+        self.assertIn("styles.css?v=20260607-language-dropdown-v2", index_html)
         self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
         self.assertIn("mailto:contact@smartappli.com", index_html)
         self.assertIn("actions/upload-pages-artifact@", workflow)
@@ -731,6 +734,8 @@ class RepositoryUnitTests(unittest.TestCase):
             self.assertIn(f'<html lang="{language["hreflang"]}">', html)
             self.assertIn(f'<link rel="canonical" href="{localized_url}">', html)
             self.assertEqual(25, html.count('rel="alternate"'))
+            self.assertIn("styles.css?v=20260607-language-dropdown-v2", html)
+            self.assertIn("app.js?v=20260607-language-dropdown-v2", html)
             self.assertIn("language-menu", html)
             self.assertIn("language-select", html)
             self.assertIn("data-language-select", html)
@@ -757,6 +762,9 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("navigator.serviceWorker.register", app_js)
         self.assertIn('return "/";', app_js)
         self.assertIn("CACHE_NAME", service_worker)
+        self.assertIn('const CACHE_NAME = "dealiot-pwa-v4"', service_worker)
+        self.assertIn("isMutableAsset", service_worker)
+        self.assertIn('requestUrl.pathname.endsWith("/app.js")', service_worker)
         self.assertIn('"./fr/"', service_worker)
         self.assertIn('"./de/"', service_worker)
         self.assertIn('"./es/"', service_worker)
@@ -773,6 +781,21 @@ class RepositoryUnitTests(unittest.TestCase):
         demo_playbook = (REPO_ROOT / "docs" / "community" / "demo-pilot-playbook.md").read_text(
             encoding="utf-8"
         )
+        community_launch_plan = (
+            REPO_ROOT / "docs" / "community" / "user-community-launch-plan.md"
+        ).read_text(encoding="utf-8")
+        user_onboarding_guide = (
+            REPO_ROOT / "docs" / "community" / "user-onboarding-guide.md"
+        ).read_text(encoding="utf-8")
+        community_rituals = (
+            REPO_ROOT / "docs" / "community" / "community-rituals.md"
+        ).read_text(encoding="utf-8")
+        user_feedback_loop = (
+            REPO_ROOT / "docs" / "community" / "user-feedback-loop.md"
+        ).read_text(encoding="utf-8")
+        seed_discussions = (
+            REPO_ROOT / "docs" / "community" / "seed-discussions.md"
+        ).read_text(encoding="utf-8")
         partner_guide = (
             REPO_ROOT / "docs" / "community" / "integration-partner-guide.md"
         ).read_text(encoding="utf-8")
@@ -788,6 +811,11 @@ class RepositoryUnitTests(unittest.TestCase):
             path.read_text(encoding="utf-8")
             for path in (REPO_ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml")
         )
+        discussion_templates = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in (REPO_ROOT / ".github" / "DISCUSSION_TEMPLATE").glob("*.yml")
+        )
+        labels = (REPO_ROOT / ".github" / "labels.yml").read_text(encoding="utf-8")
         pull_request_template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(
             encoding="utf-8"
         )
@@ -803,6 +831,26 @@ class RepositoryUnitTests(unittest.TestCase):
         for fragment in ("Pilot Scorecard", "Local Demo Script", "Post-Pilot Decision"):
             self.assertIn(fragment, demo_playbook)
 
+        for fragment in (
+            "Community Promise",
+            "30-Day Launch Motion",
+            "Launch Checklist",
+            "GitHub Discussions",
+        ):
+            self.assertIn(fragment, community_launch_plan)
+
+        for fragment in ("First 60 Minutes", "Community Entry Points", "Good Question Template"):
+            self.assertIn(fragment, user_onboarding_guide)
+
+        for fragment in ("Weekly Triage", "Office Hours Agenda", "Discussion Moderation Rules"):
+            self.assertIn(fragment, community_rituals)
+
+        for fragment in ("Triage Flow", "Prioritization Score", "Feedback Closure"):
+            self.assertIn(fragment, user_feedback_loop)
+
+        for fragment in ("Q&A Seed", "Ideas Seed", "Show And Tell Seed", "Pilot Report Seed"):
+            self.assertIn(fragment, seed_discussions)
+
         for fragment in ("Partner Tracks", "Integration Contract", "Partner Readiness Checklist"):
             self.assertIn(fragment, partner_guide)
 
@@ -816,12 +864,26 @@ class RepositoryUnitTests(unittest.TestCase):
         for fragment in ("Publication limits", "Outcome", "Remaining gaps"):
             self.assertIn(fragment, adopter_story_template)
 
-        for fragment in ("Demo or pilot request", "Adopter story", "Documentation gap"):
+        for fragment in ("Demo or pilot request", "Adopter story", "Documentation gap", "User feedback"):
             self.assertIn(fragment, issue_templates)
 
+        for fragment in (
+            "Use this for usage questions",
+            "Use this for early feature",
+            "Use this for approved demos",
+            "Use this to share a sanitized 30-day pilot result",
+        ):
+            self.assertIn(fragment, discussion_templates)
+
+        for fragment in ("user-feedback", "show-and-tell", "pilot", "integration"):
+            self.assertIn(fragment, labels)
+
         self.assertIn("Operational Impact", pull_request_template)
+        self.assertIn("User community launch plan", readme)
+        self.assertIn("Community discussions", readme)
         self.assertIn("Public website", readme)
         self.assertIn("Adoption path", website)
+        self.assertIn("docs/community/user-community-launch-plan.md", website)
         self.assertIn("docs/community/demo-pilot-playbook.md", website)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:

@@ -6,6 +6,10 @@ This repository is an open architecture and implementation reference. Support is
 
 | Need | Channel |
 |---|---|
+| Usage question or evaluation blocker | Open a GitHub Q&A discussion |
+| Product idea or integration proposal before it is scoped | Open a GitHub Ideas discussion |
+| Pilot result, approved demo, or lesson learned | Open a Show and tell discussion |
+| Adoption friction that is not yet a confirmed bug | Open a user feedback issue |
 | Bug with reproduction | Open a bug report issue |
 | Feature or integration proposal | Open a feature request issue |
 | Demo or pilot request | Open a demo request issue or contact `contact@smartappli.com` |
@@ -26,3 +30,12 @@ This repository is an open architecture and implementation reference. Support is
 - Do not share production secrets, customer data, raw personal data, or private endpoint values in public issues.
 - Public support does not include emergency production operations.
 - Managed operations require an explicit scope, SLO, access model, and escalation path.
+
+## Community Operations
+
+Community cadence, discussion rules, office-hours agenda, and feedback closure rules are maintained in:
+
+- `docs/community/user-community-launch-plan.md`
+- `docs/community/user-onboarding-guide.md`
+- `docs/community/community-rituals.md`
+- `docs/community/user-feedback-loop.md`

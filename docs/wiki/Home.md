@@ -17,12 +17,17 @@ This wiki is the production handbook for DEALIoT.
 The versioned community assets are maintained in `docs/community/`:
 
 - `docs/community/adoption-playbook.md`
+- `docs/community/user-community-launch-plan.md`
+- `docs/community/user-onboarding-guide.md`
+- `docs/community/community-rituals.md`
+- `docs/community/user-feedback-loop.md`
+- `docs/community/seed-discussions.md`
 - `docs/community/demo-pilot-playbook.md`
 - `docs/community/integration-partner-guide.md`
 - `docs/community/validation-scorecard.md`
 - `docs/community/adopter-story-template.md`
 
-Use them to run pilots, onboard integration partners, and prepare public adopter references.
+Use them to run pilots, onboard users, triage feedback, onboard integration partners, and prepare public adopter references.
 
 ## Current Production Target
 
