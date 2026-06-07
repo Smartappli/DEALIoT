@@ -12,6 +12,9 @@ This directory contains the versioned adoption assets for DEALIoT, DealHost, and
 - `adoption-funnel.md`: funnel stages, conversion assets, weekly review questions, and minimum viable popularity metrics.
 - `user-community-launch-plan.md`: channel strategy, 30-day launch motion, cadence, and success metrics for the user community.
 - `user-onboarding-guide.md`: first path for evaluators, pilot teams, operators, partners, and data stewards.
+- `developer-community-playbook.md`: contribution tracks, contribution ladder, maintainer loop, good-first-issue criteria, and community health metrics.
+- `contributor-onboarding.md`: first contribution paths, PR expectations, validation shortcuts, and contributor help guidance.
+- `community-governance.md`: roles, decision process, recognition, and escalation boundaries for the community.
 - `community-rituals.md`: triage cadence, office-hours agenda, moderation rules, labels, and escalation boundaries.
 - `user-feedback-loop.md`: feedback intake, prioritization, closure rules, and survey questions.
 - `seed-discussions.md`: first GitHub Discussions posts to make the community usable on launch day.

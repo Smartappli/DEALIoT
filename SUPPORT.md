@@ -8,6 +8,7 @@ This repository is an open architecture and implementation reference. Support is
 |---|---|
 | Usage question or evaluation blocker | Open a GitHub Q&A discussion |
 | Product idea or integration proposal before it is scoped | Open a GitHub Ideas discussion |
+| Contributor scoping, first issue help, or validation guidance | Open a Contributor help discussion |
 | Pilot result, approved demo, or lesson learned | Open a Show and tell discussion |
 | Adoption friction that is not yet a confirmed bug | Open a user feedback issue |
 | Bug with reproduction | Open a bug report issue |
@@ -37,5 +38,8 @@ Community cadence, discussion rules, office-hours agenda, and feedback closure r
 
 - `docs/community/user-community-launch-plan.md`
 - `docs/community/user-onboarding-guide.md`
+- `docs/community/contributor-onboarding.md`
+- `docs/community/developer-community-playbook.md`
+- `docs/community/community-governance.md`
 - `docs/community/community-rituals.md`
 - `docs/community/user-feedback-loop.md`

@@ -57,6 +57,9 @@ DEALIoT provides six runtime planes:
 - User onboarding guide: [docs/community/user-onboarding-guide.md](docs/community/user-onboarding-guide.md)
 - Community rituals: [docs/community/community-rituals.md](docs/community/community-rituals.md)
 - User feedback loop: [docs/community/user-feedback-loop.md](docs/community/user-feedback-loop.md)
+- Developer community playbook: [docs/community/developer-community-playbook.md](docs/community/developer-community-playbook.md)
+- Contributor onboarding: [docs/community/contributor-onboarding.md](docs/community/contributor-onboarding.md)
+- Community governance: [docs/community/community-governance.md](docs/community/community-governance.md)
 - Seed discussions: [docs/community/seed-discussions.md](docs/community/seed-discussions.md)
 - Demo pilot playbook: [docs/community/demo-pilot-playbook.md](docs/community/demo-pilot-playbook.md)
 - Integration partner guide: [docs/community/integration-partner-guide.md](docs/community/integration-partner-guide.md)
@@ -288,6 +291,8 @@ References:
 ## Contribution Workflow
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+New contributors should start with the [contributor onboarding guide](docs/community/contributor-onboarding.md). Maintainers use the [developer community playbook](docs/community/developer-community-playbook.md) and [community governance](docs/community/community-governance.md) to keep contribution paths small, reviewable, and aligned with production quality.
 
 1. Create changes with tests.
 2. Run the validation commands above.

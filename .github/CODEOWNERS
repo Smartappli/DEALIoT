@@ -1,0 +1,9 @@
+# Default ownership keeps reviews routed until area-specific maintainers exist.
+* @Smartappli
+
+/docs/community/ @Smartappli
+/website/ @Smartappli
+/deploy/ @Smartappli
+/management-console/ @Smartappli
+/mqtt-kafka-bridge/ @Smartappli
+/dealiot_contracts/ @Smartappli

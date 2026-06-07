@@ -6,6 +6,9 @@ contact_links:
   - name: Product ideas
     url: https://github.com/Smartappli/DEALIoT/discussions/categories/ideas
     about: Start here for unscoped feature, integration, and adoption ideas.
+  - name: Contributor help
+    url: https://github.com/Smartappli/DEALIoT/discussions/categories/contributor-help
+    about: Get help choosing scope, validation, or a first contribution path.
   - name: Security report
     url: https://github.com/Smartappli/DEALIoT/security/advisories/new
     about: Report vulnerabilities privately instead of opening a public issue.
