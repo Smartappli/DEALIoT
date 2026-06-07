@@ -10,6 +10,19 @@ function updateHeaderShadow() {
   header.classList.toggle("is-scrolled", window.scrollY > 16);
 }
 
+function getSiteBasePath() {
+  return window.location.pathname.startsWith("/DEALIoT/") ? "/DEALIoT/" : "/";
+}
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+
+  const basePath = getSiteBasePath();
+  navigator.serviceWorker.register(`${basePath}sw.js`, { scope: basePath }).catch(() => {});
+}
+
 if ("IntersectionObserver" in window) {
   const revealObserver = new IntersectionObserver(
     (entries) => {
@@ -52,4 +65,5 @@ if ("IntersectionObserver" in window) {
 }
 
 window.addEventListener("scroll", updateHeaderShadow, { passive: true });
+window.addEventListener("load", registerServiceWorker);
 updateHeaderShadow();

@@ -85,8 +85,11 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / ".github" / "workflows" / "website-pages.yml",
             REPO_ROOT / "bandit.yaml",
             REPO_ROOT / "website" / "index.html",
+            REPO_ROOT / "website" / "fr" / "index.html",
+            REPO_ROOT / "website" / "offline.html",
             REPO_ROOT / "website" / "styles.css",
             REPO_ROOT / "website" / "app.js",
+            REPO_ROOT / "website" / "sw.js",
             REPO_ROOT / "website" / "README.md",
             REPO_ROOT / "website" / "robots.txt",
             REPO_ROOT / "website" / "sitemap.xml",
@@ -94,6 +97,9 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "website" / "humans.txt",
             REPO_ROOT / "website" / "site.webmanifest",
             REPO_ROOT / "website" / "assets" / "mark.svg",
+            REPO_ROOT / "website" / "assets" / "icon-192.png",
+            REPO_ROOT / "website" / "assets" / "icon-512.png",
+            REPO_ROOT / "website" / "assets" / "icon-maskable-512.png",
             REPO_ROOT / "website" / "assets" / "social-card.svg",
             REPO_ROOT / "website" / "assets" / "social-card.png",
             REPO_ROOT / "wildfi-decoder" / "Dockerfile",
@@ -510,6 +516,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
     def test_public_website_presents_deal_suite(self) -> None:
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
         styles_css = (REPO_ROOT / "website" / "styles.css").read_text(encoding="utf-8")
         app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
         workflow = (REPO_ROOT / ".github" / "workflows" / "website-pages.yml").read_text(
@@ -518,7 +525,14 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for product_name in ("DEALIoT", "DealHost", "DealData"):
             self.assertIn(product_name, index_html)
+            self.assertIn(product_name, french_html)
 
+        self.assertIn('<html lang="en-US">', index_html)
+        self.assertIn('<html lang="fr">', french_html)
+        self.assertIn('href="https://smartappli.github.io/DEALIoT/fr/"', index_html)
+        self.assertIn('href="https://smartappli.github.io/DEALIoT/"', french_html)
+        self.assertIn("Operate field data like a production system.", index_html)
+        self.assertIn("Industrialisez vos donnees IoT", french_html)
         self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
         self.assertIn("mailto:contact@smartappli.com", index_html)
         self.assertIn("actions/upload-pages-artifact@", workflow)
@@ -528,7 +542,8 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('property="og:title"', index_html)
         self.assertIn('name="twitter:card"', index_html)
         self.assertIn('type="application/ld+json"', index_html)
-        self.assertIn("Qu'est-ce que DEALIoT ?", index_html)
+        self.assertIn("What is DEALIoT?", index_html)
+        self.assertIn("Qu'est-ce que DEALIoT ?", french_html)
         self.assertIn("@media (max-width: 920px)", styles_css)
         self.assertIn("Fraunces", styles_css)
         self.assertIn("Space Grotesk", styles_css)
@@ -540,6 +555,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
     def test_public_website_has_seo_and_geo_assets(self) -> None:
         index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
         robots = (REPO_ROOT / "website" / "robots.txt").read_text(encoding="utf-8")
         sitemap = (REPO_ROOT / "website" / "sitemap.xml").read_text(encoding="utf-8")
         llms = (REPO_ROOT / "website" / "llms.txt").read_text(encoding="utf-8")
@@ -548,7 +564,13 @@ class RepositoryUnitTests(unittest.TestCase):
         )
 
         canonical_url = "https://smartappli.github.io/DEALIoT/"
+        french_url = "https://smartappli.github.io/DEALIoT/fr/"
         self.assertIn(f'<link rel="canonical" href="{canonical_url}">', index_html)
+        self.assertIn(f'<link rel="canonical" href="{french_url}">', french_html)
+        self.assertIn('hreflang="fr"', index_html)
+        self.assertIn(f'href="{french_url}"', index_html)
+        self.assertIn('hreflang="en-US"', french_html)
+        self.assertIn(f'href="{canonical_url}"', french_html)
         self.assertIn(f'<meta property="og:url" content="{canonical_url}">', index_html)
         self.assertIn(
             'content="https://smartappli.github.io/DEALIoT/assets/social-card.png"',
@@ -559,11 +581,17 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("Sitemap: https://smartappli.github.io/DEALIoT/sitemap.xml", robots)
 
         sitemap_urls = re.findall(r"<loc>(.*?)</loc>", sitemap)
-        self.assertEqual([canonical_url], sitemap_urls)
+        self.assertEqual([canonical_url, french_url], sitemap_urls)
+        self.assertIn('hreflang="en-US"', sitemap)
+        self.assertIn('hreflang="fr"', sitemap)
 
         self.assertEqual("/DEALIoT/", manifest["start_url"])
-        self.assertEqual("#101614", manifest["theme_color"])
-        self.assertIn("assets/mark.svg", manifest["icons"][0]["src"])
+        self.assertEqual("en-US", manifest["lang"])
+        self.assertEqual("#0b1110", manifest["theme_color"])
+        self.assertEqual("standalone", manifest["display"])
+        self.assertIn("assets/icon-192.png", manifest["icons"][0]["src"])
+        self.assertIn("assets/icon-512.png", manifest["icons"][1]["src"])
+        self.assertEqual("maskable", manifest["icons"][2]["purpose"])
 
         json_ld_match = re.search(
             r'<script type="application/ld\+json">\s*(.*?)\s*</script>',
@@ -589,10 +617,30 @@ class RepositoryUnitTests(unittest.TestCase):
             "What is DEALIoT?",
             "What is DealHost?",
             "What is DealData?",
+            "Default language: English US",
+            "PWA status: installable",
             "ranking signal",
             "https://github.com/Smartappli/DEALIoT",
         ):
             self.assertIn(fragment, llms)
+
+    def test_public_website_is_installable_pwa(self) -> None:
+        app_js = (REPO_ROOT / "website" / "app.js").read_text(encoding="utf-8")
+        service_worker = (REPO_ROOT / "website" / "sw.js").read_text(encoding="utf-8")
+        offline_html = (REPO_ROOT / "website" / "offline.html").read_text(encoding="utf-8")
+        index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        french_html = (REPO_ROOT / "website" / "fr" / "index.html").read_text(encoding="utf-8")
+
+        self.assertIn('rel="manifest"', index_html)
+        self.assertIn('rel="apple-touch-icon"', index_html)
+        self.assertIn("navigator.serviceWorker.register", app_js)
+        self.assertIn('"/DEALIoT/"', app_js)
+        self.assertIn("CACHE_NAME", service_worker)
+        self.assertIn('"./fr/"', service_worker)
+        self.assertIn('"./offline.html"', service_worker)
+        self.assertIn('request.mode === "navigate"', service_worker)
+        self.assertIn("The DEAL site is available offline.", offline_html)
+        self.assertIn('<link rel="manifest" href="../site.webmanifest">', french_html)
 
     def test_repository_has_adoption_assets(self) -> None:
         adoption_playbook = (REPO_ROOT / "docs" / "community" / "adoption-playbook.md").read_text(
@@ -649,7 +697,7 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn("Operational Impact", pull_request_template)
         self.assertIn("Public website", readme)
-        self.assertIn("Passer a l'adoption", website)
+        self.assertIn("Adoption path", website)
         self.assertIn("docs/community/demo-pilot-playbook.md", website)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:

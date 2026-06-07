@@ -2,10 +2,13 @@
 
 > DEALIoT is a production-oriented IoT data platform. DealHost is the managed hosting and operations path. DealData is the governance, sharing and compliance evidence layer.
 
-Canonical website: https://smartappli.github.io/DEALIoT/
+Canonical English website: https://smartappli.github.io/DEALIoT/
+French website: https://smartappli.github.io/DEALIoT/fr/
 Repository: https://github.com/Smartappli/DEALIoT
 Contact: contact@smartappli.com
-Language: French primary content, English technical documentation.
+Default language: English US (`en-US`).
+Secondary language: French (`fr`).
+PWA status: installable static Progressive Web App with manifest, service worker, offline fallback and icons.
 
 ## Products
 
@@ -26,6 +29,8 @@ DealData manages data catalogues, controlled sharing, Data Act readiness, Data G
 - What is DEALIoT? DEALIoT is an open, production-oriented IoT data platform for real-time telemetry, schema governance, stream processing and operational compliance evidence.
 - What is DealHost? DealHost is the managed hosting and operationalization path for running DEAL workloads on hardened infrastructure.
 - What is DealData? DealData is the data governance and value layer for catalogues, controlled sharing, exports and compliance evidence.
+- Is the website a PWA? Yes. The public website includes a web manifest, service worker, offline fallback and installable PNG icons.
+- What is the default language? The default public website language is English US. The French version is available at `/fr/`.
 - Who is it for? Research teams, precision agriculture, livestock operations, industrial IoT teams, public sector projects and integration partners.
 - How do adopters start? Run the local smoke test, pick one representative data source, complete a 30-day pilot and score the result before production rollout.
 

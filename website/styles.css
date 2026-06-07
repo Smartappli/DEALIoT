@@ -1,10 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 :root {
-  --ink: #101614;
-  --ink-soft: #35413d;
-  --paper: #f4eedf;
-  --paper-deep: #e6dac2;
+  --ink: #0b1110;
+  --ink-soft: #42524b;
+  --paper: #f6f0e2;
+  --paper-deep: #ebe0c8;
   --copper: #c86f32;
   --copper-dark: #8f461f;
   --moss: #2f6b57;
@@ -94,7 +94,7 @@ a {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 1.5rem;
   align-items: center;
   width: min(1180px, calc(100% - 2rem));
@@ -110,6 +110,13 @@ a {
 .site-header.is-scrolled {
   background: rgb(244 238 223 / 90%);
   box-shadow: 0 22px 80px rgb(16 22 20 / 16%);
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-self: end;
 }
 
 .brand {
@@ -169,6 +176,15 @@ a {
   color: var(--white);
   font-weight: 700;
   background: var(--copper-dark);
+  border-radius: 999px;
+}
+
+.language-link {
+  padding: 0.78rem 0.95rem;
+  color: var(--ink);
+  font-weight: 800;
+  background: rgb(255 250 240 / 62%);
+  border: 1px solid var(--line);
   border-radius: 999px;
 }
 
@@ -688,6 +704,37 @@ h3 {
   text-transform: uppercase;
 }
 
+.site-footer a {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.offline-body {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+}
+
+.offline-shell {
+  width: min(720px, calc(100% - 2rem));
+  padding: clamp(2rem, 6vw, 4rem);
+  background: rgb(255 250 240 / 78%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.offline-shell h1 {
+  margin-top: 1rem;
+  font-size: clamp(3rem, 8vw, 6rem);
+}
+
+.offline-shell p {
+  color: var(--ink-soft);
+  font-size: 1.15rem;
+  line-height: 1.65;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -732,6 +779,10 @@ h3 {
     align-self: center;
   }
 
+  .header-actions {
+    align-self: center;
+  }
+
   .hero,
   .section-heading,
   .proof {
@@ -773,6 +824,10 @@ h3 {
   .brand small,
   .nav-cta {
     display: none;
+  }
+
+  .header-actions {
+    justify-self: end;
   }
 
   .site-nav {
