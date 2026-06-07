@@ -112,7 +112,11 @@
     "contact_team": "Свържете се с екипа",
     "open_repo": "Отворете хранилището GitHub",
     "deal_ecosystem": "DEAL екосистема",
-    "llms_context": "LLMS контекст"
+    "llms_context": "LLMS контекст",
+    "decide": "Решете",
+    "champion_decision_kit": "Комплект за решаване на шампион",
+    "decision_kit_desc": "Сравнението, бързата оценка и вътрешните шампионски материали помагат на екипите да превърнат интереса в премерено решение за приемане.",
+    "open_decision_kit": "Отворете комплекта за вземане на решения"
   },
   "hr": {
     "meta_description": "DEAL predstavlja DEALIoT, DEALHost i DEALData: IoT podatkovnu platformu spremnu za proizvodnju, upravljani put hostinga i sloj upravljanja podacima za skalabilne terenske podatkovne ekosustave.",
@@ -227,7 +231,11 @@
     "contact_team": "Kontaktirajte tim",
     "open_repo": "Otvorite spremište GitHub",
     "deal_ecosystem": "DEAL ekosustav",
-    "llms_context": "LLMS kontekst"
+    "llms_context": "LLMS kontekst",
+    "decide": "odlučiti",
+    "champion_decision_kit": "Komplet odluke prvaka",
+    "decision_kit_desc": "Usporedba, brza procjena i interni pobjednički materijali pomažu timovima pretvoriti interes u odmjerenu odluku o usvajanju.",
+    "open_decision_kit": "Otvorite paket za odlučivanje"
   },
   "cs": {
     "meta_description": "DEAL představuje DEALIoT, DEALHost a DEALData: datovou platformu IoT připravenou na provoz, spravovanou hostitelskou cestu a vrstvu správy dat pro škálovatelné terénní datové ekosystémy.",
@@ -342,7 +350,11 @@
     "contact_team": "Kontaktujte tým",
     "open_repo": "Otevřete úložiště GitHub",
     "deal_ecosystem": "DEAL ekosystém",
-    "llms_context": "LLMS kontext"
+    "llms_context": "LLMS kontext",
+    "decide": "Rozhodněte se",
+    "champion_decision_kit": "Sada pro rozhodování o šampionech",
+    "decision_kit_desc": "Srovnání, rychlé vyhodnocení a interní materiály pro šampiony pomáhají týmům přeměnit zájem na uvážené rozhodnutí o přijetí.",
+    "open_decision_kit": "Otevřete rozhodovací sadu"
   },
   "da": {
     "meta_description": "DEAL præsenterer DEALIoT, DEALHost og DEALData: en produktionsklar IoT-dataplatform, administreret hostingsti og datastyringslag til skalerbare feltdataøkosystemer.",
@@ -457,7 +469,11 @@
     "contact_team": "Kontakt holdet",
     "open_repo": "Åbn GitHub-lageret",
     "deal_ecosystem": "DEAL økosystem",
-    "llms_context": "LLMS-kontekst"
+    "llms_context": "LLMS-kontekst",
+    "decide": "Beslut dig",
+    "champion_decision_kit": "Champion beslutningssæt",
+    "decision_kit_desc": "Sammenligning, hurtig evaluering og internt mestermateriale hjælper teams med at konvertere interesse til en afmålt beslutning om adoption.",
+    "open_decision_kit": "Åbn beslutningssættet"
   },
   "nl": {
     "meta_description": "DEAL presenteert DEALIoT, DEALHost en DEALData: een productieklaar IoT-dataplatform, een beheerd hostingpad en een data-governancelaag voor schaalbare velddata-ecosystemen.",
@@ -572,7 +588,11 @@
     "contact_team": "Neem contact op met het team",
     "open_repo": "Open de GitHub-repository",
     "deal_ecosystem": "DEAL ecosysteem",
-    "llms_context": "LLMS-context"
+    "llms_context": "LLMS-context",
+    "decide": "Beslissen",
+    "champion_decision_kit": "Besliskit voor champions",
+    "decision_kit_desc": "Vergelijking, snelle evaluatie en materiaal voor interne champions helpen teams interesse om te zetten in een meetbare adoptiebeslissing.",
+    "open_decision_kit": "Open de besliskit"
   },
   "et": {
     "meta_description": "DEAL esitleb DEALIoT, DEALHost ja DEALData: tootmisvalmis IoT andmeplatvormi, hallatavat hostimisteed ja andmete halduskihti skaleeritavate põlluandmete ökosüsteemide jaoks.",
@@ -687,7 +707,11 @@
     "contact_team": "Võtke meeskonnaga ühendust",
     "open_repo": "Avage hoidla GitHub",
     "deal_ecosystem": "DEAL ökosüsteem",
-    "llms_context": "LLMS kontekst"
+    "llms_context": "LLMS kontekst",
+    "decide": "Otsustage",
+    "champion_decision_kit": "Tšempioni otsustuskomplekt",
+    "decision_kit_desc": "Võrdlus, kiire hindamine ja sisemised meistermaterjalid aitavad meeskondadel muuta huvi mõõdetud vastuvõtmisotsuseks.",
+    "open_decision_kit": "Avage otsustuskomplekt"
   },
   "fi": {
     "meta_description": "DEAL esittelee DEALIoT, DEALHost ja DEALData: tuotantovalmiin IoT-tietoalustan, hallitun isännöintipolun ja tiedonhallintakerroksen skaalautuville kenttätietoekosysteemeille.",
@@ -802,7 +826,11 @@
     "contact_team": "Ota yhteyttä tiimiin",
     "open_repo": "Avaa GitHub-arkisto",
     "deal_ecosystem": "DEAL ekosysteemi",
-    "llms_context": "LLMS-konteksti"
+    "llms_context": "LLMS-konteksti",
+    "decide": "Päätä",
+    "champion_decision_kit": "Mestarin päätöspaketti",
+    "decision_kit_desc": "Vertailu, nopea arviointi ja sisäiset mestarimateriaalit auttavat tiimejä muuttamaan kiinnostuksen harkituksi adoptiopäätökseksi.",
+    "open_decision_kit": "Avaa päätöspaketti"
   },
   "fr": {
     "meta_description": "DEAL présente DEALIoT, DEALHost et DEALData : une plate-forme de données IoT prête pour la production, un chemin d'hébergement géré et une couche de gouvernance des données pour des écosystèmes de données de terrain évolutifs.",
@@ -917,7 +945,11 @@
     "contact_team": "Contactez l'équipe",
     "open_repo": "Ouvrez le référentiel GitHub",
     "deal_ecosystem": "Écosystème DEAL",
-    "llms_context": "Contexte LLMS"
+    "llms_context": "Contexte LLMS",
+    "decide": "Décider",
+    "champion_decision_kit": "Kit de décision champion",
+    "decision_kit_desc": "Le guide de comparaison, le parcours d’évaluation rapide et les supports pour champions internes aident les équipes à transformer l’intérêt en décision d’adoption mesurée.",
+    "open_decision_kit": "Ouvrir le kit de décision"
   },
   "de": {
     "meta_description": "DEAL präsentiert DEALIoT, DEALHost und DEALData: eine produktionsbereite IoT-Datenplattform, einen verwalteten Hosting-Pfad und eine Daten-Governance-Schicht für skalierbare Felddaten-Ökosysteme.",
@@ -1032,7 +1064,11 @@
     "contact_team": "Kontaktieren Sie das Team",
     "open_repo": "Öffnen Sie das GitHub-Repository",
     "deal_ecosystem": "DEAL Ökosystem",
-    "llms_context": "LLMS-Kontext"
+    "llms_context": "LLMS-Kontext",
+    "decide": "Entscheiden",
+    "champion_decision_kit": "Entscheidungskit für Champions",
+    "decision_kit_desc": "Vergleich, schnelle Bewertung und Materialien für interne Champions helfen Teams, Interesse in eine messbare Einführungsentscheidung zu verwandeln.",
+    "open_decision_kit": "Entscheidungskit öffnen"
   },
   "el": {
     "meta_description": "Το DEAL παρουσιάζει τα DEALIoT, DEALHost και DEALData: μια πλατφόρμα δεδομένων IoT έτοιμη για παραγωγή, διαδρομή διαχειριζόμενης φιλοξενίας και επίπεδο διακυβέρνησης δεδομένων για κλιμακούμενα οικοσυστήματα δεδομένων πεδίου.",
@@ -1147,7 +1183,11 @@
     "contact_team": "Επικοινωνήστε με την ομάδα",
     "open_repo": "Ανοίξτε το αποθετήριο GitHub",
     "deal_ecosystem": "DEAL οικοσύστημα",
-    "llms_context": "Πλαίσιο LLMS"
+    "llms_context": "Πλαίσιο LLMS",
+    "decide": "Αποφασίστε",
+    "champion_decision_kit": "Κιτ απόφασης πρωταθλητή",
+    "decision_kit_desc": "Η σύγκριση, η γρήγορη αξιολόγηση και το εσωτερικό υλικό πρωταθλητή βοηθούν τις ομάδες να μετατρέψουν το ενδιαφέρον σε μια μετρημένη απόφαση υιοθεσίας.",
+    "open_decision_kit": "Ανοίξτε το κιτ απόφασης"
   },
   "hu": {
     "meta_description": "A DEAL bemutatja a DEALIoT, DEALHost és DEALData kifejezéseket: termelésre kész IoT-adatplatformot, felügyelt tárhely-útvonalat és adatirányítási réteget a méretezhető terepi adat-ökoszisztémákhoz.",
@@ -1262,7 +1302,11 @@
     "contact_team": "Vegye fel a kapcsolatot a csapattal",
     "open_repo": "Nyissa meg a GitHub tárolót",
     "deal_ecosystem": "DEAL ökoszisztéma",
-    "llms_context": "LLMS-környezet"
+    "llms_context": "LLMS-környezet",
+    "decide": "Döntse el",
+    "champion_decision_kit": "Bajnok döntési készlet",
+    "decision_kit_desc": "Az összehasonlítás, a gyors értékelés és a belső bajnoki anyagok segítenek a csapatoknak abban, hogy az érdeklődést mérsékelt elfogadási döntéssé alakítsák.",
+    "open_decision_kit": "Nyissa meg a döntési csomagot"
   },
   "ga": {
     "meta_description": "Cuireann DEAL DEALIoT, DEALHost agus DEALData i láthair: ardán sonraí IoT atá réidh le haghaidh táirgeadh, cosán óstála bainistithe agus ciseal rialachais sonraí le haghaidh éiceachórais sonraí allamuigh inscálaithe.",
@@ -1377,7 +1421,11 @@
     "contact_team": "Déan teagmháil leis an bhfoireann",
     "open_repo": "Oscail an stór GitHub",
     "deal_ecosystem": "DEAL éiceachóras",
-    "llms_context": "Comhthéacs LLMS"
+    "llms_context": "Comhthéacs LLMS",
+    "decide": "Déan cinneadh",
+    "champion_decision_kit": "Foireann cinneadh Champion",
+    "decision_kit_desc": "Cuidíonn comparáid, meastóireacht thapa agus ábhair curadh inmheánacha le foirne ús a thiontú ina chinneadh glactha tomhaiste.",
+    "open_decision_kit": "Oscail an trealamh cinntí"
   },
   "it": {
     "meta_description": "DEAL presenta DEALIoT, DEALHost e DEALData: una piattaforma dati IoT pronta per la produzione, percorso di hosting gestito e livello di governance dei dati per ecosistemi di dati sul campo scalabili.",
@@ -1492,7 +1540,11 @@
     "contact_team": "Contatta la squadra",
     "open_repo": "Apri il repository GitHub",
     "deal_ecosystem": "DEAL ecosistema",
-    "llms_context": "Contesto LLMS"
+    "llms_context": "Contesto LLMS",
+    "decide": "Decidere",
+    "champion_decision_kit": "Kit decisionale per champion",
+    "decision_kit_desc": "Confronto, valutazione rapida e materiali per champion interni aiutano i team a trasformare l’interesse in una decisione di adozione misurabile.",
+    "open_decision_kit": "Apri il kit decisionale"
   },
   "lv": {
     "meta_description": "DEAL piedāvā DEALIoT, DEALHost un DEALData: ražošanai gatavu IoT datu platformu, pārvaldītu mitināšanas ceļu un datu pārvaldības slāni mērogojamām lauka datu ekosistēmām.",
@@ -1607,7 +1659,11 @@
     "contact_team": "Sazinieties ar komandu",
     "open_repo": "Atveriet repozitoriju GitHub",
     "deal_ecosystem": "DEAL ekosistēma",
-    "llms_context": "LLMS konteksts"
+    "llms_context": "LLMS konteksts",
+    "decide": "Izlemiet",
+    "champion_decision_kit": "Čempionu lēmumu komplekts",
+    "decision_kit_desc": "Salīdzinājums, ātrs novērtējums un iekšējie čempionu materiāli palīdz komandām pārvērst interesi par izsvērtu pieņemšanas lēmumu.",
+    "open_decision_kit": "Atveriet lēmumu komplektu"
   },
   "lt": {
     "meta_description": "DEAL pristato DEALIoT, DEALHost ir DEALData: gamybai paruoštą IoT duomenų platformą, valdomą prieglobos kelią ir duomenų valdymo sluoksnį, skirtą keičiamo dydžio lauko duomenų ekosistemoms.",
@@ -1722,7 +1778,11 @@
     "contact_team": "Susisiekite su komanda",
     "open_repo": "Atidarykite GitHub saugyklą",
     "deal_ecosystem": "DEAL ekosistema",
-    "llms_context": "LLMS kontekstas"
+    "llms_context": "LLMS kontekstas",
+    "decide": "Nuspręskite",
+    "champion_decision_kit": "Čempiono sprendimų rinkinys",
+    "decision_kit_desc": "Palyginimas, greitas įvertinimas ir vidinė čempionų medžiaga padeda komandoms paversti susidomėjimą išmatuotu sprendimu.",
+    "open_decision_kit": "Atidarykite sprendimų rinkinį"
   },
   "mt": {
     "meta_description": "DEAL jippreżenta DEALIoT, DEALHost u DEALData: pjattaforma tad-dejta tal-IoT lesta għall-produzzjoni, passaġġ ta’ hosting ġestit u saff ta’ governanza tad-dejta għal ekosistemi ta’ dejta fuq il-post skalabbli.",
@@ -1837,7 +1897,11 @@
     "contact_team": "Ikkuntattja lit-tim",
     "open_repo": "Iftaħ ir-repożitorju GitHub",
     "deal_ecosystem": "DEAL ekosistema",
-    "llms_context": "Kuntest LLMS"
+    "llms_context": "Kuntest LLMS",
+    "decide": "Iddeċiedi",
+    "champion_decision_kit": "Kit tad-deċiżjoni taċ-Champion",
+    "decision_kit_desc": "It-tqabbil, l-evalwazzjoni rapida u l-materjali taċ-ċampjins interni jgħinu lit-timijiet jikkonvertu l-interess f’deċiżjoni ta’ adozzjoni mkejla.",
+    "open_decision_kit": "Iftaħ il-kit tad-deċiżjoni"
   },
   "pl": {
     "meta_description": "DEAL przedstawia DEALIoT, DEALHost i DEALData: gotową do produkcji platformę danych IoT, zarządzaną ścieżkę hostingu i warstwę zarządzania danymi dla skalowalnych ekosystemów danych terenowych.",
@@ -1952,7 +2016,11 @@
     "contact_team": "Skontaktuj się z zespołem",
     "open_repo": "Otwórz repozytorium GitHub",
     "deal_ecosystem": "DEAL ekosystem",
-    "llms_context": "Kontekst LLMS"
+    "llms_context": "Kontekst LLMS",
+    "decide": "Zdecyduj",
+    "champion_decision_kit": "Zestaw decyzji mistrza",
+    "decision_kit_desc": "Porównanie, szybka ocena i wewnętrzne materiały dla mistrzów pomagają zespołom przekształcić zainteresowanie w wyważoną decyzję o przyjęciu.",
+    "open_decision_kit": "Otwórz zestaw decyzyjny"
   },
   "pt": {
     "meta_description": "DEAL apresenta DEALIoT, DEALHost e DEALData: uma plataforma de dados IoT pronta para produção, caminho de hospedagem gerenciado e camada de governança de dados para ecossistemas escalonáveis ​​de dados de campo.",
@@ -2067,7 +2135,11 @@
     "contact_team": "Entre em contato com a equipe",
     "open_repo": "Abra o repositório GitHub",
     "deal_ecosystem": "DEAL ecossistema",
-    "llms_context": "Contexto LLMS"
+    "llms_context": "Contexto LLMS",
+    "decide": "Decidir",
+    "champion_decision_kit": "Kit de decisão para champions",
+    "decision_kit_desc": "Comparação, avaliação rápida e materiais para champions internos ajudam as equipas a transformar interesse numa decisão de adoção mensurável.",
+    "open_decision_kit": "Abrir o kit de decisão"
   },
   "ro": {
     "meta_description": "DEAL prezintă DEALIoT, DEALHost și DEALData: o platformă de date IoT pregătită pentru producție, o cale de găzduire gestionată și un strat de guvernare a datelor pentru ecosisteme de date de câmp scalabile.",
@@ -2182,7 +2254,11 @@
     "contact_team": "Contactați echipa",
     "open_repo": "Deschideți depozitul GitHub",
     "deal_ecosystem": "DEAL ecosistem",
-    "llms_context": "Context LLMS"
+    "llms_context": "Context LLMS",
+    "decide": "Decide",
+    "champion_decision_kit": "Kit de decizie pentru campion",
+    "decision_kit_desc": "Comparația, evaluarea rapidă și materialele interne de campion ajută echipele să transforme interesul într-o decizie de adoptare măsurată.",
+    "open_decision_kit": "Deschideți trusa de decizie"
   },
   "sk": {
     "meta_description": "DEAL predstavuje DEALIoT, DEALHost a DEALData: dátovú platformu IoT pripravenú na produkčnú prevádzku, riadenú hostiteľskú cestu a vrstvu správy údajov pre škálovateľné terénne dátové ekosystémy.",
@@ -2297,7 +2373,11 @@
     "contact_team": "Kontaktujte tím",
     "open_repo": "Otvorte úložisko GitHub",
     "deal_ecosystem": "DEAL ekosystém",
-    "llms_context": "Kontext LLMS"
+    "llms_context": "Kontext LLMS",
+    "decide": "Rozhodnite sa",
+    "champion_decision_kit": "Súprava na rozhodovanie šampiónov",
+    "decision_kit_desc": "Porovnanie, rýchle vyhodnotenie a interné materiály pre šampiónov pomáhajú tímom premeniť záujem na merané rozhodnutie o prijatí.",
+    "open_decision_kit": "Otvorte rozhodovaciu súpravu"
   },
   "sl": {
     "meta_description": "DEAL predstavlja DEALIoT, DEALHost in DEALData: podatkovno platformo IoT, pripravljeno za proizvodnjo, upravljano gostiteljsko pot in plast upravljanja podatkov za razširljive terenske podatkovne ekosisteme.",
@@ -2412,7 +2492,11 @@
     "contact_team": "Obrnite se na ekipo",
     "open_repo": "Odprite repozitorij GitHub",
     "deal_ecosystem": "DEAL ekosistem",
-    "llms_context": "Kontekst LLMS"
+    "llms_context": "Kontekst LLMS",
+    "decide": "Odločite se",
+    "champion_decision_kit": "Odločitveni komplet za prvaka",
+    "decision_kit_desc": "Primerjava, hitra ocena in materiali za notranje prvake pomagajo ekipam spremeniti zanimanje v premišljeno odločitev o posvojitvi.",
+    "open_decision_kit": "Odprite komplet za odločanje"
   },
   "es": {
     "meta_description": "DEAL presenta DEALIoT, DEALHost y DEALData: una plataforma de datos de IoT lista para producción, una ruta de alojamiento administrada y una capa de gobernanza de datos para ecosistemas de datos de campo escalables.",
@@ -2527,7 +2611,11 @@
     "contact_team": "Contacta con el equipo",
     "open_repo": "Abra el repositorio GitHub",
     "deal_ecosystem": "DEAL ecosistema",
-    "llms_context": "Contexto LLMS"
+    "llms_context": "Contexto LLMS",
+    "decide": "Decidir",
+    "champion_decision_kit": "Kit de decisión para champions",
+    "decision_kit_desc": "La comparación, la evaluación rápida y los materiales para champions internos ayudan a los equipos a convertir el interés en una decisión de adopción medible.",
+    "open_decision_kit": "Abrir el kit de decisión"
   },
   "sv": {
     "meta_description": "DEAL presenterar DEALIoT, DEALHost och DEALData: en produktionsklar IoT-dataplattform, hanterad värdväg och datastyrningslager för skalbara fältdataekosystem.",
@@ -2642,6 +2730,10 @@
     "contact_team": "Kontakta teamet",
     "open_repo": "Öppna GitHub-förvaret",
     "deal_ecosystem": "DEAL ekosystem",
-    "llms_context": "LLMS-kontext"
+    "llms_context": "LLMS-kontext",
+    "decide": "Bestäm dig",
+    "champion_decision_kit": "Champion beslut kit",
+    "decision_kit_desc": "Jämförelse, snabb utvärdering och internt mästarmaterial hjälper team att omvandla intresse till ett avvägt adoptionsbeslut.",
+    "open_decision_kit": "Öppna beslutspaketet"
   }
 }

@@ -22,10 +22,12 @@ Strong first-fit scenarios include livestock telemetry, WildFi decoding, precisi
 ## Fast Adoption Path
 
 1. Confirm fit with the [use case catalog](docs/community/use-case-catalog.md).
-2. Run the local smoke test and capture the first event reaching Kafka.
-3. Scope one 30-day pilot with the [demo pilot playbook](docs/community/demo-pilot-playbook.md).
-4. Score the pilot with the [validation scorecard](docs/community/validation-scorecard.md).
-5. Publish an approved lesson, adopter story, or integration note using the [public launch kit](docs/community/public-launch-kit.md).
+2. Compare alternatives with the [architecture comparison guide](docs/community/architecture-comparison-guide.md).
+3. Run the [quick evaluation path](docs/community/quick-evaluation-path.md) and capture the first event reaching Kafka.
+4. Help an internal owner make the case with the [internal champion kit](docs/community/internal-champion-kit.md).
+5. Scope one 30-day pilot with the [demo pilot playbook](docs/community/demo-pilot-playbook.md).
+6. Score the pilot with the [validation scorecard](docs/community/validation-scorecard.md).
+7. Publish an approved lesson, adopter story, or integration note using the [public launch kit](docs/community/public-launch-kit.md).
 
 ## Platform Scope
 
@@ -46,6 +48,9 @@ DEALIoT provides six runtime planes:
 - Adoption playbook: [docs/community/adoption-playbook.md](docs/community/adoption-playbook.md)
 - Architecture popularity playbook: [docs/community/architecture-popularity-playbook.md](docs/community/architecture-popularity-playbook.md)
 - Use case catalog: [docs/community/use-case-catalog.md](docs/community/use-case-catalog.md)
+- Quick evaluation path: [docs/community/quick-evaluation-path.md](docs/community/quick-evaluation-path.md)
+- Architecture comparison guide: [docs/community/architecture-comparison-guide.md](docs/community/architecture-comparison-guide.md)
+- Internal champion kit: [docs/community/internal-champion-kit.md](docs/community/internal-champion-kit.md)
 - Public launch kit: [docs/community/public-launch-kit.md](docs/community/public-launch-kit.md)
 - Adoption funnel: [docs/community/adoption-funnel.md](docs/community/adoption-funnel.md)
 - User community launch plan: [docs/community/user-community-launch-plan.md](docs/community/user-community-launch-plan.md)

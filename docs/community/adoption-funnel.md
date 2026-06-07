@@ -20,6 +20,9 @@ This funnel converts attention into adoption decisions. It should guide README s
 | `README.md` | Awareness, fit, trial |
 | `website/index.html` | Awareness, fit |
 | `docs/community/use-case-catalog.md` | Fit |
+| `docs/community/architecture-comparison-guide.md` | Fit, trust |
+| `docs/community/quick-evaluation-path.md` | Trial |
+| `docs/community/internal-champion-kit.md` | Trust, adoption |
 | `scripts/smoke-e2e.sh` | Trial |
 | `docs/architecture/production-readiness.md` | Trust |
 | `docs/community/demo-pilot-playbook.md` | Adoption |

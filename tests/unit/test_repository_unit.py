@@ -769,6 +769,8 @@ class RepositoryUnitTests(unittest.TestCase):
                 "adoption_path",
                 "q_dealiot",
                 "use_case_catalog",
+                "champion_decision_kit",
+                "open_decision_kit",
                 "llms_context",
             ):
                 self.assertIn(localized_copy[key], html)
@@ -822,6 +824,15 @@ class RepositoryUnitTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         use_case_catalog = (
             REPO_ROOT / "docs" / "community" / "use-case-catalog.md"
+        ).read_text(encoding="utf-8")
+        quick_evaluation_path = (
+            REPO_ROOT / "docs" / "community" / "quick-evaluation-path.md"
+        ).read_text(encoding="utf-8")
+        comparison_guide = (
+            REPO_ROOT / "docs" / "community" / "architecture-comparison-guide.md"
+        ).read_text(encoding="utf-8")
+        champion_kit = (
+            REPO_ROOT / "docs" / "community" / "internal-champion-kit.md"
         ).read_text(encoding="utf-8")
         public_launch_kit = (
             REPO_ROOT / "docs" / "community" / "public-launch-kit.md"
@@ -885,6 +896,15 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for fragment in ("Use Cases", "Priority Matrix", "Public Proof Assets"):
             self.assertIn(fragment, use_case_catalog)
+
+        for fragment in ("10-Minute Fit Check", "60-Minute Technical Check", "30-Day Decision"):
+            self.assertIn(fragment, quick_evaluation_path)
+
+        for fragment in ("Comparison Matrix", "Anti-Fit Signals", "Adoption Recommendation"):
+            self.assertIn(fragment, comparison_guide)
+
+        for fragment in ("5-Minute Sponsor Brief", "Stakeholder Map", "Objection Handling"):
+            self.assertIn(fragment, champion_kit)
 
         for fragment in ("Launch Post", "Partner Outreach Email", "Conference Or Meetup Abstract"):
             self.assertIn(fragment, public_launch_kit)
@@ -953,6 +973,9 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("Fast Adoption Path", readme)
         self.assertIn("Architecture popularity playbook", readme)
         self.assertIn("Use case catalog", readme)
+        self.assertIn("Quick evaluation path", readme)
+        self.assertIn("Architecture comparison guide", readme)
+        self.assertIn("Internal champion kit", readme)
         self.assertIn("Public launch kit", readme)
         self.assertIn("Adoption funnel", readme)
         self.assertIn("User community launch plan", readme)
@@ -962,8 +985,12 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("docs/community/user-community-launch-plan.md", website)
         self.assertIn("docs/community/demo-pilot-playbook.md", website)
         self.assertIn("docs/community/use-case-catalog.md", website)
+        self.assertIn("docs/community/internal-champion-kit.md", website)
         self.assertIn("architecture-popularity-playbook.md", llms_txt)
         self.assertIn("use-case-catalog.md", llms_txt)
+        self.assertIn("quick-evaluation-path.md", llms_txt)
+        self.assertIn("architecture-comparison-guide.md", llms_txt)
+        self.assertIn("internal-champion-kit.md", llms_txt)
         self.assertIn("public-launch-kit.md", llms_txt)
         self.assertIn("adoption-funnel.md", llms_txt)
 

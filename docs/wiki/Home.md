@@ -19,6 +19,9 @@ The versioned community assets are maintained in `docs/community/`:
 - `docs/community/adoption-playbook.md`
 - `docs/community/architecture-popularity-playbook.md`
 - `docs/community/use-case-catalog.md`
+- `docs/community/quick-evaluation-path.md`
+- `docs/community/architecture-comparison-guide.md`
+- `docs/community/internal-champion-kit.md`
 - `docs/community/public-launch-kit.md`
 - `docs/community/adoption-funnel.md`
 - `docs/community/user-community-launch-plan.md`
@@ -31,7 +34,7 @@ The versioned community assets are maintained in `docs/community/`:
 - `docs/community/validation-scorecard.md`
 - `docs/community/adopter-story-template.md`
 
-Use them to position the architecture, select public use cases, run pilots, onboard users, triage feedback, onboard integration partners, and prepare public adopter references.
+Use them to position the architecture, select public use cases, compare alternatives, run quick evaluations, help internal champions, run pilots, onboard users, triage feedback, onboard integration partners, and prepare public adopter references.
 
 ## Current Production Target
 
