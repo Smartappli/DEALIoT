@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">DEALIoT, DealHost, DealData</title>
+  <desc id="desc">Social preview card for the DEAL suite.</desc>
+  <defs>
+    <radialGradient id="a" cx="18%" cy="18%" r="70%">
+      <stop offset="0" stop-color="#46b5a7" stop-opacity="0.9"/>
+      <stop offset="0.5" stop-color="#e6ba55" stop-opacity="0.52"/>
+      <stop offset="1" stop-color="#101614" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="b" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset="1" stop-color="#e6dac2"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#101614"/>
+  <circle cx="990" cy="82" r="360" fill="url(#a)" opacity="0.9"/>
+  <circle cx="150" cy="540" r="280" fill="#c86f32" opacity="0.34"/>
+  <rect x="70" y="70" width="1060" height="490" rx="42" fill="url(#b)" opacity="0.96"/>
+  <circle cx="166" cy="168" r="54" fill="#101614"/>
+  <text x="166" y="186" text-anchor="middle" font-family="Georgia, serif" font-size="48" font-weight="900" fill="#fffaf0">D</text>
+  <text x="246" y="155" font-family="Georgia, serif" font-size="64" font-weight="900" fill="#101614">DEAL suite</text>
+  <text x="246" y="205" font-family="Trebuchet MS, sans-serif" font-size="28" font-weight="700" fill="#35413d">DEALIoT / DealHost / DealData</text>
+  <text x="90" y="335" font-family="Georgia, serif" font-size="72" font-weight="900" fill="#101614">IoT data ecosystems that scale.</text>
+  <text x="94" y="405" font-family="Trebuchet MS, sans-serif" font-size="30" fill="#35413d">Ingestion temps reel, hebergement souverain, gouvernance des donnees et evidence compliance.</text>
+  <g font-family="Trebuchet MS, sans-serif" font-size="24" font-weight="700" fill="#fffaf0">
+    <rect x="94" y="462" width="174" height="54" rx="27" fill="#2f6b57"/>
+    <text x="181" y="497" text-anchor="middle">MQTT</text>
+    <rect x="286" y="462" width="174" height="54" rx="27" fill="#8f461f"/>
+    <text x="373" y="497" text-anchor="middle">Kafka</text>
+    <rect x="478" y="462" width="174" height="54" rx="27" fill="#2f6b57"/>
+    <text x="565" y="497" text-anchor="middle">Flink</text>
+    <rect x="670" y="462" width="210" height="54" rx="27" fill="#8f461f"/>
+    <text x="775" y="497" text-anchor="middle">Kubernetes</text>
+  </g>
+</svg>

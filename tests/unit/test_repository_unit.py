@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -87,7 +88,14 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "website" / "styles.css",
             REPO_ROOT / "website" / "app.js",
             REPO_ROOT / "website" / "README.md",
+            REPO_ROOT / "website" / "robots.txt",
+            REPO_ROOT / "website" / "sitemap.xml",
+            REPO_ROOT / "website" / "llms.txt",
+            REPO_ROOT / "website" / "humans.txt",
+            REPO_ROOT / "website" / "site.webmanifest",
             REPO_ROOT / "website" / "assets" / "mark.svg",
+            REPO_ROOT / "website" / "assets" / "social-card.svg",
+            REPO_ROOT / "website" / "assets" / "social-card.png",
             REPO_ROOT / "wildfi-decoder" / "Dockerfile",
             REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
             REPO_ROOT / "management-console" / "Dockerfile",
@@ -516,6 +524,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("actions/upload-pages-artifact@", workflow)
         self.assertIn("actions/deploy-pages@", workflow)
         self.assertIn("path: website", workflow)
+        self.assertIn('href="https://smartappli.github.io/DEALIoT/"', index_html)
+        self.assertIn('property="og:title"', index_html)
+        self.assertIn('name="twitter:card"', index_html)
+        self.assertIn('type="application/ld+json"', index_html)
+        self.assertIn("Qu'est-ce que DEALIoT ?", index_html)
         self.assertIn("@media (max-width: 920px)", styles_css)
         self.assertIn("Fraunces", styles_css)
         self.assertIn("Space Grotesk", styles_css)
@@ -524,6 +537,62 @@ class RepositoryUnitTests(unittest.TestCase):
             self.assertNotIn(forbidden_fragment, app_js)
         for forbidden_font in ("Inter", "Roboto", "Arial", "system-ui"):
             self.assertNotIn(forbidden_font, styles_css)
+
+    def test_public_website_has_seo_and_geo_assets(self) -> None:
+        index_html = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        robots = (REPO_ROOT / "website" / "robots.txt").read_text(encoding="utf-8")
+        sitemap = (REPO_ROOT / "website" / "sitemap.xml").read_text(encoding="utf-8")
+        llms = (REPO_ROOT / "website" / "llms.txt").read_text(encoding="utf-8")
+        manifest = json.loads(
+            (REPO_ROOT / "website" / "site.webmanifest").read_text(encoding="utf-8")
+        )
+
+        canonical_url = "https://smartappli.github.io/DEALIoT/"
+        self.assertIn(f'<link rel="canonical" href="{canonical_url}">', index_html)
+        self.assertIn(f'<meta property="og:url" content="{canonical_url}">', index_html)
+        self.assertIn(
+            'content="https://smartappli.github.io/DEALIoT/assets/social-card.png"',
+            index_html,
+        )
+        self.assertIn('<meta property="og:image:width" content="1200">', index_html)
+        self.assertIn('<meta property="og:image:height" content="630">', index_html)
+        self.assertIn("Sitemap: https://smartappli.github.io/DEALIoT/sitemap.xml", robots)
+
+        sitemap_urls = re.findall(r"<loc>(.*?)</loc>", sitemap)
+        self.assertEqual([canonical_url], sitemap_urls)
+
+        self.assertEqual("/DEALIoT/", manifest["start_url"])
+        self.assertEqual("#101614", manifest["theme_color"])
+        self.assertIn("assets/mark.svg", manifest["icons"][0]["src"])
+
+        json_ld_match = re.search(
+            r'<script type="application/ld\+json">\s*(.*?)\s*</script>',
+            index_html,
+            flags=re.DOTALL,
+        )
+        if json_ld_match is None:
+            self.fail("Missing JSON-LD script")
+        json_ld = json.loads(json_ld_match.group(1))
+        graph = json_ld["@graph"]
+        graph_types = {node["@type"] for node in graph}
+        graph_names = {node.get("name") for node in graph}
+
+        for expected_type in ("Organization", "WebSite", "SoftwareApplication", "FAQPage"):
+            self.assertIn(expected_type, graph_types)
+        for expected_name in ("DEALIoT", "DealHost", "DealData", "DEAL suite"):
+            self.assertIn(expected_name, graph_names)
+
+        faq_node = next(node for node in graph if node["@type"] == "FAQPage")
+        self.assertGreaterEqual(len(faq_node["mainEntity"]), 3)
+
+        for fragment in (
+            "What is DEALIoT?",
+            "What is DealHost?",
+            "What is DealData?",
+            "ranking signal",
+            "https://github.com/Smartappli/DEALIoT",
+        ):
+            self.assertIn(fragment, llms)
 
     def test_repository_has_adoption_assets(self) -> None:
         adoption_playbook = (REPO_ROOT / "docs" / "community" / "adoption-playbook.md").read_text(

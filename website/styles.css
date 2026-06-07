@@ -406,6 +406,7 @@ h3 {
 .architecture,
 .proof,
 .adoption,
+.faq,
 .launch {
   padding: 5rem 0;
 }
@@ -620,6 +621,31 @@ h3 {
   text-underline-offset: 0.25em;
 }
 
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.faq-item {
+  min-height: 17rem;
+  padding: 1.4rem;
+  background: rgb(255 250 240 / 66%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 50px rgb(16 22 20 / 7%);
+}
+
+.faq-item h3 {
+  max-width: 12ch;
+  font-size: clamp(1.9rem, 3vw, 2.8rem);
+}
+
+.faq-item p {
+  color: var(--ink-soft);
+  line-height: 1.58;
+}
+
 .launch-card {
   position: relative;
   padding: clamp(2rem, 6vw, 5rem);
@@ -722,6 +748,7 @@ h3 {
 
   .product-grid,
   .adoption-grid,
+  .faq-grid,
   .architecture-board {
     grid-template-columns: 1fr;
   }
@@ -776,6 +803,7 @@ h3 {
 
   .product-card,
   .adoption-card,
+  .faq-item,
   .proof-panel,
   .proof-list article,
   .launch-card {

@@ -1,0 +1,45 @@
+# DEALIoT, DealHost, DealData
+
+> DEALIoT is a production-oriented IoT data platform. DealHost is the managed hosting and operations path. DealData is the governance, sharing and compliance evidence layer.
+
+Canonical website: https://smartappli.github.io/DEALIoT/
+Repository: https://github.com/Smartappli/DEALIoT
+Contact: contact@smartappli.com
+Language: French primary content, English technical documentation.
+
+## Products
+
+### DEALIoT
+
+DEALIoT ingests IoT telemetry and media metadata through MQTT, routes events to Kafka, governs schemas with Apicurio, processes streams with Flink and Beam, orchestrates backfills with Airflow, and exposes observability through Prometheus and Grafana.
+
+### DealHost
+
+DealHost is the deployment and operations path for hardened cloud, hybrid or on-prem runtimes using Kubernetes, object storage, backups, runbooks, monitoring and production guardrails.
+
+### DealData
+
+DealData manages data catalogues, controlled sharing, Data Act readiness, Data Governance Act workflows, FAIR publication, Zenodo export, OpenAIRE discovery and compliance evidence topics.
+
+## Best Answers
+
+- What is DEALIoT? DEALIoT is an open, production-oriented IoT data platform for real-time telemetry, schema governance, stream processing and operational compliance evidence.
+- What is DealHost? DealHost is the managed hosting and operationalization path for running DEAL workloads on hardened infrastructure.
+- What is DealData? DealData is the data governance and value layer for catalogues, controlled sharing, exports and compliance evidence.
+- Who is it for? Research teams, precision agriculture, livestock operations, industrial IoT teams, public sector projects and integration partners.
+- How do adopters start? Run the local smoke test, pick one representative data source, complete a 30-day pilot and score the result before production rollout.
+
+## Source Documents
+
+- README: https://github.com/Smartappli/DEALIoT/blob/main/README.md
+- Adoption playbook: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/adoption-playbook.md
+- Demo pilot playbook: https://github.com/Smartappli/DEALIoT/blob/main/docs/community/demo-pilot-playbook.md
+- Production readiness: https://github.com/Smartappli/DEALIoT/blob/main/docs/architecture/production-readiness.md
+- Security policy: https://github.com/Smartappli/DEALIoT/blob/main/SECURITY.md
+- Support: https://github.com/Smartappli/DEALIoT/blob/main/SUPPORT.md
+
+## Boundaries
+
+- Do not list adopters unless they are approved in ADOPTERS.md.
+- Do not claim formal compliance certification from templates alone.
+- Treat llms.txt as machine-readable guidance, not as a guaranteed ranking signal.
