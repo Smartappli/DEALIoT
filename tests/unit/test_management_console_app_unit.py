@@ -395,14 +395,14 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 open_test_http_url(f"{base_url}/api/datasets/zenodo")
             self.assertEqual(unauthorized_get.exception.code, HTTPStatus.UNAUTHORIZED)
 
-            get_request = request.Request(
+            get_request = request.Request(  # noqa: S310
                 f"{base_url}/api/datasets/zenodo",
                 headers={"Authorization": "Bearer unit-token"},
             )
             response = read_json_from_request(get_request)
             self.assertEqual(response["repository"], "Zenodo")
 
-            post = request.Request(
+            post = request.Request(  # noqa: S310
                 f"{base_url}/api/operations/trigger-media-backfill",
                 data=b"{}",
                 method="POST",
@@ -416,7 +416,7 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 "management_console.app.trigger_media_backfill",
                 return_value=(HTTPStatus.ACCEPTED, {"status": "queued"}),
             ):
-                authorized_post = request.Request(
+                authorized_post = request.Request(  # noqa: S310
                     f"{base_url}/api/operations/trigger-media-backfill",
                     data=b"{}",
                     method="POST",

@@ -380,7 +380,7 @@ class BridgeUnitTests(unittest.TestCase):
         with (
             patch.object(self.bridge, "MQTT_USERNAME", "user"),
             patch.object(self.bridge, "MQTT_PASSWORD", "pass"),
-            patch.object(self.bridge, "MQTT_TLS_ENABLED", False),
+            patch.object(self.bridge, "MQTT_TLS_ENABLED", new=False),
             patch.object(self.bridge.mqtt_client, "Client", return_value=client),
             patch.object(self.bridge, "start_health_server") as mock_health,
             patch.object(self.bridge, "run_bridge") as mock_run,
@@ -399,21 +399,24 @@ class BridgeUnitTests(unittest.TestCase):
         with (
             patch.object(self.bridge, "MQTT_USERNAME", "user"),
             patch.object(self.bridge, "MQTT_PASSWORD", "pass"),
-            patch.object(self.bridge, "MQTT_TLS_ENABLED", True),
+            patch.object(self.bridge, "MQTT_TLS_ENABLED", new=True),
             patch.object(self.bridge, "MQTT_TLS_CA_FILE", "/etc/ssl/mqtt/ca.pem"),
             patch.object(self.bridge, "MQTT_TLS_CERT_FILE", "/etc/ssl/mqtt/client.pem"),
             patch.object(self.bridge, "MQTT_TLS_KEY_FILE", "/etc/ssl/mqtt/client.key"),
-            patch.object(self.bridge, "MQTT_TLS_INSECURE_SKIP_VERIFY", False),
+            patch.object(self.bridge, "MQTT_TLS_INSECURE_SKIP_VERIFY", new=False),
             patch.object(self.bridge.mqtt_client, "Client", return_value=client),
             patch.object(self.bridge, "start_health_server"),
             patch.object(self.bridge, "run_bridge"),
         ):
             self.bridge.main()
 
-        self.assertEqual(client.tls_config["ca_certs"], "/etc/ssl/mqtt/ca.pem")
-        self.assertEqual(client.tls_config["certfile"], "/etc/ssl/mqtt/client.pem")
-        self.assertEqual(client.tls_config["keyfile"], "/etc/ssl/mqtt/client.key")
-        self.assertEqual(client.tls_config["cert_reqs"], self.bridge.ssl.CERT_REQUIRED)
+        tls_config = client.tls_config
+        self.assertIsNotNone(tls_config)
+        assert tls_config is not None
+        self.assertEqual(tls_config["ca_certs"], "/etc/ssl/mqtt/ca.pem")
+        self.assertEqual(tls_config["certfile"], "/etc/ssl/mqtt/client.pem")
+        self.assertEqual(tls_config["keyfile"], "/etc/ssl/mqtt/client.key")
+        self.assertEqual(tls_config["cert_reqs"], self.bridge.ssl.CERT_REQUIRED)
         self.assertIsNone(client.tls_insecure)
 
     def test_main_raises_when_mqtt_credentials_are_partial(self):

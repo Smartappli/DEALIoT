@@ -1,10 +1,12 @@
+from __future__ import annotations
+
 import argparse
 import json
 import mimetypes
 import os
-from collections.abc import Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import boto3
 from kafka import KafkaProducer
@@ -20,6 +22,9 @@ from dealiot_contracts import (
     validate_event,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
 TOPIC_BY_MEDIA_KIND = {
     "image2d": RAW_IMAGE2D_META_TOPIC,
     "image3d": RAW_IMAGE3D_META_TOPIC,
@@ -29,23 +34,24 @@ TOPIC_BY_MEDIA_KIND = {
 TRUTHY_VALUES = {"1", "true", "yes", "on"}
 
 
-def bool_env(name: str, default: bool = False) -> bool:
+def bool_env(name: str, *, default: bool = False) -> bool:
     value = os.getenv(name)
     if value is None:
         return default
     return value.strip().lower() in TRUTHY_VALUES
 
 
-def kafka_security_config() -> dict:
+def kafka_security_config() -> dict[str, bool | str]:
     security_protocol = os.getenv("KAFKA_SECURITY_PROTOCOL", "PLAINTEXT").strip()
-    config = {"security_protocol": security_protocol}
+    config: dict[str, bool | str] = {"security_protocol": security_protocol}
 
     if security_protocol.startswith("SASL_"):
         username = os.getenv("KAFKA_SASL_USERNAME")
         password = os.getenv("KAFKA_SASL_PASSWORD")
         if not username or not password:
             raise ValueError(
-                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when Kafka SASL is enabled.",
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when "
+                "Kafka SASL is enabled.",
             )
         config["sasl_mechanism"] = os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
         config["sasl_plain_username"] = username
@@ -61,7 +67,7 @@ def kafka_security_config() -> dict:
             config["ssl_certfile"] = ssl_certfile
         if ssl_keyfile:
             config["ssl_keyfile"] = ssl_keyfile
-        config["ssl_check_hostname"] = bool_env("KAFKA_SSL_CHECK_HOSTNAME", True)
+        config["ssl_check_hostname"] = bool_env("KAFKA_SSL_CHECK_HOSTNAME", default=True)
 
     return {key: value for key, value in config.items() if value not in (None, "")}
 

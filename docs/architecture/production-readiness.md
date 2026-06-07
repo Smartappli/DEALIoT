@@ -2,6 +2,9 @@
 
 This document defines the current production target for DEALIoT.
 
+Detailed audit history is maintained in `docs/architecture/scalable-production-audit.md`.
+Versioned GitHub Wiki source pages are maintained in `docs/wiki/`.
+
 ## Production Target
 
 Kubernetes is the primary production target. Docker Swarm remains supported as a simpler runtime
@@ -19,6 +22,7 @@ target, but Kubernetes is where strict production controls are enforced first.
 7. Provide secrets through a secret manager or External Secrets Operator, not literal manifests.
 8. Validate production manifests in CI before merge.
 9. Generate image SBOM and provenance attestations for pushed images.
+10. Enforce Kubernetes Pod Security `restricted` on runtime namespaces.
 
 ## Stateful Dependency Strategy
 
@@ -56,6 +60,10 @@ Production runtime clients are expected to use authenticated and encrypted depen
 
 The production manifests wire readiness/liveness probes for application services and expose Flink
 Prometheus metrics on port `9250`.
+
+Kubernetes workload manifests declare `seccompProfile: RuntimeDefault`, disable service-account
+token automount, drop Linux capabilities, prevent privilege escalation, and run containers as
+non-root. Deployment tests enforce these guardrails.
 
 ## CI Gates
 

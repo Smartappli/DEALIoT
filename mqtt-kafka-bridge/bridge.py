@@ -1,7 +1,5 @@
 import atexit
 import base64
-from http import HTTPStatus
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import logging
 import os
@@ -10,6 +8,8 @@ import threading
 import time
 import uuid
 from datetime import UTC, datetime
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from json import JSONDecodeError
 from pathlib import Path
 from typing import Any
@@ -33,6 +33,7 @@ from dealiot_contracts import (
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_MQTT_TOPICS = "$share/ingestors/devices/#,$share/ingestors/wildfi/#"
+MQTT_TLS_DEFAULT_PORT = 8883
 UNIX_MILLISECONDS_THRESHOLD = 10_000_000_000
 WILDFI_TOPIC_MARKERS = {"wildfi", "wild-fi"}
 WILDFI_TAG_MARKERS = {"tags", "tag", "devices"}
@@ -115,7 +116,7 @@ def csv_env_or_default(name: str, default: str) -> tuple[str, ...]:
     return topics
 
 
-def bool_env(name: str, default: bool = False) -> bool:
+def bool_env(name: str, *, default: bool = False) -> bool:
     value = os.getenv(name)
     if value is None:
         return default
@@ -126,7 +127,7 @@ MQTT_HOST = os.getenv("MQTT_HOST", "vernemq1")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_USERNAME = os.getenv("MQTT_USERNAME")
 MQTT_PASSWORD = env_or_secret_file("MQTT_PASSWORD")
-MQTT_TLS_ENABLED = bool_env("MQTT_TLS_ENABLED", MQTT_PORT == 8883)
+MQTT_TLS_ENABLED = bool_env("MQTT_TLS_ENABLED", default=MQTT_PORT == MQTT_TLS_DEFAULT_PORT)
 MQTT_TLS_CA_FILE = os.getenv("MQTT_TLS_CA_FILE")
 MQTT_TLS_CERT_FILE = os.getenv("MQTT_TLS_CERT_FILE")
 MQTT_TLS_KEY_FILE = os.getenv("MQTT_TLS_KEY_FILE")
@@ -157,7 +158,8 @@ def kafka_security_config() -> dict[str, Any]:
         password = env_or_secret_file("KAFKA_SASL_PASSWORD")
         if not username or not password:
             raise ValueError(
-                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when Kafka SASL is enabled",
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when "
+                "Kafka SASL is enabled",
             )
         config["sasl_mechanism"] = os.getenv("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
         config["sasl_plain_username"] = username
@@ -173,7 +175,7 @@ def kafka_security_config() -> dict[str, Any]:
             config["ssl_certfile"] = ssl_certfile
         if ssl_keyfile:
             config["ssl_keyfile"] = ssl_keyfile
-        config["ssl_check_hostname"] = bool_env("KAFKA_SSL_CHECK_HOSTNAME", True)
+        config["ssl_check_hostname"] = bool_env("KAFKA_SSL_CHECK_HOSTNAME", default=True)
 
     return {key: value for key, value in config.items() if value not in (None, "")}
 
@@ -415,11 +417,11 @@ class HealthHandler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
-        LOGGER.debug("health probe: " + format, *args)
+        LOGGER.debug("health probe: %s", format % args)
 
 
 def start_health_server() -> None:
-    server = ThreadingHTTPServer(("0.0.0.0", BRIDGE_HEALTH_PORT), HealthHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", BRIDGE_HEALTH_PORT), HealthHandler)  # noqa: S104
     thread = threading.Thread(target=server.serve_forever, name="bridge-health", daemon=True)
     thread.start()
 
@@ -436,7 +438,7 @@ def configure_mqtt_tls(client: mqtt_client.Client) -> None:
         cert_reqs=cert_reqs,
     )
     if MQTT_TLS_INSECURE_SKIP_VERIFY:
-        client.tls_insecure_set(True)
+        client.tls_insecure_set(value=True)
 
 
 def main() -> None:

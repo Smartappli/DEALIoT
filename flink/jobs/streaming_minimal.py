@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import json
 import os
-from collections.abc import Iterable
+from typing import TYPE_CHECKING
 
 from pyflink.common import Row, Types
 from pyflink.common.serialization import SimpleStringSchema
@@ -24,6 +26,9 @@ from pyflink.datastream.functions import (
     RuntimeContext,
 )
 from pyflink.datastream.state import ValueStateDescriptor
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable
 
 EVENT_FIELDS = (
     "entity_id",
@@ -102,7 +107,7 @@ def env_or_default(name: str, default: str) -> str:
     return value.strip()
 
 
-def bool_env(name: str, default: bool = False) -> bool:
+def bool_env(name: str, *, default: bool = False) -> bool:
     value = os.getenv(name)
     if value is None:
         return default
@@ -131,7 +136,8 @@ def kafka_client_properties() -> dict[str, str]:
         password = os.getenv("KAFKA_SASL_PASSWORD")
         if not username or not password:
             raise ValueError(
-                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when Kafka SASL is enabled",
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when "
+                "Kafka SASL is enabled",
             )
         properties["sasl.mechanism"] = mechanism
         properties["sasl.jaas.config"] = (
@@ -150,7 +156,7 @@ def kafka_client_properties() -> dict[str, str]:
             value = os.getenv(env_name)
             if value:
                 properties[property_name] = value
-        if not bool_env("KAFKA_SSL_CHECK_HOSTNAME", True):
+        if not bool_env("KAFKA_SSL_CHECK_HOSTNAME", default=True):
             properties["ssl.endpoint.identification.algorithm"] = ""
 
     properties.update(parse_kafka_client_properties(os.getenv("KAFKA_CLIENT_PROPERTIES", "")))
@@ -316,7 +322,9 @@ def build_topic_stream(
         .set_property("enable.auto.commit", "false")
         .set_property("commit.offsets.on.checkpoint", "true")
     )
-    source = apply_kafka_properties(source_builder, kafka_properties or kafka_client_properties()).build()
+    source = apply_kafka_properties(
+        source_builder, kafka_properties or kafka_client_properties()
+    ).build()
 
     return env.from_source(
         source,
@@ -357,7 +365,9 @@ def build_kafka_sink(
         .set_delivery_guarantee(kafka_delivery_guarantee())
         .set_property("acks", "all")
     )
-    return apply_kafka_properties(sink_builder, kafka_properties or kafka_client_properties()).build()
+    return apply_kafka_properties(
+        sink_builder, kafka_properties or kafka_client_properties()
+    ).build()
 
 
 def main():

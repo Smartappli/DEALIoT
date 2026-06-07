@@ -15,12 +15,7 @@ WORKLOAD_MANIFEST_PATHS = [
     REPO_ROOT / "deploy" / "kubernetes" / "base" / "airflow.yaml",
     REPO_ROOT / "deploy" / "kubernetes" / "base" / "management-console.yaml",
     REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "mqtt-kafka-bridge.yaml",
-    REPO_ROOT
-    / "deploy"
-    / "kubernetes"
-    / "overlays"
-    / "production"
-    / "wildfi-decoder-job.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "production" / "wildfi-decoder-job.yaml",
 ]
 
 
@@ -99,17 +94,27 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("docker stack config -c deploy/swarm/dealiot-stack.yml", workflow_text)
         self.assertIn("docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml", workflow_text)
         self.assertIn("DEALIOT_SMOKE_BRIDGE_IMAGE: dealiot-mqtt-kafka-bridge:ci", workflow_text)
+        bridge_image_env = (
+            "DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: "
+            "ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-${{ github.sha }}"
+        )
         self.assertIn(
-            "DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-${{ github.sha }}",
+            bridge_image_env,
             workflow_text,
         )
-        self.assertIn("Production Swarm stack must render immutable release images only", workflow_text)
+        self.assertIn(
+            "Production Swarm stack must render immutable release images only", workflow_text
+        )
         self.assertIn("kubectl kustomize deploy/kubernetes/base", workflow_text)
         self.assertIn("kubectl kustomize deploy/kubernetes/overlays/production", workflow_text)
         self.assertIn("kubectl create namespace dealiot", workflow_text)
         self.assertIn("kubectl create namespace dealiot-smoke", workflow_text)
+        placeholder_message = (
+            "Production overlay must not render mutable tags, placeholder tags, "
+            "example endpoints, or example secrets"
+        )
         self.assertIn(
-            "Production overlay must not render mutable tags, placeholder tags, example endpoints, or example secrets",
+            placeholder_message,
             workflow_text,
         )
         self.assertIn("sha-${GITHUB_SHA}", workflow_text)
@@ -149,18 +154,8 @@ class DeploymentReadinessTests(unittest.TestCase):
             / "overlays"
             / "production"
             / "external-dependency-contract.yaml",
-            REPO_ROOT
-            / "deploy"
-            / "kubernetes"
-            / "overlays"
-            / "production"
-            / "autoscaling.yaml",
-            REPO_ROOT
-            / "deploy"
-            / "kubernetes"
-            / "overlays"
-            / "production"
-            / "availability.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "production" / "autoscaling.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "production" / "availability.yaml",
             REPO_ROOT
             / "deploy"
             / "kubernetes"
@@ -345,7 +340,11 @@ class DeploymentReadinessTests(unittest.TestCase):
         ):
             self.assertIn(workload, hpas)
             self.assertEqual(hpas[workload]["kind"], "HorizontalPodAutoscaler")
-            self.assertGreater(hpas[workload]["spec"]["maxReplicas"], hpas[workload]["spec"]["minReplicas"])
+            hpa_spec = hpas[workload]["spec"]
+            self.assertGreater(
+                hpa_spec["maxReplicas"],
+                hpa_spec["minReplicas"],
+            )
 
         pdbs = {document["metadata"]["name"]: document for document in availability_docs}
         self.assertEqual(pdbs["airflow-worker"]["spec"]["minAvailable"], 2)

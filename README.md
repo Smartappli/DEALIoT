@@ -1,581 +1,249 @@
-# Real-Time Multimodal IoT Data Platform
+# DEALIoT
 
-This repository implements a reproducible edge-to-cloud architecture for multimodal IoT ingestion, schema governance, stream/batch processing, high-availability transactional storage, and operational observability. The stack targets real-time livestock and precision-agriculture workloads, but the design is generic enough for other industrial IoT domains.
+DEALIoT is a production-oriented real-time IoT data platform for multimodal telemetry, media metadata, schema governance, stream processing, orchestration, and operational compliance evidence.
+
+The platform targets livestock, precision agriculture, and industrial IoT deployments where device telemetry, GPS data, media objects, and governance evidence must be processed reliably from edge ingestion to curated datasets.
 
 [![CI](https://github.com/Smartappli/DEALIoT/actions/workflows/ci.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/ci.yml)
+[![Production Deployment Test](https://github.com/Smartappli/DEALIoT/actions/workflows/production-deployment-test.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/production-deployment-test.yml)
 [![CodeQL](https://github.com/Smartappli/DEALIoT/actions/workflows/codeql.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/codeql.yml)
-[![Dependabot Updates](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/dependabot/dependabot-updates)
-[![Renovate](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/renovate.yml)
 [![ShellCheck](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/shellcheck.yml)
-
-
 [![SonarQube](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml/badge.svg)](https://github.com/Smartappli/DEALIoT/actions/workflows/sonarqube.yml)
-[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=bugs)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-
-
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/26b7e888b6b54e299cb0ed23a112f2d4)](https://app.codacy.com/gh/Smartappli/DEALIoT/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Smartappli_DEALIoT&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Smartappli_DEALIoT)
 
+## Platform Scope
 
-## 1. What the platform does
+DEALIoT provides six runtime planes:
 
-The platform combines six logical planes:
+| Plane | Responsibility | Primary components |
+|---|---|---|
+| Ingestion | Secure MQTT ingestion and routing to Kafka topics | VerneMQ, MQTT-Kafka bridge |
+| Event backbone | Durable event transport and schema governance | Kafka KRaft, Apicurio Registry |
+| Object storage | Raw and derived media object storage | SeaweedFS S3 locally, managed S3 in production |
+| Processing | Stream processing, feature projection, replay, and backfill | Flink, Beam, Airflow |
+| Storage | Operational SQL state and connection pooling | TimescaleDB, Patroni, HAProxy, PgBouncer |
+| Operations | Observability, control surfaces, and compliance evidence | Prometheus, Grafana, Management Console |
 
-1. **Edge and ingestion**
-   - MQTT ingestion through a 3-node VerneMQ cluster.
-   - An MQTT-to-Kafka bridge that forwards telemetry, GPS messages, and media metadata into Kafka topics.
-
-2. **Event backbone and schema governance**
-   - A 3-node Apache Kafka KRaft cluster.
-   - Apicurio Registry for JSON schema governance and artifact lifecycle.
-
-3. **Object storage**
-   - SeaweedFS S3 as object storage for raw and derived media objects.
-   - Bucket notifications that emit `media.object.events` to Kafka.
-
-4. **Stream and batch processing**
-   - Apache Flink for stateful stream processing with checkpointing and savepoints on SeaweedFS S3.
-   - Apache Beam job server and Python harness for portable pipelines.
-   - Apache Airflow 3 for scheduled orchestration and replay/backfill workflows.
-
-5. **Operational and analytical storage**
-   - A 3-node Patroni/etcd-backed TimescaleDB HA cluster.
-   - HAProxy for read-write and read-only routing.
-   - PgBouncer for client pooling.
-
-6. **Observability and administration**
-   - Prometheus, Grafana, cAdvisor, statsd-exporter, postgres-exporter.
-   - pgAdmin for database inspection.
-
-## 2. High-level architecture
+## Architecture
 
 ```mermaid
 flowchart LR
-  subgraph Edge
-    D[IoT devices]
-    M[Media producers]
-  end
-
-  subgraph Ingestion
-    V[VerneMQ cluster]
-    B[MQTT-Kafka bridge]
-  end
-
-  subgraph Backbone
-    K[Kafka KRaft cluster]
-    R[Apicurio Registry]
-    O[SeaweedFS S3]
-  end
-
-  subgraph Processing
-    F[Flink]
-    J[Beam job server]
-    A[Airflow 3]
-  end
-
-  subgraph Storage
-    H[HAProxy]
-    P[(Patroni + TimescaleDB HA)]
-    G[PgBouncer]
-  end
-
-  subgraph Observability
-    PR[Prometheus]
-    GF[Grafana]
-  end
-
-  D --> V --> B --> K
-  M --> O --> K
-  K --> R
-  K --> F
-  K --> J
-  A --> O
-  A --> K
-  F --> O
-  F --> H --> P
-  G --> H
-  PR --> GF
+  Device[IoT devices] --> MQTT[MQTT broker]
+  Media[Media producers] --> S3[S3-compatible object storage]
+  MQTT --> Bridge[MQTT-Kafka bridge]
+  Bridge --> Kafka[(Kafka)]
+  S3 --> Kafka
+  Kafka --> Registry[Apicurio Registry]
+  Kafka --> Flink[Flink streaming jobs]
+  Kafka --> Beam[Beam pipelines]
+  Airflow[Airflow orchestration] --> S3
+  Airflow --> Kafka
+  Flink --> State[(TimescaleDB / state stores)]
+  Prometheus[Prometheus] --> Grafana[Grafana]
+  Console[Management Console] --> Airflow
+  Console --> Registry
+  Console --> Flink
 ```
 
-## 3. Repository layout
+### Production Architecture Principles
+
+- Kubernetes is the primary production target.
+- Docker Swarm remains available for simpler runtime deployments and smoke validation.
+- Stateful dependencies are externalized in production unless managed by a dedicated operator.
+- Runtime dependency traffic is encrypted or private: Kafka `SASL_SSL`, MQTT TLS, S3 TLS, PostgreSQL private connectivity, and Redis private connectivity.
+- Kubernetes production uses default-deny NetworkPolicies, Pod Security `restricted`, immutable image tags, readiness/liveness probes, HPA, PDB, and topology spread constraints.
+- Secrets are expected from a secret manager, External Secrets Operator, or equivalent out-of-band mechanism.
+
+## Repository Layout
 
 ```text
-airflow/                  Airflow DAGs, logs, plugins
-apicurio/bootstrap/       Registry bootstrap artifacts
-beam/                     Beam job server and Python harness images
-deploy/                   Docker Swarm and Kubernetes production targets
-flink/                    Custom PyFlink image and jobs
-grafana/                  Dashboards and provisioning
-haproxy/                  Read-write / read-only routing
-kafka-connect/            Debezium connector definitions
-mqtt-kafka-bridge/        MQTT to Kafka bridge
-management-console/       Internal architecture management console
-orchestration/            Airflow image build
-patroni/                  Patroni templates
-pgadmin/                  pgAdmin preconfigured servers
-pgbouncer/                Explicit pooling configuration
-pipelines/                Replay/backfill utilities
-prometheus/               Metrics scraping and alert rules
-scripts/                  Bootstrap and entrypoint helpers
-secrets/                  Docker secrets (local dev only)
+.github/workflows/                         CI, security scans, image build, deployment validation
+airflow/dags/                              Airflow DAGs
+apicurio/bootstrap/                        Registry schema bootstrap payloads
+dealiot_contracts/                         Shared event contract helpers
+deploy/kubernetes/base/                    Kubernetes base runtime manifests
+deploy/kubernetes/overlays/production/     Production Kustomize overlay
+deploy/swarm/                              Docker Swarm runtime and smoke stacks
+docs/                                      Architecture, compliance, and runbooks
+flink/jobs/                                PyFlink streaming jobs
+management-console/                        Internal operational console
+mqtt-kafka-bridge/                         MQTT to Kafka ingestion bridge
+pipelines/                                 Replay and backfill utilities
+scripts/                                   Bootstrap and smoke-test scripts
+tests/                                     Unit, integration, and deployment guardrail tests
+wildfi-decoder/                            Offline WildFi binary decoder image wrapper
 ```
 
-## 4. Critical design decisions finalized in this version
+## Event Topics
 
-### Fixed inconsistencies
+Core runtime topics include:
 
-This finalized version addresses the following problems found during the audit:
+| Topic | Purpose |
+|---|---|
+| `raw.sensor` | Device telemetry and decoded WildFi sensor payloads |
+| `raw.gps` | GPS and GNSS events |
+| `raw.image2d.meta` | 2D image metadata |
+| `raw.image3d.meta` | 3D image metadata |
+| `raw.video2d.meta` | 2D video metadata |
+| `raw.video3d.meta` | 3D video metadata |
+| `media.object.events` | Object storage notifications |
+| `features.events` | Derived feature events |
+| `state.latest` | Compacted latest state projection |
+| `dlq.events` | Invalid or unroutable event records |
 
-- The Airflow DAG passed `--window-start` and `--window-end`, but `pipelines/media_backfill.py` only accepted `--since-minutes`.
-- The Airflow containers did not receive Kafka and S3/SeaweedFS credentials, so the backfill workflow could not read objects or publish replayed events.
-- Kafka Connect internal topics (`__connect-configs`, `__connect-offsets`, `__connect-status`) were missing while Kafka auto-topic creation was disabled.
-- The `raw.gps` topic existed but no matching schema artifact was bootstrapped into Apicurio Registry.
-- The MQTT bridge emitted a generic record that did not match the intended telemetry contract.
-- PgBouncer shipped dedicated config files and userlists that were not mounted, which made the repository harder to reason about.
-- The environment-specific compose overlays were empty.
+Governance, Data Act, DGA, security, resilience, and compliance evidence topics are defined in `docker-compose.yml`, `apicurio/bootstrap/`, and `docs/runbooks/security-resilience-compliance.md`.
 
-### Final behavior of the backfill pipeline
+## Local Development
 
-The Airflow DAG now calls a backfill script that:
+### Prerequisites
 
-1. Reads objects from SeaweedFS S3 in a bounded window.
-2. Maps the bucket and media kind to one of:
-   - `raw.image2d.meta`
-   - `raw.image3d.meta`
-   - `raw.video2d.meta`
-   - `raw.video3d.meta`
-3. Publishes synthetic metadata events to Kafka so downstream consumers can reprocess missed media arrivals.
+- Docker Engine with Compose v2
+- Python 3.12 or newer for local tests
+- `uv` for reproducible Python tooling
+- `kubectl` for rendering Kubernetes overlays
 
-This makes the Airflow workflow operational instead of only printing objects to stdout.
-
-## 5. Topics and contracts
-
-### Kafka topics created during bootstrap
-
-| Topic | Purpose | Partitions | Replication |
-|---|---|---:|---:|
-| `raw.gps` | GPS events | 24 | 3 |
-| `raw.sensor` | Telemetry events | 24 | 3 |
-| `raw.image2d.meta` | 2D image metadata | 12 | 3 |
-| `raw.image3d.meta` | 3D image metadata | 12 | 3 |
-| `raw.video2d.meta` | 2D video metadata | 12 | 3 |
-| `raw.video3d.meta` | 3D video metadata | 12 | 3 |
-| `media.object.events` | S3 object notifications | 12 | 3 |
-| `features.events` | Derived features | 24 | 3 |
-| `alerts.events` | Alerts | 12 | 3 |
-| `state.latest` | Compacted latest state | 12 | 3 |
-| `dlq.events` | Dead-letter events | 12 | 3 |
-| `governance.data.products` | DGA data product catalogue | 3 | 3 |
-| `governance.access.requests` | DGA access requests and decisions | 6 | 3 |
-| `governance.permission.events` | DGA consent/permission lifecycle | 6 | 3 |
-| `governance.intermediation.log` | DGA intermediation activity log | 12 | 3 |
-| `governance.transfer.notices` | DGA unauthorised access/transfer/use notices | 6 | 3 |
-| `governance.research.projects` | Research project register and ethics status | 3 | 3 |
-| `governance.research.outputs` | Research outputs and disclosure review evidence | 6 | 3 |
-| `governance.dataset.catalog` | Dataset catalogue, FAIR metadata and access policy | 3 | 3 |
-| `governance.data_management_plans` | Data Management Plans for research and releases | 3 | 3 |
-| `governance.repository.exports` | Repository, Zenodo and OpenAIRE export evidence | 6 | 3 |
-| `dataact.product.catalog` | Data Act connected-product and related-service catalogue | 3 | 3 |
-| `dataact.user.access.requests` | Data Act user access requests and decisions | 6 | 3 |
-| `dataact.third_party.sharing` | User-authorized third-party sharing evidence | 6 | 3 |
-| `dataact.user.exports` | User export and delivery evidence | 6 | 3 |
-| `dataact.safeguards` | Data Act security and trade-secret safeguards | 3 | 3 |
-| `dataact.legal_basis.checks` | Data Act and personal-data release checks | 6 | 3 |
-| `security.asset.inventory` | Security asset inventory and ownership | 3 | 3 |
-| `security.incident.events` | NIS2/DORA/CRA incident evidence | 6 | 3 |
-| `security.vulnerability.findings` | Vulnerability and remediation register | 6 | 3 |
-| `security.sbom.attestations` | SBOM, provenance and signature evidence | 3 | 3 |
-| `security.patch.events` | Security update and rollback evidence | 6 | 3 |
-| `resilience.backup.tests` | Restore test, RPO and RTO evidence | 3 | 3 |
-| `resilience.operational.risk` | ICT and operational risk register | 3 | 3 |
-| `resilience.third_party.risk` | ICT supplier and exit-plan register | 3 | 3 |
-| `compliance.scope.decisions` | Regulatory scope decision register | 3 | 3 |
-| `compliance.control.assessments` | Compliance control assessment evidence | 6 | 3 |
-| `compliance.reporting.channels` | Regulatory reporting channel register | 3 | 3 |
-| `compliance.legal.dossier` | Legal dossier artefacts and release gates | 3 | 3 |
-| `cra.product.lifecycle` | CRA product support and update lifecycle | 3 | 3 |
-| `kafkasql-journal-v3` | Apicurio KafkaSQL journal | 1 | 3 |
-| `kafkasql-snapshots-v3` | Apicurio KafkaSQL snapshots | 1 | 3 |
-| `registry-events-v3` | Apicurio registry events | 1 | 3 |
-| `__connect-configs` | Kafka Connect internal config topic | 1 | 3 |
-| `__connect-offsets` | Kafka Connect internal offsets topic | 12 | 3 |
-| `__connect-status` | Kafka Connect internal status topic | 6 | 3 |
-
-### Registry artifacts bootstrapped
-
-- `raw.sensor`
-- `raw.gps`
-- `raw.image2d.meta`
-- `raw.image3d.meta`
-- `raw.video2d.meta`
-- `raw.video3d.meta`
-- `media.object.events`
-- `dlq.events`
-- `governance.data.products`
-- `governance.access.requests`
-- `governance.permission.events`
-- `governance.intermediation.log`
-- `governance.transfer.notices`
-- `governance.research.projects`
-- `governance.research.outputs`
-- `governance.dataset.catalog`
-- `governance.data_management_plans`
-- `governance.repository.exports`
-- `dataact.product.catalog`
-- `dataact.user.access.requests`
-- `dataact.third_party.sharing`
-- `dataact.user.exports`
-- `dataact.safeguards`
-- `dataact.legal_basis.checks`
-- `security.asset.inventory`
-- `security.incident.events`
-- `security.vulnerability.findings`
-- `security.sbom.attestations`
-- `security.patch.events`
-- `resilience.backup.tests`
-- `resilience.operational.risk`
-- `resilience.third_party.risk`
-- `compliance.scope.decisions`
-- `compliance.control.assessments`
-- `compliance.reporting.channels`
-- `compliance.legal.dossier`
-- `cra.product.lifecycle`
-
-### WildFi ingestion
-
-The MQTT bridge subscribes to both generic devices and WildFi telemetry:
-
-```text
-$share/ingestors/devices/#
-$share/ingestors/wildfi/#
-```
-
-Decoded WildFi GPS/GNSS/raw GPS payloads are routed to `raw.gps`. Decoded IMU, environment,
-proximity, movement, and metadata payloads are routed to `raw.sensor`. See
-`docs/runbooks/wildfi-ingestion.md` for the expected topic and payload contract.
-
-Native WildFi `.bin` logs are decoded with the packaged `wildfi-decoder` image, built from
-`https://github.com/wildlab/WildFiDecoder`, not inside the MQTT bridge.
-
-## 6. Network zones
-
-- `ingest_net`: internal ingestion plane for MQTT and SeaweedFS producers.
-- `kafka_net`: internal event backbone.
-- `patroni_backend`: internal HA database control plane.
-- `patroni_frontend`: client-facing database access plane.
-- `orchestration_net`: Airflow, Grafana, Apicurio UI, and other control-plane services.
-
-This segmentation limits accidental coupling between components and makes troubleshooting easier.
-
-## SonarQube setup
-
-This repository is configured for GitHub Actions-based SonarQube analysis:
-
-- Workflow: `.github/workflows/sonarqube.yml`
-- Project scanner config: `sonar-project.properties`
-- Required repository secrets:
-  - `SONAR_TOKEN`
-  - `SONAR_HOST_URL` (optional; defaults to `https://sonarcloud.io` when unset, set it for self-hosted SonarQube)
-  - `CODACY_PROJECT_TOKEN` (optional; when set, coverage is also uploaded to Codacy)
-
-The workflow runs on pushes to `main`/`master`, on pull requests, and manually via `workflow_dispatch`.
-
-## 7. Configuration model
-
-The stack uses **two complementary configuration channels**:
-
-1. **`.env` / `.env.example`**
-   - Non-file environment variables.
-   - Public URLs.
-   - Build pins.
-   - SeaweedFS S3 credentials used by Flink/Airflow/Beam.
-
-2. **`./secrets/*.txt`**
-   - Database passwords.
-   - SeaweedFS S3 credentials.
-   - PgAdmin password.
-   - PgBouncer userlists.
-
-### Minimum `.env` variables
+### Configure Local Secrets
 
 ```bash
 cp .env.example .env
+mkdir -p secrets
 ```
 
-Then set at least:
+Populate the secret files listed in `README` runbooks and `.env.example`. Local secrets must stay outside Git; `.gitignore` and `.dockerignore` exclude `.env` and `secrets/`.
 
-- `AIRFLOW_FERNET_KEY`
-- `AIRFLOW_API_SECRET_KEY`
-- `AIRFLOW_JWT_SECRET`
-- `AIRFLOW_ADMIN_USER`
-- `AIRFLOW_ADMIN_PASSWORD`
-- `AIRFLOW_DB_PASSWORD`
-- `VERNEMQ_DISTRIBUTED_COOKIE`
-- `VERNEMQ_ADMIN_PASSWORD`
-- `SEAWEEDFS_S3_ACCESS_KEY`
-- `SEAWEEDFS_S3_SECRET_KEY`
-- `APICURIO_PUBLIC_URL`
-- `GRAFANA_PUBLIC_URL`
-
-### Docker secret files required
-
-```text
-secrets/app_user_password.txt
-secrets/debezium_password.txt
-secrets/seaweedfs_s3_secret_key.txt
-secrets/seaweedfs_s3_access_key.txt
-secrets/patroni_repl_password.txt
-secrets/patroni_rewind_password.txt
-
-## 8. Quality checks and bug-fix workflow
-
-Before committing changes, run the local automated checks:
-
-```bash
-pytest -q
-```
-
-Recent reliability hardening:
-
-- The MQTT→Kafka bridge now logs asynchronous Kafka producer failures with the actual exception details, which makes transient broker/network issues diagnosable during operations.
-secrets/pgadmin_default_password.txt
-secrets/pgbouncer_ro_userlist.txt
-secrets/pgbouncer_rw_userlist.txt
-secrets/postgres_exporter_password.txt
-secrets/postgres_superuser_password.txt
-```
-
-### Generate new secrets locally
-
-```bash
-python - <<'PY'
-import secrets
-from pathlib import Path
-
-target = Path("secrets")
-target.mkdir(exist_ok=True)
-
-files = {
-    "app_user_password.txt": secrets.token_urlsafe(24),
-    "debezium_password.txt": secrets.token_urlsafe(24),
-    "seaweedfs_s3_access_key.txt": secrets.token_urlsafe(24),
-    "seaweedfs_s3_secret_key.txt": secrets.token_urlsafe(32),
-    "patroni_repl_password.txt": secrets.token_urlsafe(24),
-    "patroni_rewind_password.txt": secrets.token_urlsafe(24),
-    "pgadmin_default_password.txt": secrets.token_urlsafe(24),
-    "postgres_exporter_password.txt": secrets.token_urlsafe(24),
-    "postgres_superuser_password.txt": secrets.token_urlsafe(24),
-}
-
-for name, value in files.items():
-    (target / name).write_text(value + "\n", encoding="utf-8")
-PY
-```
-
-## 8. Startup sequence
-
-Use the base compose file plus an environment-specific overlay. The base file describes the
-internal topology and does not publish host ports. Development ports live in
-`docker-compose.dev.yml`; production-like local validation exposes only the explicit edge service.
-
-### Development
+### Start The Development Stack
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
-# or
-./install_dealiot.sh dev up -d --build
 ```
 
-### Staging
+Useful local endpoints when the development overlay is active:
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d --build
-# or
-./install_dealiot.sh staging up -d --build
-```
-
-### Production-like local validation
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-# or
-./install_dealiot.sh prod up -d --build
-```
-
-### Docker Swarm production
-
-The Swarm stack lives in `deploy/swarm/dealiot-stack.yml`. It deploys the application/runtime
-plane and expects production-grade stateful dependencies to be provisioned outside the stack:
-Kafka, MQTT, S3-compatible storage, Airflow PostgreSQL, and Airflow Redis.
-
-```bash
-docker stack deploy -c deploy/swarm/dealiot-stack.yml dealiot
-```
-
-The CI-only stack `deploy/swarm/dealiot-smoke-stack.yml` verifies Swarm deployment mechanics with
-the locally built bridge image.
-
-### Kubernetes production
-
-The Kubernetes target is a Kustomize base under `deploy/kubernetes/base`.
-
-```bash
-kubectl apply -k deploy/kubernetes/base
-```
-
-Create environment-specific overlays for real clusters to patch image tags, external endpoints,
-ingress, storage classes, and secret references. The CI overlay
-`deploy/kubernetes/overlays/ci-smoke` is intentionally minimal and validates rollout wiring on
-kind.
-
-## 9. Service endpoints
-
-These endpoints are available when the development overlay is active.
-
-| Service | URL / Port |
+| Service | Endpoint |
 |---|---|
-| Airflow API/UI | `http://localhost:8088` |
-| Flink UI | `http://localhost:8081` |
-| Kafka Connect | `http://localhost:8083` |
-| Apicurio Registry API | `http://localhost:8082/apis/registry/v3` |
-| Apicurio Registry UI | `http://localhost:8888` |
-| SeaweedFS S3 API | `http://localhost:8333` |
-| SeaweedFS Filer UI | `http://localhost:8889` |
-| pgAdmin | `http://localhost:5050` |
-| Grafana | `http://localhost:3000` |
+| Airflow | `http://localhost:8088` |
+| Flink | `http://localhost:8081` |
+| Apicurio Registry | `http://localhost:8082/apis/registry/v3` |
 | Management Console | `http://localhost:8090` |
+| Grafana | `http://localhost:3000` |
 | Prometheus | `http://localhost:9090` |
-| HAProxy stats | `http://localhost:7000` |
-| PostgreSQL RW | `localhost:5432` |
-| PostgreSQL RO | `localhost:5433` |
-| PgBouncer RW | `localhost:6432` |
-| PgBouncer RO | `localhost:6433` |
+| SeaweedFS S3 | `http://localhost:8333` |
 
-## 10. End-to-end smoke test
-
-After rendering Compose and before accepting a platform change, run:
+### Run The End-To-End Smoke Test
 
 ```bash
 bash scripts/smoke-e2e.sh
 ```
 
-The smoke test starts the event-flow services, submits the minimal Flink job, publishes MQTT
-fixtures, and verifies `raw.sensor`, `dlq.events`, `features.events`, `state.latest`, and Apicurio
-artifacts.
+The smoke test starts the core event-flow services, submits the minimal Flink job, publishes MQTT fixtures, validates Kafka topics, verifies Apicurio artifacts, and captures diagnostics on failure.
 
-## 11. Validation checklist
+## Production Deployment
 
-After startup, validate in this order:
+### Kubernetes
 
-### Kafka
+The production overlay is located at `deploy/kubernetes/overlays/production`.
+
+Before deployment:
+
+1. Replace all `sha-REPLACE_WITH_RELEASE_SHA` image tags with immutable release SHA tags.
+2. Replace example dependency endpoints in `runtime-config.production.example.env`.
+3. Provide `dealiot-secrets` through a secret manager or External Secrets Operator.
+4. Narrow NetworkPolicy `ipBlock` ranges to real private dependency CIDRs.
+5. Confirm metrics-server or another HPA metrics provider is installed.
+
+Render locally:
+
 ```bash
-docker compose exec kafka1 /opt/kafka/bin/kafka-topics.sh   --bootstrap-server kafka1:9092 --list
+kubectl kustomize deploy/kubernetes/overlays/production >/tmp/dealiot-production.yaml
 ```
 
-### Patroni / PostgreSQL
+Apply through your GitOps controller or deployment pipeline after replacing all placeholders.
+
+### Docker Swarm
+
+The Swarm stack is located at `deploy/swarm/dealiot-stack.yml` and expects external Kafka, MQTT, S3, PostgreSQL, and Redis services.
+
 ```bash
-docker compose exec pg1 curl -s http://127.0.0.1:8008/patroni
-docker compose exec haproxy sh -lc "nc -zv 127.0.0.1 5432"
+docker stack config -c deploy/swarm/dealiot-stack.yml
+docker stack deploy -c deploy/swarm/dealiot-stack.yml dealiot
 ```
 
-### SeaweedFS buckets
+Create required Swarm secrets before deployment. See `deploy/swarm/README.md` for the exact contract.
+
+## Runtime Security
+
+The production runtime contract requires:
+
+- Kafka `SASL_SSL` with SCRAM credentials.
+- MQTT TLS on port `8883` by default.
+- Management Console bearer-token protection for `/api/*` and mutation routes.
+- Kubernetes Pod Security `restricted` on production and CI smoke namespaces.
+- Default-deny Kubernetes NetworkPolicies.
+- Immutable image tags and CI checks that reject mutable tags and unresolved placeholders.
+- Container resources, readiness/liveness probes, dropped Linux capabilities, and disabled service-account token automounting.
+
+## Testing And Quality Gates
+
+Run the same validation layers used by CI:
+
 ```bash
-docker compose exec seaweedfs-init sh -lc 'echo "SeaweedFS bootstrap completed"'
+uv run python -m unittest discover -s tests/unit -p "test_*.py" -v
+uv run python -m unittest -v tests/integration/test_platform_integration.py
+uv run --with PyYAML python -m unittest -v tests/deployment/test_deployment_readiness.py
+uv run python -m unittest -v tests/test_application_smoke.py
 ```
 
-### Apicurio artifacts
-Open the registry UI and verify the expected groups/artifacts are present.
+Additional CI gates include:
 
-### Airflow DAG import
-Open the Airflow UI and verify that `media_backfill` is visible and import-error free.
+- Pre-commit hooks: YAML, JSON, Ruff, Mypy, djLint.
+- CodeQL, Bandit, OSSAR, OSV Scanner, SonarQube, and Codacy coverage upload.
+- Docker image builds with SBOM and provenance attestations.
+- Kubernetes render and server-side dry-run validation.
+- Docker Swarm render and smoke deployment validation.
+- kind smoke deployment for the bridge image.
 
-## 12. Operational notes
+## Operations And Runbooks
 
-### Event contract enforcement
-Python producers validate critical event contracts before publishing to Kafka:
-
-- valid records go to their intended `raw.*` topic
-- invalid records go to `dlq.events`
-- `timestamp` is the event time; `ingested_at` is when the platform received or replayed it
-
-This local validation is a guardrail. Apicurio remains the source of schema documentation and
-consumer compatibility governance.
-
-### Airflow 3
-The stack uses the Airflow 3 split model:
-- API/UI server (`airflow-apiserver`)
-- scheduler
-- worker
-- triggerer
-- standalone DAG processor
-
-This separation is intentional and aligns with the Airflow 3 deployment model.
-
-### Flink state management
-Flink stores checkpoints and savepoints in SeaweedFS S3:
-- `s3://flink-checkpoints/streaming`
-- `s3://flink-savepoints/streaming`
-
-### Debezium / Kafka Connect
-The `timescaledb-source` connector captures changes from `appdb` via a named publication:
-- publication: `dbz_publication`
-- slot: `debezium_appdb`
-
-### Database routing
-- RW traffic: HAProxy `5432`
-- RO traffic: HAProxy `5433`
-- pooled RW: PgBouncer `6432`
-- pooled RO: PgBouncer `6433`
-
-## 13. Runbooks
+Primary runbooks:
 
 - [Operations](docs/runbooks/operations.md)
 - [Backup and restore](docs/runbooks/backup-restore.md)
 - [Security hardening](docs/runbooks/security-hardening.md)
 - [Security resilience compliance](docs/runbooks/security-resilience-compliance.md)
-- [Legal applicability](docs/runbooks/legal-applicability.md)
-- [Legal compliance dossier](docs/compliance/legal-compliance-dossier.md)
-- [Legal finalization report](docs/compliance/legal-finalization-report.md)
+- [WildFi ingestion](docs/runbooks/wildfi-ingestion.md)
 - [Data Governance Act](docs/runbooks/data-governance-act.md)
 - [Data Act](docs/runbooks/data-act.md)
-- [Dataset catalogue and Data Management Plan](docs/runbooks/data-management-plan.md)
-- [Zenodo dataset export](docs/runbooks/zenodo-export.md)
-- [OpenAIRE metadata export](docs/runbooks/openaire-export.md)
-- [Legal readiness review](docs/compliance/legal-readiness-review.md)
+- [Dataset catalogue and DMP](docs/runbooks/data-management-plan.md)
+- [Zenodo export](docs/runbooks/zenodo-export.md)
+- [OpenAIRE export](docs/runbooks/openaire-export.md)
 
-## 14. Recommended next steps
+The GitHub Wiki contains the production architecture handbook, deployment guide, configuration reference, operational runbooks, scaling model, and security checklist.
 
-1. Add TLS and authentication for Kafka, MQTT, object storage, and public UIs before any
-   non-local deployment.
-2. Add backup and restore runbooks for Kafka metadata, TimescaleDB, SeaweedFS, Grafana, and
-   Airflow metadata.
-3. Finalize the production stateful layer with managed services or dedicated operators for Kafka,
-   PostgreSQL, Redis, MQTT, and object storage before go-live.
-4. Add downstream consumers for `features.events`, `alerts.events`, and `state.latest`.
-5. Add one or more domain-specific Flink jobs under `flink/jobs/`.
+## WildFi Support
 
-## 15. Included artifacts in this finalized package
+DEALIoT supports WildFi telemetry through:
 
-This finalized package contains:
+- MQTT subscription to `$share/ingestors/wildfi/#`.
+- Routing decoded GPS/GNSS payloads to `raw.gps`.
+- Routing decoded IMU, environment, proximity, movement, and metadata payloads to `raw.sensor`.
+- Offline binary decoding through the packaged `wildfi-decoder` image.
 
-- a patched `docker-compose.yml`
-- functional environment overlays for dev/staging/prod
-- a shared lightweight event contract module used by Python producers
-- a `dlq.events` schema and DLQ routing for invalid producer events
-- an E2E smoke script and runbooks for operations, backup/restore, and security hardening
-- a new `README.md`
-- a new `.env.example`
-- a corrected MQTT bridge
-- a management console for architecture health, data catalogue, runbooks, and compliance controls
-- a corrected media backfill utility
-- a new `raw.gps` Apicurio schema
-- Docker Swarm and Kubernetes production deployment targets with CI smoke workflows
+References:
+
+- `docs/runbooks/wildfi-ingestion.md`
+- `deploy/kubernetes/overlays/production/wildfi-decoder-config.yaml`
+- `deploy/kubernetes/overlays/production/wildfi-decoder-job.yaml`
+
+## Contribution Workflow
+
+1. Create changes with tests.
+2. Run the validation commands above.
+3. Render Kubernetes and Swarm manifests when deployment files change.
+4. Keep production placeholders out of rendered manifests.
+5. Commit with a focused message and push to GitHub.
+
+## License
+
+This repository is licensed under the terms in [LICENSE](LICENSE).

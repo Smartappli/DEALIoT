@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import unittest
 from pathlib import Path
@@ -28,6 +29,15 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "runbooks" / "zenodo-export.md",
             REPO_ROOT / "docs" / "runbooks" / "openaire-export.md",
             REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md",
+            REPO_ROOT / "docs" / "architecture" / "scalable-production-audit.md",
+            REPO_ROOT / "docs" / "wiki" / "Home.md",
+            REPO_ROOT / "docs" / "wiki" / "Architecture.md",
+            REPO_ROOT / "docs" / "wiki" / "Production-Deployment.md",
+            REPO_ROOT / "docs" / "wiki" / "Configuration-Reference.md",
+            REPO_ROOT / "docs" / "wiki" / "Security-and-Compliance.md",
+            REPO_ROOT / "docs" / "wiki" / "Operations-and-Scaling.md",
+            REPO_ROOT / "docs" / "wiki" / "CI-CD-and-Release.md",
+            REPO_ROOT / "docs" / "wiki" / "Runbook-Index.md",
             REPO_ROOT / "docs" / "compliance" / "legal-compliance-dossier.md",
             REPO_ROOT / "docs" / "compliance" / "legal-finalization-report.md",
             REPO_ROOT / "docs" / "compliance" / "legal-readiness-review.md",
@@ -61,6 +71,51 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for file_path in required_files:
             self.assertTrue(file_path.is_file(), f"Missing file: {file_path}")
+
+    def test_readme_is_professional_project_entrypoint(self) -> None:
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+        for required_heading in (
+            "# DEALIoT",
+            "## Platform Scope",
+            "## Architecture",
+            "## Local Development",
+            "## Production Deployment",
+            "## Runtime Security",
+            "## Testing And Quality Gates",
+            "## Operations And Runbooks",
+        ):
+            self.assertIn(required_heading, readme)
+
+        for forbidden_fragment in (
+            "Recent reliability hardening:",
+            "MQTTâ",
+            "Recommended next steps",
+            "Included artifacts in this finalized package",
+        ):
+            self.assertNotIn(forbidden_fragment, readme)
+
+        self.assertIn("Kubernetes is the primary production target", readme)
+        self.assertIn("The GitHub Wiki contains the production architecture handbook", readme)
+
+    def test_versioned_wiki_source_covers_production_operations(self) -> None:
+        wiki_dir = REPO_ROOT / "docs" / "wiki"
+        wiki_text = "\n".join(path.read_text(encoding="utf-8") for path in wiki_dir.glob("*.md"))
+
+        for required_fragment in (
+            "Production Deployment",
+            "Configuration Reference",
+            "Security And Compliance",
+            "Operations And Scaling",
+            "CI/CD And Release",
+            "Pod Security `restricted`",
+            "Kafka `SASL_SSL`",
+            "MQTT TLS",
+            "NetworkPolicies",
+            "HPA",
+            "PDB",
+        ):
+            self.assertIn(required_fragment, wiki_text)
 
     def test_apicurio_bootstrap_json_payloads_are_strings(self) -> None:
         bootstrap_files = [
@@ -436,6 +491,26 @@ class RepositoryUnitTests(unittest.TestCase):
 
         for script in script_files:
             self.assertTrue(script.is_file(), f"Missing shell script: {script}")
+
+    def test_runtime_python_sources_parse_with_ci_minimum_python(self) -> None:
+        runtime_sources = [
+            REPO_ROOT / "airflow" / "dags" / "media_backfill.py",
+            REPO_ROOT / "dealiot_contracts" / "events.py",
+            REPO_ROOT / "flink" / "jobs" / "streaming_minimal.py",
+            REPO_ROOT / "management-console" / "management_console" / "app.py",
+            REPO_ROOT / "management-console" / "management_console" / "catalog.py",
+            REPO_ROOT / "management-console" / "management_console" / "openaire.py",
+            REPO_ROOT / "management-console" / "management_console" / "zenodo.py",
+            REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py",
+            REPO_ROOT / "pipelines" / "media_backfill.py",
+        ]
+
+        for source in runtime_sources:
+            ast.parse(
+                source.read_text(encoding="utf-8"),
+                filename=str(source),
+                feature_version=(3, 12),
+            )
 
 
 if __name__ == "__main__":
