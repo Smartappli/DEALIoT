@@ -8,6 +8,20 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FULL_LENGTH_SHA = re.compile(r"^[0-9a-f]{40}$")
+WORKLOAD_MANIFEST_PATHS = [
+    REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "base" / "apicurio-registry.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "base" / "flink-session.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "base" / "airflow.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "base" / "management-console.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "mqtt-kafka-bridge.yaml",
+    REPO_ROOT
+    / "deploy"
+    / "kubernetes"
+    / "overlays"
+    / "production"
+    / "wildfi-decoder-job.yaml",
+]
 
 
 class DeploymentReadinessTests(unittest.TestCase):
@@ -473,6 +487,49 @@ class DeploymentReadinessTests(unittest.TestCase):
             for item in management_console["spec"]["template"]["spec"]["containers"][0]["env"]
         }
         self.assertIn("MANAGEMENT_CONSOLE_TOKEN", console_env_names)
+        console_container = management_console["spec"]["template"]["spec"]["containers"][0]
+        self.assertIn("readinessProbe", console_container)
+        self.assertIn("livenessProbe", console_container)
+
+    def test_kubernetes_workloads_follow_restricted_pod_security(self) -> None:
+        for namespace_path in (
+            REPO_ROOT / "deploy" / "kubernetes" / "base" / "namespace.yaml",
+            REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "namespace.yaml",
+        ):
+            namespace = yaml.safe_load(namespace_path.read_text(encoding="utf-8"))
+            labels = namespace["metadata"]["labels"]
+            self.assertEqual(labels["pod-security.kubernetes.io/enforce"], "restricted")
+            self.assertEqual(labels["pod-security.kubernetes.io/audit"], "restricted")
+            self.assertEqual(labels["pod-security.kubernetes.io/warn"], "restricted")
+
+        for manifest_path in WORKLOAD_MANIFEST_PATHS:
+            documents = yaml.safe_load_all(manifest_path.read_text(encoding="utf-8"))
+            for document in documents:
+                if not document or document.get("kind") not in {"Deployment", "Job"}:
+                    continue
+
+                pod_spec = document["spec"]["template"]["spec"]
+                context = f"{manifest_path}:{document['kind']}/{document['metadata']['name']}"
+                self.assertFalse(pod_spec.get("automountServiceAccountToken", True), context)
+                self.assertEqual(
+                    pod_spec["securityContext"]["seccompProfile"]["type"],
+                    "RuntimeDefault",
+                    context,
+                )
+
+                for container in pod_spec["containers"]:
+                    container_context = f"{context}:{container['name']}"
+                    security_context = container["securityContext"]
+                    self.assertFalse(
+                        security_context["allowPrivilegeEscalation"],
+                        container_context,
+                    )
+                    self.assertIn("ALL", security_context["capabilities"]["drop"])
+                    self.assertTrue(security_context["runAsNonRoot"], container_context)
+                    self.assertIn("cpu", container["resources"]["requests"])
+                    self.assertIn("memory", container["resources"]["requests"])
+                    self.assertIn("cpu", container["resources"]["limits"])
+                    self.assertIn("memory", container["resources"]["limits"])
 
     def test_kubernetes_production_wildfi_contract_is_explicit(self) -> None:
         contract = yaml.safe_load(
