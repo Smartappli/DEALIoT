@@ -459,10 +459,14 @@ class DeploymentReadinessTests(unittest.TestCase):
             self.assertIn("readinessProbe", container)
             self.assertIn("livenessProbe", container)
 
-        management_console = yaml.safe_load(
-            (REPO_ROOT / "deploy" / "kubernetes" / "base" / "management-console.yaml").read_text(
-                encoding="utf-8"
+        management_console = next(
+            document
+            for document in yaml.safe_load_all(
+                (
+                    REPO_ROOT / "deploy" / "kubernetes" / "base" / "management-console.yaml"
+                ).read_text(encoding="utf-8")
             )
+            if document and document.get("kind") == "Deployment"
         )
         console_env_names = {
             item["name"]
