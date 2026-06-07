@@ -200,6 +200,16 @@ class MediaBackfillUnitTests(unittest.TestCase):
         self.assertEqual(producer_kwargs["ssl_cafile"], "/etc/ssl/kafka/ca.pem")
         self.assertTrue(producer_kwargs["ssl_check_hostname"])
 
+    def test_kafka_security_config_rejects_missing_sasl_credentials(self):
+        with (
+            patch.dict(os.environ, {"KAFKA_SECURITY_PROTOCOL": "SASL_SSL"}, clear=True),
+            self.assertRaisesRegex(
+                ValueError,
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set",
+            ),
+        ):
+            self.module.kafka_security_config()
+
     def test_main_sends_records_and_prints_summary(self):
         args = argparse.Namespace(
             bucket="media-raw-2d-images",
@@ -239,6 +249,50 @@ class MediaBackfillUnitTests(unittest.TestCase):
         payload = json.loads(output.getvalue())
         self.assertEqual(payload["records_sent"], 1)
         self.assertEqual(payload["topic"], "raw.image2d.meta")
+
+    def test_main_routes_invalid_records_to_dlq(self):
+        args = argparse.Namespace(
+            bucket="media-raw-2d-images",
+            prefix="cam/",
+            since_minutes=15,
+            window_start=None,
+            window_end=None,
+            media_kind="image2d",
+        )
+        start = dt.datetime(2026, 1, 1, 0, 0, tzinfo=dt.UTC)
+        end = dt.datetime(2026, 1, 1, 0, 15, tzinfo=dt.UTC)
+        producer = Mock()
+        objects = [
+            {
+                "bucket": "media-raw-2d-images",
+                "object_key": "cam/frame-1.jpg",
+                "size_bytes": 5,
+                "timestamp": "2026-01-01T00:01:00+00:00",
+                "object_uri": "s3://media-raw-2d-images/cam/frame-1.jpg",
+            }
+        ]
+
+        with (
+            patch.object(self.module.argparse.ArgumentParser, "parse_args", return_value=args),
+            patch.object(self.module, "resolve_window", return_value=(start, end)),
+            patch.object(self.module, "get_kafka_producer", return_value=producer),
+            patch.object(self.module, "iter_objects_between", return_value=objects),
+            patch.object(
+                self.module,
+                "build_record",
+                return_value={"device_id": "cam-1", "timestamp": ""},
+            ),
+        ):
+            output = io.StringIO()
+            with redirect_stdout(output):
+                self.module.main()
+
+        producer.send.assert_called_once()
+        self.assertEqual(producer.send.call_args.args[0], self.module.DLQ_TOPIC)
+        dlq_payload = producer.send.call_args.kwargs["value"]
+        self.assertEqual(dlq_payload["intended_topic"], "raw.image2d.meta")
+        self.assertIn("missing required field: bucket", dlq_payload["errors"])
+        self.assertEqual(json.loads(output.getvalue())["records_invalid"], 1)
 
 
 if __name__ == "__main__":

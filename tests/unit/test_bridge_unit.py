@@ -134,6 +134,29 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(self.bridge.derive_device_id("/"), "unknown")
         self.assertEqual(self.bridge.pick_key("/tenant/devices/cam-07/video"), b"cam-07")
 
+    def test_timestamp_helpers_cover_fallback_string_seconds_and_milliseconds(self):
+        fallback = "2026-01-01T00:00:00+00:00"
+
+        self.assertEqual(self.bridge.normalized_timestamp(None, fallback), fallback)
+        self.assertEqual(self.bridge.normalized_timestamp("", fallback), fallback)
+        self.assertEqual(
+            self.bridge.normalized_timestamp(1_704_067_200, fallback),
+            "2024-01-01T00:00:00+00:00",
+        )
+        self.assertEqual(
+            self.bridge.normalized_timestamp(1_704_067_200_000, fallback),
+            "2024-01-01T00:00:00+00:00",
+        )
+        self.assertEqual(
+            self.bridge.normalized_timestamp("already-normalized", fallback),
+            "already-normalized",
+        )
+        self.assertEqual(self.bridge.pick_event_timestamp(["not", "a", "dict"], fallback), fallback)
+        self.assertEqual(
+            self.bridge.pick_event_timestamp({"time": "2026-02-01T00:00:00+00:00"}, fallback),
+            "2026-02-01T00:00:00+00:00",
+        )
+
     def test_csv_env_or_default_ignores_empty_items(self):
         with patch.dict(
             self.bridge.os.environ,
@@ -145,11 +168,31 @@ class BridgeUnitTests(unittest.TestCase):
                 ("devices/#", "wildfi/#"),
             )
 
+    def test_csv_env_or_default_falls_back_when_configured_value_is_empty(self):
+        with patch.dict(self.bridge.os.environ, {"UNIT_TOPICS": " , "}, clear=False):
+            self.assertEqual(
+                self.bridge.csv_env_or_default("UNIT_TOPICS", " devices/#, wildfi/# "),
+                ("devices/#", "wildfi/#"),
+            )
+
     def test_bool_env_parses_truthy_values(self):
         with patch.dict(self.bridge.os.environ, {"UNIT_BOOL": "yes"}, clear=False):
             self.assertTrue(self.bridge.bool_env("UNIT_BOOL"))
         with patch.dict(self.bridge.os.environ, {"UNIT_BOOL": "0"}, clear=False):
             self.assertFalse(self.bridge.bool_env("UNIT_BOOL", default=True))
+
+    def test_allowed_secret_directories_reads_configured_directories(self):
+        first = REPO_ROOT / "secrets"
+        second = REPO_ROOT / "tmp-secrets"
+        with patch.dict(
+            self.bridge.os.environ,
+            {"DEALIOT_SECRET_DIRECTORIES": f"{first}{self.bridge.os.pathsep}{second}"},
+            clear=False,
+        ):
+            self.assertEqual(
+                self.bridge.allowed_secret_directories(),
+                (first.resolve(strict=False), second.resolve(strict=False)),
+            )
 
     def test_kafka_security_config_supports_sasl_ssl(self):
         with patch.dict(
@@ -171,6 +214,37 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(config["sasl_plain_password"], "secret")
         self.assertEqual(config["ssl_cafile"], "/etc/ssl/kafka/ca.pem")
         self.assertTrue(config["ssl_check_hostname"])
+
+    def test_kafka_security_config_rejects_missing_sasl_credentials(self):
+        with (
+            patch.dict(
+                self.bridge.os.environ,
+                {"KAFKA_SECURITY_PROTOCOL": "SASL_SSL"},
+                clear=True,
+            ),
+            self.assertRaisesRegex(
+                ValueError,
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set",
+            ),
+        ):
+            self.bridge.kafka_security_config()
+
+    def test_kafka_security_config_includes_ssl_client_material(self):
+        with patch.dict(
+            self.bridge.os.environ,
+            {
+                "KAFKA_SECURITY_PROTOCOL": "SSL",
+                "KAFKA_SSL_CERTFILE": "/etc/ssl/kafka/client.pem",
+                "KAFKA_SSL_KEYFILE": "/etc/ssl/kafka/client.key",
+                "KAFKA_SSL_CHECK_HOSTNAME": "false",
+            },
+            clear=True,
+        ):
+            config = self.bridge.kafka_security_config()
+
+        self.assertEqual(config["ssl_certfile"], "/etc/ssl/kafka/client.pem")
+        self.assertEqual(config["ssl_keyfile"], "/etc/ssl/kafka/client.key")
+        self.assertFalse(config["ssl_check_hostname"])
 
     def test_env_or_secret_file_prefers_environment_value(self):
         with patch.dict(
@@ -196,6 +270,10 @@ class BridgeUnitTests(unittest.TestCase):
                 self.assertEqual(self.bridge.env_or_secret_file("UNIT_SECRET"), "from-file")
         finally:
             secret_path.unlink(missing_ok=True)
+
+    def test_env_or_secret_file_returns_none_when_unset(self):
+        with patch.dict(self.bridge.os.environ, {}, clear=True):
+            self.assertIsNone(self.bridge.env_or_secret_file("UNIT_SECRET"))
 
     def test_env_or_secret_file_rejects_untrusted_file_path(self):
         untrusted_secret = REPO_ROOT / "unit_bridge_untrusted_secret.txt"
@@ -375,6 +453,20 @@ class BridgeUnitTests(unittest.TestCase):
         mock_sleep.assert_called_once_with(5)
         client.loop_forever.assert_not_called()
 
+    def test_run_bridge_enters_mqtt_loop_after_connect(self):
+        client = Mock()
+        client.loop_forever.side_effect = KeyboardInterrupt()
+
+        with self.assertRaises(KeyboardInterrupt):
+            self.bridge.run_bridge(client)
+
+        client.connect.assert_called_once_with(
+            self.bridge.MQTT_HOST,
+            self.bridge.MQTT_PORT,
+            keepalive=30,
+        )
+        client.loop_forever.assert_called_once_with()
+
     def test_start_health_server_uses_configured_loopback_bind(self):
         fake_server = Mock()
         fake_thread = Mock()
@@ -444,6 +536,28 @@ class BridgeUnitTests(unittest.TestCase):
         self.assertEqual(tls_config["keyfile"], "/etc/ssl/mqtt/client.key")
         self.assertEqual(tls_config["cert_reqs"], self.bridge.ssl.CERT_REQUIRED)
         self.assertIsNone(client.tls_insecure)
+
+    def test_main_configures_mqtt_tls_insecure_skip_verify(self):
+        client = _FakeClient()
+        with (
+            patch.object(self.bridge, "MQTT_USERNAME", None),
+            patch.object(self.bridge, "MQTT_PASSWORD", None),
+            patch.object(self.bridge, "MQTT_TLS_ENABLED", new=True),
+            patch.object(self.bridge, "MQTT_TLS_CA_FILE", None),
+            patch.object(self.bridge, "MQTT_TLS_CERT_FILE", None),
+            patch.object(self.bridge, "MQTT_TLS_KEY_FILE", None),
+            patch.object(self.bridge, "MQTT_TLS_INSECURE_SKIP_VERIFY", new=True),
+            patch.object(self.bridge.mqtt_client, "Client", return_value=client),
+            patch.object(self.bridge, "start_health_server"),
+            patch.object(self.bridge, "run_bridge"),
+        ):
+            self.bridge.main()
+
+        tls_config = client.tls_config
+        self.assertIsNotNone(tls_config)
+        assert tls_config is not None
+        self.assertEqual(tls_config["cert_reqs"], self.bridge.ssl.CERT_NONE)
+        self.assertTrue(client.tls_insecure)
 
     def test_main_raises_when_mqtt_credentials_are_partial(self):
         with (

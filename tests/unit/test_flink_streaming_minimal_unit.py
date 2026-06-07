@@ -397,6 +397,59 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         self.assertEqual(properties["ssl.truststore.password"], "truststore-secret")
         self.assertEqual(properties["client.dns.lookup"], "use_all_dns_ips")
 
+    def test_kafka_client_properties_reject_invalid_and_incomplete_config(self) -> None:
+        with self.assertRaisesRegex(ValueError, "key=value syntax"):
+            self.module.parse_kafka_client_properties("missing-separator")
+
+        with (
+            patch.dict(
+                self.module.os.environ,
+                {"KAFKA_SECURITY_PROTOCOL": "SASL_SSL"},
+                clear=True,
+            ),
+            self.assertRaisesRegex(
+                ValueError,
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set",
+            ),
+        ):
+            self.module.kafka_client_properties()
+
+    def test_kafka_client_properties_can_disable_ssl_hostname_check(self) -> None:
+        with patch.dict(
+            self.module.os.environ,
+            {
+                "KAFKA_SECURITY_PROTOCOL": "SSL",
+                "KAFKA_SSL_CHECK_HOSTNAME": "false",
+            },
+            clear=True,
+        ):
+            properties = self.module.kafka_client_properties()
+
+        self.assertEqual(properties["ssl.endpoint.identification.algorithm"], "")
+
+    def test_delivery_guarantee_and_offset_strategy_validation(self) -> None:
+        with patch.dict(
+            self.module.os.environ,
+            {"FLINK_KAFKA_DELIVERY_GUARANTEE": "none"},
+            clear=False,
+        ):
+            self.assertEqual(self.module.kafka_delivery_guarantee(), "NONE")
+
+        with (
+            patch.dict(
+                self.module.os.environ,
+                {"FLINK_KAFKA_DELIVERY_GUARANTEE": "invalid"},
+                clear=False,
+            ),
+            self.assertRaisesRegex(ValueError, "must be NONE or AT_LEAST_ONCE"),
+        ):
+            self.module.kafka_delivery_guarantee()
+
+        self.assertEqual(self.module.kafka_offset_reset_strategy("latest"), "LATEST")
+        self.assertEqual(self.module.kafka_offset_reset_strategy("none"), "NONE")
+        with self.assertRaisesRegex(ValueError, "earliest, latest, none"):
+            self.module.kafka_offset_reset_strategy("invalid")
+
     def test_normalize_event_flat_map_handles_valid_and_invalid_json(self) -> None:
         normalizer = self.module.NormalizeEvent()
         raw = json.dumps(

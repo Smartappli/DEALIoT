@@ -60,6 +60,39 @@ class EventContractsUnitTests(unittest.TestCase):
             "2026-01-01T00:00:00+00:00",
         )
 
+    def test_event_time_returns_empty_string_when_timestamp_is_missing(self) -> None:
+        self.assertEqual(event_time({}), "")
+
+    def test_unknown_topic_has_no_contract_errors(self) -> None:
+        self.assertEqual(validate_event("unknown.topic", {"payload": "opaque"}), [])
+
+    def test_rejects_invalid_contract_types_and_gps_ranges(self) -> None:
+        event = {
+            "device_id": 123,
+            "timestamp": 456,
+            "ingested_at": 789,
+            "latitude": 91.0,
+            "longitude": -181.0,
+            "heading_deg": 361.0,
+            "speed_m_s": "fast",
+            "payload": "not-an-object",
+            "tags": ["not", "an", "object"],
+            "retain": "false",
+        }
+
+        errors = validate_event("raw.gps", event)
+
+        self.assertIn("field must be a string: device_id", errors)
+        self.assertIn("field must be a string: timestamp", errors)
+        self.assertIn("field must be a string: ingested_at", errors)
+        self.assertIn("field must be numeric: speed_m_s", errors)
+        self.assertIn("field must be an object: payload", errors)
+        self.assertIn("field must be an object: tags", errors)
+        self.assertIn("field must be a boolean: retain", errors)
+        self.assertIn("latitude out of range: -90..90", errors)
+        self.assertIn("longitude out of range: -180..180", errors)
+        self.assertIn("heading_deg out of range: 0..360", errors)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -137,7 +137,7 @@ a {
   left: auto;
   z-index: 20;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(10rem, auto) minmax(18rem, 1fr) max-content;
   gap: 0.9rem;
   align-items: center;
   width: min(1180px, calc(100% - 2rem));
@@ -197,16 +197,25 @@ a {
 
 .site-nav {
   display: flex;
+  max-width: 100%;
   gap: 0.2rem;
   justify-content: center;
   min-width: 0;
   padding: 0.2rem;
+  overflow-x: auto;
+  scrollbar-width: none;
   border: 1px solid rgb(15 23 42 / 6%);
   border-radius: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.site-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .site-nav a {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   min-height: 2.1rem;
@@ -214,6 +223,7 @@ a {
   color: rgb(36 54 79 / 78%);
   font-size: 0.82rem;
   font-weight: 800;
+  white-space: nowrap;
   border-radius: 12px;
   transition: color 180ms ease, background 180ms ease, transform 180ms ease;
 }
@@ -233,6 +243,7 @@ a {
   display: flex;
   gap: 0.45rem;
   align-items: center;
+  min-width: max-content;
   margin-top: 0;
 }
 
@@ -1019,7 +1030,7 @@ h3 {
     bottom: auto;
     left: auto;
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(9rem, auto) minmax(12rem, 1fr) max-content;
     width: min(1180px, calc(100% - 1rem));
     margin: 0.75rem auto 0;
     border-radius: 28px;
@@ -1037,7 +1048,8 @@ h3 {
   .site-nav {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    overflow-x: auto;
   }
 
   .site-nav a {
@@ -1123,10 +1135,6 @@ h3 {
     justify-content: flex-start;
     order: 3;
     overflow-x: auto;
-  }
-
-  .site-nav a {
-    white-space: nowrap;
   }
 
   .language-select {

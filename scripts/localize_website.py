@@ -9,7 +9,7 @@ from typing import cast
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEBSITE_DIR = REPO_ROOT / "website"
 BASE_URL = "https://smartappli.io/"
-ASSET_VERSION = "20260607-language-dropdown-v2"
+ASSET_VERSION = "20260607-header-overlap-v1"
 TRANSLATION_FILE = WEBSITE_DIR / "src" / "i18n-copy.json"
 
 
