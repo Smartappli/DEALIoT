@@ -98,6 +98,12 @@ class DeploymentReadinessTests(unittest.TestCase):
 
         self.assertIn("docker stack config -c deploy/swarm/dealiot-stack.yml", workflow_text)
         self.assertIn("docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml", workflow_text)
+        self.assertIn("DEALIOT_SMOKE_BRIDGE_IMAGE: dealiot-mqtt-kafka-bridge:ci", workflow_text)
+        self.assertIn(
+            "DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-${{ github.sha }}",
+            workflow_text,
+        )
+        self.assertIn("Production Swarm stack must render immutable release images only", workflow_text)
         self.assertIn("kubectl kustomize deploy/kubernetes/base", workflow_text)
         self.assertIn("kubectl kustomize deploy/kubernetes/overlays/production", workflow_text)
         self.assertIn("kubectl create namespace dealiot", workflow_text)
