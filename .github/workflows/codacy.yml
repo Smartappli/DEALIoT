@@ -54,48 +54,35 @@ jobs:
           # This will handover control about PR rejection to the GitHub side
           max-allowed-issues: 2147483647
 
-      # Ensure each SARIF run has a distinct category, let GitHub compute stable
-      # fingerprints, and split uploads under GitHub's 20-runs-per-SARIF limit.
+      # Collapse Codacy's many tool runs into one GitHub code scanning run.
+      # GitHub rejects a single SARIF upload when it contains more than 20 runs.
       - name: Normalize SARIF for GitHub code scanning
         run: |
-          mkdir -p sarif-results
-          run_count="$(jq '.runs | length' results.sarif)"
-          start=0
-          chunk_index=0
-
-          while [ "$start" -lt "$run_count" ]; do
-            end=$((start + 20))
-
-            jq --argjson start "$start" --argjson end "$end" '
-              .runs |= (to_entries[$start:$end] | map(
-                (.value + {
-                  automationDetails: (
-                    (.value.automationDetails // {}) + { id: ("codacy-security-scan-" + (.key | tostring)) }
-                  )
+          jq '
+            . as $sarif
+            | .runs = [
+              (
+                ($sarif.runs[0] // {
+                  tool: { driver: { name: "Codacy", rules: [] } },
+                  results: []
                 })
-                | (.results // []) |= map(del(.partialFingerprints))
-              ))
-            ' results.sarif > "sarif-results/results.normalized.${chunk_index}.sarif"
-
-            start="$end"
-            chunk_index=$((chunk_index + 1))
-          done
-
-          if [ "$run_count" -eq 0 ]; then
-            jq '
-              .runs |= (to_entries | map(
-                (.value + {
-                  automationDetails: (
-                    (.value.automationDetails // {}) + { id: ("codacy-security-scan-" + (.key | tostring)) }
-                  )
-                })
-                | (.results // []) |= map(del(.partialFingerprints))
-              ))
-            ' results.sarif > sarif-results/results.normalized.0.sarif
-          fi
+                | .tool.driver.name = "Codacy"
+                | .tool.driver.rules = (
+                  [$sarif.runs[]? | (.tool.driver.rules // [])[]?]
+                  | unique_by(.id)
+                )
+                | .results = (
+                  [$sarif.runs[]? | (.results // [])[]? | del(.partialFingerprints, .ruleIndex)]
+                )
+                | .automationDetails = (
+                  (.automationDetails // {}) + { id: "codacy-security-scan" }
+                )
+              )
+            ]
+          ' results.sarif > results.normalized.sarif
 
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4
         with:
-          sarif_file: sarif-results
+          sarif_file: results.normalized.sarif
