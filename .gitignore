@@ -16,6 +16,3 @@ secrets/
 
 # Airflow runtime artifacts
 airflow/logs/
-
-# PHP / Composer
-vendor/
