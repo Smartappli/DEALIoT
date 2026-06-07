@@ -22,6 +22,8 @@ env:
   DEALIOT_FLINK_PYFLINK_IMAGE: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
   DEALIOT_ORCHESTRATION_IMAGE: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
   KAFKA_BOOTSTRAP_SERVERS: kafka1.ci.internal:9092,kafka2.ci.internal:9092,kafka3.ci.internal:9092
+  KAFKA_SASL_USERNAME: dealiot_ci
+  KAFKA_SASL_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-kafka-sasl
   MQTT_HOST: mqtt.ci.internal
   MQTT_USERNAME: dealiot_ingestor
   S3_ENDPOINT_URL: https://s3.ci.internal
@@ -57,7 +59,9 @@ jobs:
         run: docker swarm init
 
       - name: Create CI Swarm secrets
-        run: openssl rand -hex 24 | docker secret create mqtt_password -
+        run: |
+          openssl rand -hex 24 | docker secret create mqtt_password -
+          printf '%s' "${KAFKA_SASL_PASSWORD}" | docker secret create kafka_sasl_password -
 
       - name: Deploy Swarm smoke stack
         run: docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml dealiot-smoke
@@ -89,6 +93,7 @@ jobs:
           docker stack rm dealiot-smoke || true
           sleep 10
           docker secret rm mqtt_password || true
+          docker secret rm kafka_sasl_password || true
           docker swarm leave --force || true
 
   kubernetes-deployment:

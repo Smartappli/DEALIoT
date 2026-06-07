@@ -18,8 +18,10 @@ configMapGenerator:
     envs:
       - runtime-config.production.example.env
 
-commonLabels:
-  dealiot.io/environment: production
+labels:
+  - includeSelectors: true
+    pairs:
+      dealiot.io/environment: production
 
 images:
   - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge

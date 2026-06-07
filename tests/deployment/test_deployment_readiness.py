@@ -427,10 +427,14 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
 
     def test_kubernetes_runtime_manifests_wire_security_and_health_probes(self) -> None:
-        bridge = yaml.safe_load(
-            (REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml").read_text(
-                encoding="utf-8"
+        bridge = next(
+            document
+            for document in yaml.safe_load_all(
+                (REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml").read_text(
+                    encoding="utf-8"
+                )
             )
+            if document and document.get("kind") == "Deployment"
         )
         bridge_container = bridge["spec"]["template"]["spec"]["containers"][0]
         bridge_env_names = {item["name"] for item in bridge_container["env"]}

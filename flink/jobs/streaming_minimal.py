@@ -129,12 +129,15 @@ def kafka_client_properties() -> dict[str, str]:
         mechanism = env_or_default("KAFKA_SASL_MECHANISM", "SCRAM-SHA-512")
         username = os.getenv("KAFKA_SASL_USERNAME")
         password = os.getenv("KAFKA_SASL_PASSWORD")
-        properties["sasl.mechanism"] = mechanism
-        if username and password:
-            properties["sasl.jaas.config"] = (
-                "org.apache.kafka.common.security.scram.ScramLoginModule required "
-                f'username="{username}" password="{password}";'
+        if not username or not password:
+            raise ValueError(
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when Kafka SASL is enabled",
             )
+        properties["sasl.mechanism"] = mechanism
+        properties["sasl.jaas.config"] = (
+            "org.apache.kafka.common.security.scram.ScramLoginModule required "
+            f'username="{username}" password="{password}";'
+        )
 
     if "SSL" in security_protocol:
         for env_name, property_name in (
