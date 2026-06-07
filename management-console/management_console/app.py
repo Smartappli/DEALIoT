@@ -44,6 +44,11 @@ DEFAULT_TIMEOUT_SECONDS = 2.0
 MAX_REQUEST_BYTES = 65536
 
 
+def management_console_token() -> str | None:
+    value = os.getenv("MANAGEMENT_CONSOLE_TOKEN", "").strip()
+    return value or None
+
+
 class SimpleHttpResponse:
     def __init__(self, status: int, body: bytes) -> None:
         self.status = status
@@ -306,7 +311,22 @@ def read_json_body(handler: Any) -> dict[str, Any]:
 class ManagementConsoleHandler(BaseHTTPRequestHandler):
     server_version = "DEALIoTManagementConsole/1.0"
 
+    def request_authorized(self) -> bool:
+        token = management_console_token()
+        if token is None:
+            return True
+        return self.headers.get("Authorization") == f"Bearer {token}"
+
+    def require_authorization(self) -> bool:
+        if self.request_authorized():
+            return True
+        self.respond_json({"error": "unauthorized"}, status=HTTPStatus.UNAUTHORIZED)
+        return False
+
     def do_GET(self) -> None:
+        if self.path.startswith("/api/") and not self.require_authorization():
+            return
+
         routes = {
             "/api/architecture": lambda: self.respond_json(catalog_payload()),
             "/api/compliance": lambda: self.respond_json(compliance_payload()),
@@ -334,6 +354,9 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
         self.serve_static()
 
     def do_POST(self) -> None:
+        if not self.require_authorization():
+            return
+
         actions = {
             "/api/operations/trigger-media-backfill": trigger_media_backfill,
             "/api/datasets/openaire/export": lambda payload: (

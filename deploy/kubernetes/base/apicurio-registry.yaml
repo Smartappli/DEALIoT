@@ -34,6 +34,26 @@ spec:
                 configMapKeyRef:
                   name: dealiot-runtime-config
                   key: KAFKA_BOOTSTRAP_SERVERS
+            - name: APICURIO_KAFKASQL_SECURITY_PROTOCOL
+              valueFrom:
+                configMapKeyRef:
+                  name: dealiot-runtime-config
+                  key: KAFKA_SECURITY_PROTOCOL
+            - name: APICURIO_KAFKASQL_SASL_MECHANISM
+              valueFrom:
+                configMapKeyRef:
+                  name: dealiot-runtime-config
+                  key: KAFKA_SASL_MECHANISM
+            - name: APICURIO_KAFKASQL_SASL_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: dealiot-runtime-config
+                  key: KAFKA_SASL_USERNAME
+            - name: APICURIO_KAFKASQL_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: KAFKA_SASL_PASSWORD
             - name: APICURIO_KAFKASQL_TOPIC
               valueFrom:
                 configMapKeyRef:
@@ -57,6 +77,12 @@ spec:
               port: http
             initialDelaySeconds: 20
             periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /apis/registry/v3/system/info
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 30
           resources:
             requests:
               cpu: 250m
@@ -86,7 +112,7 @@ kind: PodDisruptionBudget
 metadata:
   name: apicurio-registry
 spec:
-  minAvailable: 1
+  minAvailable: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: apicurio-registry

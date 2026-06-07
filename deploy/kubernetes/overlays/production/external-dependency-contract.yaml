@@ -14,6 +14,7 @@ data:
         endpoint_config_key: KAFKA_BOOTSTRAP_SERVERS
         required_security: tls_sasl_or_mtls
         minimum_brokers: 3
+        required_secret_key: KAFKA_SASL_PASSWORD
         required_topics:
           - raw.sensor
           - raw.gps
@@ -165,6 +166,8 @@ data:
       name: dealiot-secrets
       keys:
         - MQTT_PASSWORD
+        - KAFKA_SASL_PASSWORD
+        - MANAGEMENT_CONSOLE_TOKEN
         - AWS_ACCESS_KEY_ID
         - AWS_SECRET_ACCESS_KEY
         - AIRFLOW__CORE__FERNET_KEY

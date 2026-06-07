@@ -31,16 +31,36 @@ spec:
         - name: bridge
           image: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:local-placeholder
           imagePullPolicy: IfNotPresent
+          ports:
+            - name: health
+              containerPort: 8080
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
           env:
             - name: MQTT_PASSWORD_FILE
               value: /var/run/dealiot-secrets/mqtt-password
+            - name: KAFKA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: KAFKA_SASL_PASSWORD
           volumeMounts:
             - name: dealiot-secrets
               mountPath: /var/run/dealiot-secrets
               readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 30
+            periodSeconds: 30
           resources:
             requests:
               cpu: 250m
@@ -69,7 +89,7 @@ metadata:
     app.kubernetes.io/name: mqtt-kafka-bridge
     app.kubernetes.io/part-of: dealiot
 spec:
-  minAvailable: 1
+  minAvailable: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: mqtt-kafka-bridge
