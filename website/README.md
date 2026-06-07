@@ -53,9 +53,18 @@ The public website ships with:
 - `humans.txt`: maintainer and repository reference.
 - `assets/social-card.png`: primary 1200x630 social preview image for link sharing.
 - `assets/social-card.svg`: editable vector source for the social preview.
+- `.htaccess`: Apache cache, compression and security headers for non-GitHub Pages hosting.
 
 `llms.txt` is included as helpful machine-readable guidance. It should not be treated as a guaranteed ranking factor.
 
+## Performance And Caching
+
+- HTML, `sw.js` and `site.webmanifest` are configured for revalidation.
+- Versioned `styles.css` and `app.js` URLs can be cached for one year.
+- Images, SVG icons and social cards are cached as immutable static assets.
+- Text metadata files such as `robots.txt`, `sitemap.xml`, `humans.txt` and `llms.txt` use a one-day cache.
+- The GitHub Pages workflow stages `website-dist/` and excludes `node_modules`, source CSS and package metadata from the published artifact.
+
 ## Deployment
 
-The website is externalized on `smartappli.io`. The GitHub Pages workflow can still publish the `website/` directory as a static artifact on pushes to `main` when website files or the workflow change.
+The website is externalized on `smartappli.io`. The GitHub Pages workflow publishes a staged `website-dist/` artifact on pushes to `main` when website files or the workflow change.
