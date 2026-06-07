@@ -322,13 +322,13 @@ class RepositoryUnitTests(unittest.TestCase):
             self.assertIn(ignored_path, dockerignore)
 
         tracked_sensitive_paths = subprocess.run(
-            ["git", "ls-files", ".env", ".idea", "secrets"],
+            ["git", "ls-files", ".env", ".env.*", ".idea", "secrets"],
             cwd=REPO_ROOT,
             check=True,
             capture_output=True,
             text=True,
         ).stdout.splitlines()
-        allowed_sensitive_paths = {"secrets/.gitkeep"}
+        allowed_sensitive_paths = {".env.example", "secrets/.gitkeep"}
 
         for path in tracked_sensitive_paths:
             self.assertIn(path, allowed_sensitive_paths)
