@@ -66,8 +66,7 @@
           content="Ingestie IoT în timp real, găzduire operată și produse de date guvernate cu dovezi de conformitate.">
     <meta name="twitter:image"
           content="https://smartappli.io/assets/social-card.png">
-    <meta name="twitter:image:alt"
-          content="DEAL previzualizare a site-ului public al suită.">
+    <meta name="twitter:image:alt" content="DEAL previzualizare a site-ului public al suită.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap"
@@ -76,7 +75,13 @@
     <link rel="apple-touch-icon" href="../assets/icon-192.png">
     <link rel="manifest" href="../site.webmanifest">
     <link rel="author" href="../humans.txt">
-    <link rel="stylesheet" href="../styles.css?v=20260607-header-overlap-v1">
+    <link rel="preload"
+          href="../styles.css?v=20260607-cache-performance-v1"
+          as="style">
+    <link rel="preload"
+          href="../app.js?v=20260607-cache-performance-v1"
+          as="script">
+    <link rel="stylesheet" href="../styles.css?v=20260607-cache-performance-v1">
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -262,8 +267,7 @@
             </div>
           </dl>
         </div>
-        <div class="hero-orbit reveal"
-             aria-label="DEAL prezentare generală a suitei">
+        <div class="hero-orbit reveal" aria-label="DEAL prezentare generală a suitei">
           <div class="orbit-card core-card">
             <span>DEAL</span>
             <strong>Operați datele cu încredere</strong>
@@ -494,6 +498,6 @@
       <span>DEAL ecosistem</span>
       <span><a href="https://smartappli.io/" hreflang="en-US" lang="en-US">English</a> / <a href="https://smartappli.io/llms.txt">Context LLMS</a></span>
     </footer>
-    <script src="../app.js?v=20260607-header-overlap-v1" defer></script>
+    <script src="../app.js?v=20260607-cache-performance-v1" defer></script>
   </body>
 </html>

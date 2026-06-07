@@ -109,7 +109,11 @@ function networkFirst(request, fallbackUrl) {
           return cached;
         }
 
-        return fallbackUrl ? caches.match(fallbackUrl) : Response.error();
+        if (!fallbackUrl) {
+          return Response.error();
+        }
+
+        return caches.match(fallbackUrl).then((fallback) => fallback || Response.error());
       }),
     );
 }
