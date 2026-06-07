@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="DEAL presente DEALIoT, DealHost et DealData: plateformes IoT, hebergement souverain et gouvernance des donnees pour des organisations qui veulent industrialiser vite.">
+    <meta name="theme-color" content="#101614">
+    <title>DEAL | DEALIoT, DealHost, DealData</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=IBM+Plex+Mono:wght@500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Aller au contenu</a>
+
+    <header class="site-header" data-header>
+      <a class="brand" href="#top" aria-label="Accueil DEAL">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>
+          <strong>DEAL</strong>
+          <small>Data ecosystems that scale</small>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="Navigation principale">
+        <a href="#products">Produits</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#proof">Preuves</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a class="nav-cta" href="#contact">Demander une demo</a>
+    </header>
+
+    <main id="main">
+      <section id="top" class="hero section-shell">
+        <div class="hero-copy reveal">
+          <p class="eyebrow">DEALIoT + DealHost + DealData</p>
+          <h1>Industrialisez vos donnees IoT, de l'objet connecte a la valeur exploitable.</h1>
+          <p class="hero-lede">
+            Une suite modulaire pour capter les signaux terrain, les operer sur une infrastructure maitrisee et transformer les donnees en actifs gouvernes, partageables et conformes.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#products">Explorer la suite</a>
+            <a class="button secondary" href="#architecture">Voir l'architecture</a>
+          </div>
+          <dl class="hero-metrics" aria-label="Promesses principales">
+            <div>
+              <dt>3</dt>
+              <dd>produits coordonnes</dd>
+            </div>
+            <div>
+              <dt>24/7</dt>
+              <dd>vision operations</dd>
+            </div>
+            <div>
+              <dt>EU</dt>
+              <dd>compliance evidence</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="hero-orbit reveal" aria-label="Vue d'ensemble de la suite DEAL">
+          <div class="orbit-card core-card">
+            <span>DEAL</span>
+            <strong>Operate data with trust</strong>
+          </div>
+          <div class="orbit-node node-iot">DEALIoT</div>
+          <div class="orbit-node node-host">DealHost</div>
+          <div class="orbit-node node-data">DealData</div>
+          <div class="signal-line line-a" aria-hidden="true"></div>
+          <div class="signal-line line-b" aria-hidden="true"></div>
+          <div class="signal-line line-c" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section id="products" class="products section-shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Une suite, trois leviers</p>
+          <h2>Construire, heberger, valoriser.</h2>
+          <p>
+            Chaque produit peut etre adopte seul. Ensemble, ils couvrent le cycle complet: ingestion terrain, exploitation cloud, gouvernance et partage des donnees.
+          </p>
+        </div>
+
+        <div class="product-grid">
+          <article class="product-card card-iot reveal">
+            <span class="product-index">01</span>
+            <h3>DEALIoT</h3>
+            <p>
+              Plateforme IoT temps reel pour capteurs, media metadata et flux industriels. MQTT, Kafka, Flink, Airflow et Kubernetes sont pre-assembles pour passer du prototype au run scalable.
+            </p>
+            <ul>
+              <li>Ingestion MQTT vers Kafka</li>
+              <li>Traitement stream et backfill</li>
+              <li>Observabilite et DLQ integrees</li>
+            </ul>
+          </article>
+
+          <article class="product-card card-host reveal">
+            <span class="product-index">02</span>
+            <h3>DealHost</h3>
+            <p>
+              Hebergement souverain et infogere pour workloads data critiques: Kubernetes, stockage objet, supervision, sauvegardes, durcissement et exploitation continue.
+            </p>
+            <ul>
+              <li>Clusters applicatifs securises</li>
+              <li>Runbooks, alertes et backups</li>
+              <li>Chemins cloud, hybride ou on-prem</li>
+            </ul>
+          </article>
+
+          <article class="product-card card-data reveal">
+            <span class="product-index">03</span>
+            <h3>DealData</h3>
+            <p>
+              Couche de gouvernance et de valorisation: catalogues, evidence topics, exports controles, Data Act, DGA, FAIR, Zenodo et OpenAIRE.
+            </p>
+            <ul>
+              <li>Catalogues et data products</li>
+              <li>Partage controle et tracabilite</li>
+              <li>Preuves compliance exploitables</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="architecture" class="architecture section-shell">
+        <div class="section-heading reveal">
+          <p class="eyebrow">Architecture cible</p>
+          <h2>Un socle ouvert pour eviter le verrouillage fournisseur.</h2>
+        </div>
+        <div class="architecture-board reveal">
+          <div class="flow-column">
+            <span>01</span>
+            <strong>Capture</strong>
+            <p>Objets connectes, WildFi, passerelles MQTT, media producers.</p>
+          </div>
+          <div class="flow-column">
+            <span>02</span>
+            <strong>Transport</strong>
+            <p>Kafka, schema registry, topics metier, DLQ et contrats d'evenements.</p>
+          </div>
+          <div class="flow-column">
+            <span>03</span>
+            <strong>Operate</strong>
+            <p>Kubernetes, DealHost, observabilite, securite et SLOs.</p>
+          </div>
+          <div class="flow-column">
+            <span>04</span>
+            <strong>Valorise</strong>
+            <p>DealData, catalogues, exports, evidence compliance et partage controle.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="proof" class="proof section-shell">
+        <div class="proof-panel reveal">
+          <p class="eyebrow">Pourquoi adopter</p>
+          <h2>La difference: une architecture auditable avant la mise en production.</h2>
+          <p>
+            La suite DEAL ne vend pas seulement un diagramme. Elle fournit des manifests, tests, workflows, runbooks, preuves de securite et documentation qui reduisent le risque d'adoption.
+          </p>
+        </div>
+        <div class="proof-list reveal">
+          <article>
+            <span>Tests</span>
+            <strong>Garde-fous CI/CD</strong>
+            <p>Validation unit, integration, deployment, Kustomize, Swarm et supply chain.</p>
+          </article>
+          <article>
+            <span>Scalabilite</span>
+            <strong>Horizontal by design</strong>
+            <p>Shared MQTT subscriptions, Kafka partitions, Flink task managers, HPA et PDB.</p>
+          </article>
+          <article>
+            <span>Confiance</span>
+            <strong>Compliance evidence</strong>
+            <p>Topics dedies pour gouvernance, securite, resilience et obligations europeennes.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="launch section-shell" id="contact">
+        <div class="launch-card reveal">
+          <p class="eyebrow">Lancer un pilote</p>
+          <h2>Un premier use case mesurable en 30 jours.</h2>
+          <p>
+            Selectionnez un flux terrain, definissez les indicateurs de valeur, deployeez la chaine pilote et mesurez le temps jusqu'au premier evenement exploitable.
+          </p>
+          <div class="launch-actions">
+            <a class="button primary" href="mailto:contact@smartappli.com?subject=Demo%20DEAL%20suite">Contacter l'equipe</a>
+            <a class="button secondary" href="https://github.com/Smartappli/DEALIoT">Voir le depot GitHub</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>DEAL ecosystem</span>
+      <span>DEALIoT · DealHost · DealData</span>
+    </footer>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

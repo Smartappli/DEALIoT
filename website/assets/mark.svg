@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">DEAL mark</title>
+  <desc id="desc">Circular DEAL ecosystem mark</desc>
+  <defs>
+    <linearGradient id="g" x1="28" y1="28" x2="228" y2="228" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#46b5a7"/>
+      <stop offset="0.52" stop-color="#e6ba55"/>
+      <stop offset="1" stop-color="#c86f32"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="#101614"/>
+  <circle cx="128" cy="128" r="86" fill="none" stroke="url(#g)" stroke-width="18"/>
+  <path d="M82 76h45c34 0 55 20 55 52s-21 52-55 52H82V76Zm44 74c16 0 26-8 26-22s-10-22-26-22h-14v44h14Z" fill="#fffaf0"/>
+</svg>
