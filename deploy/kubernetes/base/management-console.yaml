@@ -43,6 +43,11 @@ spec:
               value: http://apicurio-registry:8080/apis/registry/v3
             - name: FLINK_REST_URL
               value: http://flink-jobmanager:8081
+            - name: MANAGEMENT_CONSOLE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: MANAGEMENT_CONSOLE_TOKEN
           readinessProbe:
             httpGet:
               path: /healthz

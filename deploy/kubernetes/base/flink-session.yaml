@@ -43,6 +43,11 @@ spec:
                 secretKeyRef:
                   name: dealiot-secrets
                   key: AWS_SECRET_ACCESS_KEY
+            - name: KAFKA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: KAFKA_SASL_PASSWORD
             - name: ENABLE_BUILT_IN_PLUGINS
               value: flink-s3-fs-hadoop-2.0.0.jar
             - name: FLINK_PYTHON
@@ -69,6 +74,18 @@ spec:
                 s3.path.style.access: true
                 s3.access-key: $(AWS_ACCESS_KEY_ID)
                 s3.secret-key: $(AWS_SECRET_ACCESS_KEY)
+          readinessProbe:
+            httpGet:
+              path: /overview
+              port: rest
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /overview
+              port: rest
+            initialDelaySeconds: 60
+            periodSeconds: 30
           resources:
             requests:
               cpu: 500m
@@ -122,6 +139,9 @@ spec:
           image: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
           imagePullPolicy: IfNotPresent
           args: ["taskmanager"]
+          ports:
+            - name: data
+              containerPort: 6122
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
@@ -136,6 +156,11 @@ spec:
                 secretKeyRef:
                   name: dealiot-secrets
                   key: AWS_SECRET_ACCESS_KEY
+            - name: KAFKA_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: KAFKA_SASL_PASSWORD
             - name: ENABLE_BUILT_IN_PLUGINS
               value: flink-s3-fs-hadoop-2.0.0.jar
             - name: FLINK_PYTHON
@@ -146,6 +171,7 @@ spec:
               value: |
                 jobmanager.rpc.address: flink-jobmanager
                 rest.address: flink-jobmanager
+                taskmanager.data.port: 6122
                 taskmanager.numberOfTaskSlots: 4
                 parallelism.default: 4
                 state.backend.type: rocksdb
@@ -158,6 +184,16 @@ spec:
                 s3.path.style.access: true
                 s3.access-key: $(AWS_ACCESS_KEY_ID)
                 s3.secret-key: $(AWS_SECRET_ACCESS_KEY)
+          readinessProbe:
+            tcpSocket:
+              port: data
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          livenessProbe:
+            tcpSocket:
+              port: data
+            initialDelaySeconds: 60
+            periodSeconds: 30
           resources:
             requests:
               cpu: 500m
@@ -171,7 +207,7 @@ kind: PodDisruptionBudget
 metadata:
   name: flink-taskmanager
 spec:
-  minAvailable: 1
+  minAvailable: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: flink-taskmanager

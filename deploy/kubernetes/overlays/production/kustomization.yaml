@@ -7,6 +7,8 @@ resources:
   - ../../base
   - network-policies.yaml
   - external-dependency-contract.yaml
+  - autoscaling.yaml
+  - availability.yaml
   - wildfi-decoder-config.yaml
   - wildfi-decoder-job.yaml
 
@@ -100,6 +102,25 @@ patches:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: flink-taskmanager
+  - target:
+      kind: Deployment
+      name: airflow-apiserver
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: airflow-apiserver
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: ScheduleAnyway
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: airflow
+                    app.kubernetes.io/component: apiserver
   - target:
       kind: Deployment
       name: airflow-worker
