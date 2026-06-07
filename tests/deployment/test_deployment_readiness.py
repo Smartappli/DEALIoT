@@ -89,9 +89,13 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("kubectl create namespace dealiot", workflow_text)
         self.assertIn("kubectl create namespace dealiot-smoke", workflow_text)
         self.assertIn(
-            "Production overlay must not render mutable or placeholder image tags",
+            "Production overlay must not render mutable tags, placeholder tags, example endpoints, or example secrets",
             workflow_text,
         )
+        self.assertIn("sha-${GITHUB_SHA}", workflow_text)
+        self.assertIn("REPLACE_WITH_RELEASE_SHA", workflow_text)
+        self.assertIn("example\\\\.net", workflow_text)
+        self.assertIn("SET_FROM_SECRET_MANAGER", workflow_text)
         self.assertIn("kind create cluster --name dealiot-ci", workflow_text)
         self.assertIn("kubectl apply -k deploy/kubernetes/overlays/ci-smoke", workflow_text)
 
@@ -125,6 +129,18 @@ class DeploymentReadinessTests(unittest.TestCase):
             / "overlays"
             / "production"
             / "external-dependency-contract.yaml",
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "autoscaling.yaml",
+            REPO_ROOT
+            / "deploy"
+            / "kubernetes"
+            / "overlays"
+            / "production"
+            / "availability.yaml",
             REPO_ROOT
             / "deploy"
             / "kubernetes"
@@ -184,6 +200,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertEqual(overlay["namespace"], "dealiot")
         self.assertIn("network-policies.yaml", overlay["resources"])
         self.assertIn("external-dependency-contract.yaml", overlay["resources"])
+        self.assertIn("autoscaling.yaml", overlay["resources"])
+        self.assertIn("availability.yaml", overlay["resources"])
         self.assertIn("wildfi-decoder-config.yaml", overlay["resources"])
         self.assertIn("wildfi-decoder-job.yaml", overlay["resources"])
         self.assertEqual(
@@ -237,6 +255,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
         self.assertEqual(runtime_config["WILDFI_TOPIC_PREFIXES"], "wildfi,wild-fi")
         self.assertEqual(runtime_config["MQTT_USERNAME"], "dealiot_ingestor")
+        self.assertEqual(runtime_config["MQTT_TLS_ENABLED"], "true")
+        self.assertEqual(runtime_config["KAFKA_SECURITY_PROTOCOL"], "SASL_SSL")
+        self.assertEqual(runtime_config["KAFKA_SASL_MECHANISM"], "SCRAM-SHA-512")
+        self.assertEqual(runtime_config["KAFKA_SASL_USERNAME"], "dealiot_runtime")
         self.assertGreaterEqual(len(runtime_config["KAFKA_BOOTSTRAP_SERVERS"].split(",")), 3)
         self.assertNotIn("mqtt-broker.ingest.svc.cluster.local", config_text)
         self.assertNotIn("MQTT_PORT=1883", config_text)
@@ -263,6 +285,52 @@ class DeploymentReadinessTests(unittest.TestCase):
             self.assertGreaterEqual(replicas[workload_name], 3)
         self.assertGreaterEqual(replicas["airflow-apiserver"], 2)
         self.assertGreaterEqual(replicas["management-console"], 2)
+
+    def test_kubernetes_production_overlay_defines_autoscaling_and_disruption_budgets(self) -> None:
+        autoscaling_docs = [
+            document
+            for document in yaml.safe_load_all(
+                (
+                    REPO_ROOT
+                    / "deploy"
+                    / "kubernetes"
+                    / "overlays"
+                    / "production"
+                    / "autoscaling.yaml"
+                ).read_text(encoding="utf-8")
+            )
+            if document
+        ]
+        availability_docs = [
+            document
+            for document in yaml.safe_load_all(
+                (
+                    REPO_ROOT
+                    / "deploy"
+                    / "kubernetes"
+                    / "overlays"
+                    / "production"
+                    / "availability.yaml"
+                ).read_text(encoding="utf-8")
+            )
+            if document
+        ]
+
+        hpas = {document["metadata"]["name"]: document for document in autoscaling_docs}
+        for workload in (
+            "mqtt-kafka-bridge",
+            "flink-taskmanager",
+            "airflow-worker",
+            "management-console",
+        ):
+            self.assertIn(workload, hpas)
+            self.assertEqual(hpas[workload]["kind"], "HorizontalPodAutoscaler")
+            self.assertGreater(hpas[workload]["spec"]["maxReplicas"], hpas[workload]["spec"]["minReplicas"])
+
+        pdbs = {document["metadata"]["name"]: document for document in availability_docs}
+        self.assertEqual(pdbs["airflow-worker"]["spec"]["minAvailable"], 2)
+        self.assertEqual(pdbs["airflow-apiserver"]["spec"]["minAvailable"], 1)
+        self.assertEqual(pdbs["management-console"]["spec"]["minAvailable"], 1)
 
     def test_kubernetes_production_network_policies_default_deny_and_scope_egress(self) -> None:
         policy_path = (
@@ -312,6 +380,8 @@ class DeploymentReadinessTests(unittest.TestCase):
             self.assertIn(f"{required_dependency}:", contract_text)
         for required_secret in (
             "MQTT_PASSWORD",
+            "KAFKA_SASL_PASSWORD",
+            "MANAGEMENT_CONSOLE_TOKEN",
             "AWS_SECRET_ACCESS_KEY",
             "AIRFLOW__CORE__FERNET_KEY",
             "AIRFLOW__API__SECRET_KEY",
@@ -355,6 +425,46 @@ class DeploymentReadinessTests(unittest.TestCase):
             "radio_and_product_law: required_if_devices_are_placed_on_eu_market",
             contract_text,
         )
+
+    def test_kubernetes_runtime_manifests_wire_security_and_health_probes(self) -> None:
+        bridge = yaml.safe_load(
+            (REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        bridge_container = bridge["spec"]["template"]["spec"]["containers"][0]
+        bridge_env_names = {item["name"] for item in bridge_container["env"]}
+        self.assertIn("KAFKA_SASL_PASSWORD", bridge_env_names)
+        self.assertIn("readinessProbe", bridge_container)
+        self.assertIn("livenessProbe", bridge_container)
+        self.assertEqual(bridge_container["ports"][0]["name"], "health")
+
+        flink_docs = [
+            document
+            for document in yaml.safe_load_all(
+                (REPO_ROOT / "deploy" / "kubernetes" / "base" / "flink-session.yaml").read_text(
+                    encoding="utf-8"
+                )
+            )
+            if document and document.get("kind") == "Deployment"
+        ]
+        for deployment in flink_docs:
+            container = deployment["spec"]["template"]["spec"]["containers"][0]
+            env_names = {item["name"] for item in container["env"]}
+            self.assertIn("KAFKA_SASL_PASSWORD", env_names)
+            self.assertIn("readinessProbe", container)
+            self.assertIn("livenessProbe", container)
+
+        management_console = yaml.safe_load(
+            (REPO_ROOT / "deploy" / "kubernetes" / "base" / "management-console.yaml").read_text(
+                encoding="utf-8"
+            )
+        )
+        console_env_names = {
+            item["name"]
+            for item in management_console["spec"]["template"]["spec"]["containers"][0]["env"]
+        }
+        self.assertIn("MANAGEMENT_CONSOLE_TOKEN", console_env_names)
 
     def test_kubernetes_production_wildfi_contract_is_explicit(self) -> None:
         contract = yaml.safe_load(
@@ -545,6 +655,9 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("flink-connector-base", flink_dockerfile)
         self.assertIn("jdk_only_exports", flink_dockerfile)
         self.assertIn("def env_or_secret_file", bridge_source)
+        self.assertIn("def kafka_security_config", bridge_source)
+        self.assertIn("def configure_mqtt_tls", bridge_source)
+        self.assertIn("def start_health_server", bridge_source)
         self.assertIn(
             "COPY --chown=root:root --chmod=0555 management-console/management_console",
             management_console_dockerfile,

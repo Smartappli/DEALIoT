@@ -11,11 +11,15 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: flink-jobmanager
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: flink-jobmanager
-        app.kubernetes.io/part-of: dealiot
+    template:
+      metadata:
+        annotations:
+          prometheus.io/path: /metrics
+          prometheus.io/port: "9250"
+          prometheus.io/scrape: "true"
+        labels:
+          app.kubernetes.io/name: flink-jobmanager
+          app.kubernetes.io/part-of: dealiot
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
@@ -29,6 +33,8 @@ spec:
               containerPort: 6123
             - name: rest
               containerPort: 8081
+            - name: metrics
+              containerPort: 9250
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
@@ -70,6 +76,10 @@ spec:
                 restart-strategy.type: exponential-delay
                 restart-strategy.exponential-delay.initial-backoff: 2 s
                 restart-strategy.exponential-delay.max-backoff: 30 s
+                metrics.reporters: prom
+                metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+                metrics.reporter.prom.port: 9250
+                metrics.reporter.prom.filterLabelValueCharacters: true
                 s3.endpoint: $(S3_ENDPOINT_URL)
                 s3.path.style.access: true
                 s3.access-key: $(AWS_ACCESS_KEY_ID)
@@ -126,11 +136,15 @@ spec:
   selector:
     matchLabels:
       app.kubernetes.io/name: flink-taskmanager
-  template:
-    metadata:
-      labels:
-        app.kubernetes.io/name: flink-taskmanager
-        app.kubernetes.io/part-of: dealiot
+    template:
+      metadata:
+        annotations:
+          prometheus.io/path: /metrics
+          prometheus.io/port: "9250"
+          prometheus.io/scrape: "true"
+        labels:
+          app.kubernetes.io/name: flink-taskmanager
+          app.kubernetes.io/part-of: dealiot
     spec:
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
@@ -142,6 +156,8 @@ spec:
           ports:
             - name: data
               containerPort: 6122
+            - name: metrics
+              containerPort: 9250
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
@@ -180,6 +196,10 @@ spec:
                 execution.checkpointing.interval: 10s
                 execution.checkpointing.mode: EXACTLY_ONCE
                 execution.checkpointing.timeout: 5min
+                metrics.reporters: prom
+                metrics.reporter.prom.factory.class: org.apache.flink.metrics.prometheus.PrometheusReporterFactory
+                metrics.reporter.prom.port: 9250
+                metrics.reporter.prom.filterLabelValueCharacters: true
                 s3.endpoint: $(S3_ENDPOINT_URL)
                 s3.path.style.access: true
                 s3.access-key: $(AWS_ACCESS_KEY_ID)

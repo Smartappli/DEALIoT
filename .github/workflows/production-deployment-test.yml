@@ -21,10 +21,10 @@ env:
   DEALIOT_MANAGEMENT_CONSOLE_IMAGE: ghcr.io/smartappli/dealiot-management-console:local-placeholder
   DEALIOT_FLINK_PYFLINK_IMAGE: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
   DEALIOT_ORCHESTRATION_IMAGE: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
-  KAFKA_BOOTSTRAP_SERVERS: kafka1.example.net:9092,kafka2.example.net:9092
-  MQTT_HOST: mqtt.example.net
-  MQTT_USERNAME: admin
-  S3_ENDPOINT_URL: https://s3.example.net
+  KAFKA_BOOTSTRAP_SERVERS: kafka1.ci.internal:9092,kafka2.ci.internal:9092,kafka3.ci.internal:9092
+  MQTT_HOST: mqtt.ci.internal
+  MQTT_USERNAME: dealiot_ingestor
+  S3_ENDPOINT_URL: https://s3.ci.internal
   AWS_ACCESS_KEY_ID: ${{ github.run_id }}-${{ github.run_attempt }}-s3-access
   AWS_SECRET_ACCESS_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-s3
   AIRFLOW__CORE__FERNET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-fernet
@@ -124,9 +124,13 @@ jobs:
 
       - name: Render Kubernetes production overlay
         run: |
+          sed -i "s/sha-REPLACE_WITH_RELEASE_SHA/sha-${GITHUB_SHA}/g" deploy/kubernetes/overlays/production/kustomization.yaml
+          sed -i "s|kafka-0.example.net:9092,kafka-1.example.net:9092,kafka-2.example.net:9092|${KAFKA_BOOTSTRAP_SERVERS}|g" deploy/kubernetes/overlays/production/runtime-config.production.example.env
+          sed -i "s|mqtt.example.net|${MQTT_HOST}|g" deploy/kubernetes/overlays/production/runtime-config.production.example.env
+          sed -i "s|https://s3.example.net|${S3_ENDPOINT_URL}|g" deploy/kubernetes/overlays/production/runtime-config.production.example.env
           kubectl kustomize deploy/kubernetes/overlays/production >/tmp/dealiot-kubernetes-production.yaml
-          if grep -E "ghcr.io/smartappli/.*:(latest|local-placeholder)" /tmp/dealiot-kubernetes-production.yaml; then
-            echo "Production overlay must not render mutable or placeholder image tags." >&2
+          if grep -E "ghcr.io/smartappli/.*:(latest|local-placeholder|sha-REPLACE_WITH_RELEASE_SHA)|example\\.net|SET_FROM_SECRET_MANAGER" /tmp/dealiot-kubernetes-production.yaml; then
+            echo "Production overlay must not render mutable tags, placeholder tags, example endpoints, or example secrets." >&2
             exit 1
           fi
           kubectl apply --dry-run=server -f /tmp/dealiot-kubernetes-production.yaml

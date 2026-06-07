@@ -383,6 +383,51 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                     open_test_http_url(post)
             self.assertEqual(blocked.exception.code, HTTPStatus.CONFLICT)
 
+    def test_http_handler_requires_bearer_token_when_configured(self) -> None:
+        with (
+            patch.dict("os.environ", {"MANAGEMENT_CONSOLE_TOKEN": "unit-token"}, clear=False),
+            running_console_server() as base_url,
+        ):
+            health = read_json(f"{base_url}/healthz")
+            self.assertEqual(health["status"], "ok")
+
+            with self.assertRaises(error.HTTPError) as unauthorized_get:
+                open_test_http_url(f"{base_url}/api/datasets/zenodo")
+            self.assertEqual(unauthorized_get.exception.code, HTTPStatus.UNAUTHORIZED)
+
+            get_request = request.Request(
+                f"{base_url}/api/datasets/zenodo",
+                headers={"Authorization": "Bearer unit-token"},
+            )
+            response = read_json_from_request(get_request)
+            self.assertEqual(response["repository"], "Zenodo")
+
+            post = request.Request(
+                f"{base_url}/api/operations/trigger-media-backfill",
+                data=b"{}",
+                method="POST",
+                headers={"Content-Type": "application/json"},
+            )
+            with self.assertRaises(error.HTTPError) as unauthorized_post:
+                open_test_http_url(post)
+            self.assertEqual(unauthorized_post.exception.code, HTTPStatus.UNAUTHORIZED)
+
+            with patch(
+                "management_console.app.trigger_media_backfill",
+                return_value=(HTTPStatus.ACCEPTED, {"status": "queued"}),
+            ):
+                authorized_post = request.Request(
+                    f"{base_url}/api/operations/trigger-media-backfill",
+                    data=b"{}",
+                    method="POST",
+                    headers={
+                        "Authorization": "Bearer unit-token",
+                        "Content-Type": "application/json",
+                    },
+                )
+                response = read_json_from_request(authorized_post)
+            self.assertEqual(response["status"], "queued")
+
     def test_run_uses_configured_bind_and_port(self) -> None:
         fake_server = Mock()
         fake_server.__enter__ = Mock(return_value=fake_server)
