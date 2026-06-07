@@ -40,10 +40,22 @@ jobs:
         working-directory: website
         run: npm run build
 
+      - name: Prepare website artifact
+        run: |
+          rm -rf website-dist
+          mkdir -p website-dist
+          tar \
+            --exclude='./node_modules' \
+            --exclude='./src' \
+            --exclude='./package.json' \
+            --exclude='./package-lock.json' \
+            --exclude='./README.md' \
+            -C website -cf - . | tar -C website-dist -xf -
+
       - name: Upload website artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
         with:
-          path: website
+          path: website-dist
 
       - name: Deploy to GitHub Pages
         id: deployment

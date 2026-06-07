@@ -1,4 +1,11 @@
 User-agent: *
 Allow: /
+Allow: /assets/
+Allow: /*/index.html
+Disallow: /offline.html
+Disallow: /src/
+Disallow: /node_modules/
+Disallow: /package.json
+Disallow: /package-lock.json
 
 Sitemap: https://smartappli.io/sitemap.xml

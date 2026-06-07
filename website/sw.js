@@ -1,6 +1,6 @@
-const CACHE_NAME = "dealiot-pwa-v4";
-const ASSET_VERSION = "20260607-language-dropdown-v2";
-const CORE_ASSETS = [
+const CACHE_NAME = "dealiot-pwa-v5";
+const ASSET_VERSION = "20260607-cache-performance-v1";
+const ROUTE_ASSETS = [
   "./",
   "./fr/",
   "./sv/",
@@ -25,6 +25,8 @@ const CORE_ASSETS = [
   "./cs/",
   "./hr/",
   "./bg/",
+];
+const STATIC_ASSETS = [
   "./offline.html",
   `./styles.css?v=${ASSET_VERSION}`,
   `./app.js?v=${ASSET_VERSION}`,
@@ -35,6 +37,7 @@ const CORE_ASSETS = [
   "./assets/icon-maskable-512.png",
   "./assets/social-card.png",
 ];
+const CORE_ASSETS = [...ROUTE_ASSETS, ...STATIC_ASSETS];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)));
@@ -66,52 +69,57 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  const isMutableAsset =
-    requestUrl.pathname.endsWith("/app.js") ||
-    requestUrl.pathname.endsWith("/styles.css") ||
-    requestUrl.pathname.endsWith("/site.webmanifest");
+  const isNetworkFirstAsset =
+    requestUrl.pathname.endsWith("/sw.js") ||
+    requestUrl.pathname.endsWith("/site.webmanifest") ||
+    requestUrl.pathname.endsWith("/robots.txt") ||
+    requestUrl.pathname.endsWith("/sitemap.xml") ||
+    requestUrl.pathname.endsWith("/llms.txt") ||
+    requestUrl.pathname.endsWith("/humans.txt");
 
   if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const responseCopy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseCopy));
-          return response;
-        })
-        .catch(() => caches.match(request).then((cached) => cached || caches.match("./offline.html"))),
-    );
+    event.respondWith(networkFirst(request, "./offline.html"));
     return;
   }
 
-  if (isMutableAsset) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const responseCopy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseCopy));
-          return response;
-        })
-        .catch(() =>
-          caches
-            .match(request)
-            .then((cached) => cached || caches.match(request, { ignoreSearch: true })),
-        ),
-    );
+  if (isNetworkFirstAsset) {
+    event.respondWith(networkFirst(request));
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) {
-        return cached;
-      }
-
-      return fetch(request).then((response) => {
-        const responseCopy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, responseCopy));
-        return response;
-      });
-    }),
-  );
+  event.respondWith(staleWhileRevalidate(request));
 });
+
+function cacheResponse(request, response) {
+  if (!response || !response.ok) {
+    return response;
+  }
+
+  const responseCopy = response.clone();
+  caches.open(CACHE_NAME).then((cache) => cache.put(request, responseCopy));
+  return response;
+}
+
+function networkFirst(request, fallbackUrl) {
+  return fetch(request)
+    .then((response) => cacheResponse(request, response))
+    .catch(() =>
+      caches.match(request).then((cached) => {
+        if (cached) {
+          return cached;
+        }
+
+        return fallbackUrl ? caches.match(fallbackUrl) : Response.error();
+      }),
+    );
+}
+
+function staleWhileRevalidate(request) {
+  return caches.match(request).then((cached) => {
+    const networkResponse = fetch(request)
+      .then((response) => cacheResponse(request, response))
+      .catch(() => cached || caches.match(request, { ignoreSearch: true }));
+
+    return cached || networkResponse;
+  });
+}
