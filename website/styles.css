@@ -405,6 +405,7 @@ h3 {
 .products,
 .architecture,
 .proof,
+.adoption,
 .launch {
   padding: 5rem 0;
 }
@@ -578,6 +579,47 @@ h3 {
   margin: -0.5rem 0 0;
 }
 
+.adoption-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.adoption-card {
+  min-height: 26rem;
+  padding: 1.4rem;
+  background:
+    linear-gradient(160deg, rgb(255 250 240 / 76%), rgb(230 218 194 / 70%)),
+    var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 50px rgb(16 22 20 / 8%);
+}
+
+.adoption-card span {
+  display: inline-flex;
+  margin-bottom: 4.5rem;
+  color: var(--moss);
+  font: 700 0.82rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.adoption-card p {
+  color: var(--ink-soft);
+  line-height: 1.58;
+}
+
+.adoption-card a {
+  display: inline-flex;
+  margin-top: 1rem;
+  color: var(--copper-dark);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 0.12em;
+  text-underline-offset: 0.25em;
+}
+
 .launch-card {
   position: relative;
   padding: clamp(2rem, 6vw, 5rem);
@@ -679,6 +721,7 @@ h3 {
   }
 
   .product-grid,
+  .adoption-grid,
   .architecture-board {
     grid-template-columns: 1fr;
   }
@@ -732,6 +775,7 @@ h3 {
   }
 
   .product-card,
+  .adoption-card,
   .proof-panel,
   .proof-list article,
   .launch-card {

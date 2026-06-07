@@ -26,6 +26,22 @@ DEALIoT provides six runtime planes:
 | Storage | Operational SQL state and connection pooling | TimescaleDB, Patroni, HAProxy, PgBouncer |
 | Operations | Observability, control surfaces, and compliance evidence | Prometheus, Grafana, Management Console |
 
+## Website And Adoption
+
+- Public website: `https://smartappli.github.io/DEALIoT/`
+- Adoption playbook: [docs/community/adoption-playbook.md](docs/community/adoption-playbook.md)
+- Demo pilot playbook: [docs/community/demo-pilot-playbook.md](docs/community/demo-pilot-playbook.md)
+- Integration partner guide: [docs/community/integration-partner-guide.md](docs/community/integration-partner-guide.md)
+- Pilot validation scorecard: [docs/community/validation-scorecard.md](docs/community/validation-scorecard.md)
+- Adopter story template: [docs/community/adopter-story-template.md](docs/community/adopter-story-template.md)
+- Roadmap: [ROADMAP.md](ROADMAP.md)
+- Support policy: [SUPPORT.md](SUPPORT.md)
+- Public references: [ADOPTERS.md](ADOPTERS.md)
+
+The recommended adoption path is: validate the local smoke test, run a 30-day pilot with one data
+source and one value output, then harden the target runtime with the production deployment
+guardrails.
+
 ## Architecture
 
 ```mermaid
@@ -238,11 +254,17 @@ References:
 
 ## Contribution Workflow
 
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
 1. Create changes with tests.
 2. Run the validation commands above.
 3. Render Kubernetes and Swarm manifests when deployment files change.
 4. Keep production placeholders out of rendered manifests.
-5. Commit with a focused message and push to GitHub.
+5. Update README, wiki, runbooks, or community docs when user-facing behavior changes.
+6. Commit with a focused message and push to GitHub.
+
+Community expectations are defined in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Security reports
+must follow [SECURITY.md](SECURITY.md), not public issues.
 
 ## License
 

@@ -17,7 +17,20 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docker-compose.prod.yml",
             REPO_ROOT / ".dockerignore",
             REPO_ROOT / "README.md",
+            REPO_ROOT / "CONTRIBUTING.md",
+            REPO_ROOT / "CODE_OF_CONDUCT.md",
+            REPO_ROOT / "SECURITY.md",
+            REPO_ROOT / "SUPPORT.md",
+            REPO_ROOT / "ROADMAP.md",
+            REPO_ROOT / "ADOPTERS.md",
+            REPO_ROOT / "CITATION.cff",
             REPO_ROOT / "scripts" / "smoke-e2e.sh",
+            REPO_ROOT / "docs" / "community" / "README.md",
+            REPO_ROOT / "docs" / "community" / "adoption-playbook.md",
+            REPO_ROOT / "docs" / "community" / "demo-pilot-playbook.md",
+            REPO_ROOT / "docs" / "community" / "integration-partner-guide.md",
+            REPO_ROOT / "docs" / "community" / "validation-scorecard.md",
+            REPO_ROOT / "docs" / "community" / "adopter-story-template.md",
             REPO_ROOT / "docs" / "runbooks" / "operations.md",
             REPO_ROOT / "docs" / "runbooks" / "backup-restore.md",
             REPO_ROOT / "docs" / "runbooks" / "security-hardening.md",
@@ -60,6 +73,13 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / "docs" / "compliance" / "templates" / "openaire-discovery-approval.md",
             REPO_ROOT / ".github" / "workflows" / "ci.yml",
             REPO_ROOT / ".github" / "dependabot.yml",
+            REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md",
+            REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "config.yml",
+            REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "bug_report.yml",
+            REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "feature_request.yml",
+            REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "demo_request.yml",
+            REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "adopter_story.yml",
+            REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "documentation.yml",
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
             REPO_ROOT / ".github" / "workflows" / "website-pages.yml",
             REPO_ROOT / "bandit.yaml",
@@ -90,6 +110,7 @@ class RepositoryUnitTests(unittest.TestCase):
             "## Runtime Security",
             "## Testing And Quality Gates",
             "## Operations And Runbooks",
+            "## Website And Adoption",
         ):
             self.assertIn(required_heading, readme)
 
@@ -103,6 +124,8 @@ class RepositoryUnitTests(unittest.TestCase):
 
         self.assertIn("Kubernetes is the primary production target", readme)
         self.assertIn("The GitHub Wiki contains the production architecture handbook", readme)
+        self.assertIn("docs/community/adoption-playbook.md", readme)
+        self.assertIn("CONTRIBUTING.md", readme)
 
     def test_versioned_wiki_source_covers_production_operations(self) -> None:
         wiki_dir = REPO_ROOT / "docs" / "wiki"
@@ -501,6 +524,64 @@ class RepositoryUnitTests(unittest.TestCase):
             self.assertNotIn(forbidden_fragment, app_js)
         for forbidden_font in ("Inter", "Roboto", "Arial", "system-ui"):
             self.assertNotIn(forbidden_font, styles_css)
+
+    def test_repository_has_adoption_assets(self) -> None:
+        adoption_playbook = (REPO_ROOT / "docs" / "community" / "adoption-playbook.md").read_text(
+            encoding="utf-8"
+        )
+        demo_playbook = (REPO_ROOT / "docs" / "community" / "demo-pilot-playbook.md").read_text(
+            encoding="utf-8"
+        )
+        partner_guide = (
+            REPO_ROOT / "docs" / "community" / "integration-partner-guide.md"
+        ).read_text(encoding="utf-8")
+        validation_scorecard = (
+            REPO_ROOT / "docs" / "community" / "validation-scorecard.md"
+        ).read_text(encoding="utf-8")
+        adopter_story_template = (
+            REPO_ROOT / "docs" / "community" / "adopter-story-template.md"
+        ).read_text(encoding="utf-8")
+        readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+        website = (REPO_ROOT / "website" / "index.html").read_text(encoding="utf-8")
+        issue_templates = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in (REPO_ROOT / ".github" / "ISSUE_TEMPLATE").glob("*.yml")
+        )
+        pull_request_template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(
+            encoding="utf-8"
+        )
+
+        for fragment in (
+            "Primary Audiences",
+            "Adoption Ladder",
+            "30-Day Pilot Motion",
+            "Success Metrics",
+        ):
+            self.assertIn(fragment, adoption_playbook)
+
+        for fragment in ("Pilot Scorecard", "Local Demo Script", "Post-Pilot Decision"):
+            self.assertIn(fragment, demo_playbook)
+
+        for fragment in ("Partner Tracks", "Integration Contract", "Partner Readiness Checklist"):
+            self.assertIn(fragment, partner_guide)
+
+        for fragment in (
+            "Decision Rule",
+            "First event reaches Kafka",
+            "Production deployment gaps",
+        ):
+            self.assertIn(fragment, validation_scorecard)
+
+        for fragment in ("Publication limits", "Outcome", "Remaining gaps"):
+            self.assertIn(fragment, adopter_story_template)
+
+        for fragment in ("Demo or pilot request", "Adopter story", "Documentation gap"):
+            self.assertIn(fragment, issue_templates)
+
+        self.assertIn("Operational Impact", pull_request_template)
+        self.assertIn("Public website", readme)
+        self.assertIn("Passer a l'adoption", website)
+        self.assertIn("docs/community/demo-pilot-playbook.md", website)
 
     def test_management_console_backend_avoids_scanner_hotspots(self) -> None:
         app_py = (REPO_ROOT / "management-console" / "management_console" / "app.py").read_text(

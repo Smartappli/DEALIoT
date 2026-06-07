@@ -12,6 +12,18 @@ This wiki is the production handbook for DEALIoT.
 - [CI/CD and Release](CI-CD-and-Release)
 - [Runbook Index](Runbook-Index)
 
+## Adoption Resources
+
+The versioned community assets are maintained in `docs/community/`:
+
+- `docs/community/adoption-playbook.md`
+- `docs/community/demo-pilot-playbook.md`
+- `docs/community/integration-partner-guide.md`
+- `docs/community/validation-scorecard.md`
+- `docs/community/adopter-story-template.md`
+
+Use them to run pilots, onboard integration partners, and prepare public adopter references.
+
 ## Current Production Target
 
 Kubernetes is the primary production target. Docker Swarm is maintained as a simpler production-capable runtime and as a CI smoke target.
