@@ -767,7 +767,7 @@ class RepositoryUnitTests(unittest.TestCase):
             self.assertNotIn("<details", html)
             self.assertIn(
                 f'<option value="{localized_url}" lang="{language["hreflang"]}" selected>'
-                f'{expected_flag} {language["name"]}</option>',
+                f"{expected_flag} {language['name']}</option>",
                 html,
             )
             self.assertNotIn("????", html)
@@ -846,27 +846,27 @@ class RepositoryUnitTests(unittest.TestCase):
         star_growth_plan = (
             REPO_ROOT / "docs" / "community" / "github-star-growth-plan.md"
         ).read_text(encoding="utf-8")
-        use_case_catalog = (
-            REPO_ROOT / "docs" / "community" / "use-case-catalog.md"
-        ).read_text(encoding="utf-8")
+        use_case_catalog = (REPO_ROOT / "docs" / "community" / "use-case-catalog.md").read_text(
+            encoding="utf-8"
+        )
         quick_evaluation_path = (
             REPO_ROOT / "docs" / "community" / "quick-evaluation-path.md"
         ).read_text(encoding="utf-8")
         comparison_guide = (
             REPO_ROOT / "docs" / "community" / "architecture-comparison-guide.md"
         ).read_text(encoding="utf-8")
-        champion_kit = (
-            REPO_ROOT / "docs" / "community" / "internal-champion-kit.md"
-        ).read_text(encoding="utf-8")
-        public_launch_kit = (
-            REPO_ROOT / "docs" / "community" / "public-launch-kit.md"
-        ).read_text(encoding="utf-8")
+        champion_kit = (REPO_ROOT / "docs" / "community" / "internal-champion-kit.md").read_text(
+            encoding="utf-8"
+        )
+        public_launch_kit = (REPO_ROOT / "docs" / "community" / "public-launch-kit.md").read_text(
+            encoding="utf-8"
+        )
         first_github_discussion = (
             REPO_ROOT / "docs" / "community" / "first-github-discussion.md"
         ).read_text(encoding="utf-8")
-        adoption_funnel = (
-            REPO_ROOT / "docs" / "community" / "adoption-funnel.md"
-        ).read_text(encoding="utf-8")
+        adoption_funnel = (REPO_ROOT / "docs" / "community" / "adoption-funnel.md").read_text(
+            encoding="utf-8"
+        )
         demo_playbook = (REPO_ROOT / "docs" / "community" / "demo-pilot-playbook.md").read_text(
             encoding="utf-8"
         )
@@ -885,15 +885,15 @@ class RepositoryUnitTests(unittest.TestCase):
         community_governance = (
             REPO_ROOT / "docs" / "community" / "community-governance.md"
         ).read_text(encoding="utf-8")
-        community_rituals = (
-            REPO_ROOT / "docs" / "community" / "community-rituals.md"
-        ).read_text(encoding="utf-8")
-        user_feedback_loop = (
-            REPO_ROOT / "docs" / "community" / "user-feedback-loop.md"
-        ).read_text(encoding="utf-8")
-        seed_discussions = (
-            REPO_ROOT / "docs" / "community" / "seed-discussions.md"
-        ).read_text(encoding="utf-8")
+        community_rituals = (REPO_ROOT / "docs" / "community" / "community-rituals.md").read_text(
+            encoding="utf-8"
+        )
+        user_feedback_loop = (REPO_ROOT / "docs" / "community" / "user-feedback-loop.md").read_text(
+            encoding="utf-8"
+        )
+        seed_discussions = (REPO_ROOT / "docs" / "community" / "seed-discussions.md").read_text(
+            encoding="utf-8"
+        )
         partner_guide = (
             REPO_ROOT / "docs" / "community" / "integration-partner-guide.md"
         ).read_text(encoding="utf-8")
@@ -929,7 +929,12 @@ class RepositoryUnitTests(unittest.TestCase):
         ):
             self.assertIn(fragment, adoption_playbook)
 
-        for fragment in ("Adoption Thesis", "Adoption Flywheel", "Distribution Plan", "Launch Metrics"):
+        for fragment in (
+            "Adoption Thesis",
+            "Adoption Flywheel",
+            "Distribution Plan",
+            "Launch Metrics",
+        ):
             self.assertIn(fragment, popularity_playbook)
 
         for fragment in (

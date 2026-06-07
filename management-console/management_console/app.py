@@ -129,7 +129,10 @@ def open_http_request(
     connection_cls = (
         http.client.HTTPSConnection if parsed.scheme == "https" else http.client.HTTPConnection
     )
-    connection = connection_cls(parsed.hostname, port=parsed.port, timeout=timeout)
+    host = parsed.hostname
+    if host is None:
+        raise ValueError("HTTP request URL must use http or https with a host")
+    connection = connection_cls(host, port=parsed.port, timeout=timeout)
     try:
         connection.request(method, http_path(parsed), body=body, headers=headers or {})
         response = connection.getresponse()

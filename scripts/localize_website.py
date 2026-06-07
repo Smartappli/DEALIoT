@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-
+from typing import cast
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEBSITE_DIR = REPO_ROOT / "website"
 BASE_URL = "https://smartappli.io/"
 ASSET_VERSION = "20260607-language-dropdown-v2"
-TRANSLATION_FILE = WEBSITE_DIR / 'src' / 'i18n-copy.json'
+TRANSLATION_FILE = WEBSITE_DIR / "src" / "i18n-copy.json"
 
 
 LANGUAGES = {
@@ -165,9 +165,10 @@ ENGLISH = {
 }
 
 
-
 def load_translations() -> dict[str, dict[str, str]]:
-    return json.loads(TRANSLATION_FILE.read_text(encoding="utf-8"))
+    data = json.loads(TRANSLATION_FILE.read_text(encoding="utf-8"))
+    return cast("dict[str, dict[str, str]]", data)
+
 
 def localized_url(path: str) -> str:
     return f"{BASE_URL}{path}/"
@@ -188,35 +189,55 @@ def apply_translations(html: str, lang: str, copy: dict[str, str]) -> str:
     url = localized_url(path)
 
     html = html.replace('<html lang="en-US">', f'<html lang="{lang}">')
-    html = html.replace('<link rel="canonical" href="https://smartappli.io/">', f'<link rel="canonical" href="{url}">')
-    html = html.replace('<meta property="og:url" content="https://smartappli.io/">', f'<meta property="og:url" content="{url}">')
-    html = html.replace('<meta property="og:locale" content="en_US">', f'<meta property="og:locale" content="{config["og_locale"]}">')
-    html = html.replace('<meta property="og:locale:alternate" content="fr_FR">', '<meta property="og:locale:alternate" content="en_US">')
+    html = html.replace(
+        '<link rel="canonical" href="https://smartappli.io/">',
+        f'<link rel="canonical" href="{url}">',
+    )
+    html = html.replace(
+        '<meta property="og:url" content="https://smartappli.io/">',
+        f'<meta property="og:url" content="{url}">',
+    )
+    html = html.replace(
+        '<meta property="og:locale" content="en_US">',
+        f'<meta property="og:locale" content="{config["og_locale"]}">',
+    )
+    html = html.replace(
+        '<meta property="og:locale:alternate" content="fr_FR">',
+        '<meta property="og:locale:alternate" content="en_US">',
+    )
     html = html.replace('"inLanguage": "en-US"', f'"inLanguage": "{lang}"')
 
     html = html.replace('href="assets/', 'href="../assets/')
     html = html.replace('href="site.webmanifest"', 'href="../site.webmanifest"')
     html = html.replace('href="humans.txt"', 'href="../humans.txt"')
-    html = html.replace(f'href="styles.css?v={ASSET_VERSION}"', f'href="../styles.css?v={ASSET_VERSION}"')
+    html = html.replace(
+        f'href="styles.css?v={ASSET_VERSION}"', f'href="../styles.css?v={ASSET_VERSION}"'
+    )
     html = html.replace(f'src="app.js?v={ASSET_VERSION}"', f'src="../app.js?v={ASSET_VERSION}"')
 
-    html = html.replace('<option value="https://smartappli.io/" lang="en-US" selected>', '<option value="https://smartappli.io/" lang="en-US">')
-    html = html.replace(f'<option value="{url}" lang="{lang}">', f'<option value="{url}" lang="{lang}" selected>')
-    return html
+    html = html.replace(
+        '<option value="https://smartappli.io/" lang="en-US" selected>',
+        '<option value="https://smartappli.io/" lang="en-US">',
+    )
+    return html.replace(
+        f'<option value="{url}" lang="{lang}">', f'<option value="{url}" lang="{lang}" selected>'
+    )
 
 
 def main() -> None:
     translations = load_translations()
     missing_languages = set(LANGUAGES) - set(translations)
     if missing_languages:
-        raise SystemExit(f"Missing translations: {sorted(missing_languages)}")
+        message = f"Missing translations: {sorted(missing_languages)}"
+        raise SystemExit(message)
 
     template = (WEBSITE_DIR / "index.html").read_text(encoding="utf-8")
     for lang, config in LANGUAGES.items():
         copy = translations[lang]
         missing_keys = set(ENGLISH) - set(copy)
         if missing_keys:
-            raise SystemExit(f"{lang} missing keys: {sorted(missing_keys)}")
+            message = f"{lang} missing keys: {sorted(missing_keys)}"
+            raise SystemExit(message)
         output = apply_translations(template, lang, copy)
         target_dir = WEBSITE_DIR / config["path"]
         target_dir.mkdir(parents=True, exist_ok=True)

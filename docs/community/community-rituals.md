@@ -24,19 +24,19 @@ Template:
 ## Community Pulse - YYYY-MM
 
 ### What changed
-- 
+-
 
 ### New user blockers
-- 
+-
 
 ### Documentation added
-- 
+-
 
 ### Pilot or demo signals
-- 
+-
 
 ### Next topics
-- 
+-
 ```
 
 ## Office Hours Agenda
