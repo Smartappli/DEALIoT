@@ -28,6 +28,10 @@ This overlay replaces the base `dealiot-runtime-config` ConfigMap with
 Before deployment, copy or patch that file through a site-specific overlay or GitOps tooling with
 your private Kafka, MQTT, S3, PostgreSQL, and Redis endpoints.
 
+Kafka is configured for `SASL_SSL` by default in the production example. MQTT is configured for TLS
+on port `8883`. Keep those defaults unless the network path is already private and encrypted by a
+separate control plane.
+
 The production runtime config subscribes to both generic device telemetry and WildFi telemetry:
 
 ```text
@@ -49,6 +53,21 @@ proxLogger data and mode `3` decodes gateway metadata.
 Create `dealiot-secrets` with all keys listed in
 `external-dependency-contract.yaml`. Prefer External Secrets Operator, Vault, or your cloud secret
 manager over literal in-repo manifests. `dealiot-secrets.example.env` documents the required keys.
+
+The runtime services require at least:
+
+- `MQTT_PASSWORD`
+- `KAFKA_SASL_PASSWORD`
+- `MANAGEMENT_CONSOLE_TOKEN`
+
+The Management Console keeps `/healthz` public for probes, but protects `/api/*` and mutation
+routes with `Authorization: Bearer <token>` when `MANAGEMENT_CONSOLE_TOKEN` is set.
+
+## Availability
+
+The overlay adds HorizontalPodAutoscalers for the MQTT bridge, Flink TaskManager, Airflow workers,
+and Management Console. It also adds PodDisruptionBudgets for the application tiers and uses
+topology spread constraints so replicas are not concentrated on one node.
 
 ## Network Policy
 
