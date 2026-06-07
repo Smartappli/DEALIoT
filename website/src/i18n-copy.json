@@ -117,9 +117,9 @@
     "champion_decision_kit": "Комплект за решаване на шампион",
     "decision_kit_desc": "Сравнението, бързата оценка и вътрешните шампионски материали помагат на екипите да превърнат интереса в премерено решение за приемане.",
     "open_decision_kit": "Отворете комплекта за вземане на решения",
-    "develop": "Развивайте се",
-    "contributor_community": "Contributor общност",
-    "contributor_community_desc": "Следите за принос, етикетите за наставничество, правилата за управление и дискусиите за помощ на сътрудниците улесняват присъединяването към подкрепата за разработка.",
+    "develop": "Разработвайте",
+    "contributor_community": "Общност на сътрудници",
+    "contributor_community_desc": "Пътища за принос, менторски етикети, правила за управление и дискусии за помощ улесняват включването в разработката.",
     "start_contributing": "Започнете да допринасяте"
   },
   "hr": {
@@ -240,9 +240,9 @@
     "champion_decision_kit": "Komplet odluke prvaka",
     "decision_kit_desc": "Usporedba, brza procjena i interni pobjednički materijali pomažu timovima pretvoriti interes u odmjerenu odluku o usvajanju.",
     "open_decision_kit": "Otvorite paket za odlučivanje",
-    "develop": "Razviti",
-    "contributor_community": "Contributor zajednica",
-    "contributor_community_desc": "Tragovi doprinosa, mentorske oznake, pravila upravljanja i rasprave o pomoći suradnika olakšavaju pridruživanje razvojnoj podršci.",
+    "develop": "Razvijajte",
+    "contributor_community": "Zajednica doprinositelja",
+    "contributor_community_desc": "Staze doprinosa, mentorske oznake, pravila upravljanja i rasprave za pomoć olakšavaju uključivanje u razvoj.",
     "start_contributing": "Počnite doprinositi"
   },
   "cs": {
@@ -363,9 +363,9 @@
     "champion_decision_kit": "Sada pro rozhodování o šampionech",
     "decision_kit_desc": "Srovnání, rychlé vyhodnocení a interní materiály pro šampiony pomáhají týmům přeměnit zájem na uvážené rozhodnutí o přijetí.",
     "open_decision_kit": "Otevřete rozhodovací sadu",
-    "develop": "Rozvíjet",
-    "contributor_community": "Contributor komunita",
-    "contributor_community_desc": "Sledování příspěvků, mentorské štítky, pravidla řízení a přispěvatel pomáhají diskusím usnadnit zapojení do podpory rozvoje.",
+    "develop": "Vyvíjet",
+    "contributor_community": "Komunita přispěvatelů",
+    "contributor_community_desc": "Cesty příspěvků, mentorská označení, pravidla správy a diskuse pro pomoc usnadňují zapojení do vývoje.",
     "start_contributing": "Začněte přispívat"
   },
   "da": {
@@ -486,9 +486,9 @@
     "champion_decision_kit": "Champion beslutningssæt",
     "decision_kit_desc": "Sammenligning, hurtig evaluering og internt mestermateriale hjælper teams med at konvertere interesse til en afmålt beslutning om adoption.",
     "open_decision_kit": "Åbn beslutningssættet",
-    "develop": "Udvikle",
-    "contributor_community": "Contributor fællesskab",
-    "contributor_community_desc": "Bidragsspor, mentormærker, styringsregler og bidragydere hjælper diskussioner med at gøre udviklingsstøtte nemmere at deltage.",
+    "develop": "Udvikl",
+    "contributor_community": "Bidragsyderfællesskab",
+    "contributor_community_desc": "Bidragsspor, mentorlabels, styringsregler og hjælpediskussioner gør det lettere at deltage i udviklingen.",
     "start_contributing": "Begynd at bidrage"
   },
   "nl": {
@@ -732,10 +732,10 @@
     "champion_decision_kit": "Tšempioni otsustuskomplekt",
     "decision_kit_desc": "Võrdlus, kiire hindamine ja sisemised meistermaterjalid aitavad meeskondadel muuta huvi mõõdetud vastuvõtmisotsuseks.",
     "open_decision_kit": "Avage otsustuskomplekt",
-    "develop": "Arendada",
-    "contributor_community": "Contributor kogukond",
-    "contributor_community_desc": "Kaastöörajad, juhendamissildid, juhtimisreeglid ja panustajad aitavad aruteludel arendustoetusega liitumist lihtsamaks muuta.",
-    "start_contributing": "Alustage panustamist"
+    "develop": "Arenda",
+    "contributor_community": "Kaastöötajate kogukond",
+    "contributor_community_desc": "Panustamise rajad, mentorluse sildid, juhtimisreeglid ja abiarutelud muudavad arendusse panustamise lihtsamaks.",
+    "start_contributing": "Alusta panustamist"
   },
   "fi": {
     "meta_description": "DEAL esittelee DEALIoT, DEALHost ja DEALData: tuotantovalmiin IoT-tietoalustan, hallitun isännöintipolun ja tiedonhallintakerroksen skaalautuville kenttätietoekosysteemeille.",
@@ -856,8 +856,8 @@
     "decision_kit_desc": "Vertailu, nopea arviointi ja sisäiset mestarimateriaalit auttavat tiimejä muuttamaan kiinnostuksen harkituksi adoptiopäätökseksi.",
     "open_decision_kit": "Avaa päätöspaketti",
     "develop": "Kehitä",
-    "contributor_community": "Contributor yhteisö",
-    "contributor_community_desc": "Lahjoitusreitit, mentorointimerkit, hallintosäännöt ja avustajat auttavat keskusteluja helpottamaan kehitystukeen liittymistä.",
+    "contributor_community": "Osallistujayhteisö",
+    "contributor_community_desc": "Osallistumispolut, mentorointimerkinnät, hallintasäännöt ja avustuskeskustelut helpottavat kehitystyöhön liittymistä.",
     "start_contributing": "Aloita osallistuminen"
   },
   "fr": {
@@ -1224,10 +1224,10 @@
     "champion_decision_kit": "Κιτ απόφασης πρωταθλητή",
     "decision_kit_desc": "Η σύγκριση, η γρήγορη αξιολόγηση και το εσωτερικό υλικό πρωταθλητή βοηθούν τις ομάδες να μετατρέψουν το ενδιαφέρον σε μια μετρημένη απόφαση υιοθεσίας.",
     "open_decision_kit": "Ανοίξτε το κιτ απόφασης",
-    "develop": "Αναπτύξτε",
-    "contributor_community": "Contributor κοινότητα",
-    "contributor_community_desc": "Τα κομμάτια συνεισφοράς, οι ετικέτες καθοδήγησης, οι κανόνες διακυβέρνησης και οι συζητήσεις βοηθούν τους συνεργάτες να κάνουν πιο εύκολη τη συμμετοχή στην υποστήριξη ανάπτυξης.",
-    "start_contributing": "Αρχίστε να συνεισφέρετε"
+    "develop": "Ανάπτυξη",
+    "contributor_community": "Κοινότητα συνεισφερόντων",
+    "contributor_community_desc": "Διαδρομές συνεισφοράς, ετικέτες καθοδήγησης, κανόνες διακυβέρνησης και συζητήσεις βοήθειας κάνουν ευκολότερη τη συμμετοχή στην ανάπτυξη.",
+    "start_contributing": "Ξεκινήστε να συνεισφέρετε"
   },
   "hu": {
     "meta_description": "A DEAL bemutatja a DEALIoT, DEALHost és DEALData kifejezéseket: termelésre kész IoT-adatplatformot, felügyelt tárhely-útvonalat és adatirányítási réteget a méretezhető terepi adat-ökoszisztémákhoz.",
@@ -1347,10 +1347,10 @@
     "champion_decision_kit": "Bajnok döntési készlet",
     "decision_kit_desc": "Az összehasonlítás, a gyors értékelés és a belső bajnoki anyagok segítenek a csapatoknak abban, hogy az érdeklődést mérsékelt elfogadási döntéssé alakítsák.",
     "open_decision_kit": "Nyissa meg a döntési csomagot",
-    "develop": "Fejleszteni",
-    "contributor_community": "Contributor közösség",
-    "contributor_community_desc": "A hozzájárulási pályák, a mentori címkék, az irányítási szabályok és a közreműködők segítik a megbeszéléseket, amelyek megkönnyítik a fejlesztési támogatáshoz való csatlakozást.",
-    "start_contributing": "Kezdje el a közreműködést"
+    "develop": "Fejlesztés",
+    "contributor_community": "Közreműködői közösség",
+    "contributor_community_desc": "Hozzájárulási útvonalak, mentorálási címkék, irányítási szabályok és segítségkérő beszélgetések könnyítik meg a fejlesztés támogatását.",
+    "start_contributing": "Kezdj el hozzájárulni"
   },
   "ga": {
     "meta_description": "Cuireann DEAL DEALIoT, DEALHost agus DEALData i láthair: ardán sonraí IoT atá réidh le haghaidh táirgeadh, cosán óstála bainistithe agus ciseal rialachais sonraí le haghaidh éiceachórais sonraí allamuigh inscálaithe.",
@@ -1470,10 +1470,10 @@
     "champion_decision_kit": "Foireann cinneadh Champion",
     "decision_kit_desc": "Cuidíonn comparáid, meastóireacht thapa agus ábhair curadh inmheánacha le foirne ús a thiontú ina chinneadh glactha tomhaiste.",
     "open_decision_kit": "Oscail an trealamh cinntí",
-    "develop": "a fhorbairt",
-    "contributor_community": "Contributor pobail",
-    "contributor_community_desc": "Cuidíonn rianta ranníocaíochta, lipéid mheantóireachta, rialacha rialachais agus pléití ranníocóirí le tacaíocht forbartha a dhéanamh níos éasca le bheith páirteach.",
-    "start_contributing": "Tosaigh ag cur"
+    "develop": "Forbair",
+    "contributor_community": "Pobal rannpháirtithe",
+    "contributor_community_desc": "Déanann conairí rannpháirtíochta, lipéid mheantóireachta, rialacha rialachais agus plé cabhrach é níos éasca páirt a ghlacadh san fhorbairt.",
+    "start_contributing": "Tosaigh ag rannchuidiú"
   },
   "it": {
     "meta_description": "DEAL presenta DEALIoT, DEALHost e DEALData: una piattaforma dati IoT pronta per la produzione, percorso di hosting gestito e livello di governance dei dati per ecosistemi di dati sul campo scalabili.",
@@ -1716,10 +1716,10 @@
     "champion_decision_kit": "Čempionu lēmumu komplekts",
     "decision_kit_desc": "Salīdzinājums, ātrs novērtējums un iekšējie čempionu materiāli palīdz komandām pārvērst interesi par izsvērtu pieņemšanas lēmumu.",
     "open_decision_kit": "Atveriet lēmumu komplektu",
-    "develop": "Attīstīt",
-    "contributor_community": "Contributor kopiena",
-    "contributor_community_desc": "Ieguldījumu ieraksti, mentoringa iezīmes, pārvaldības noteikumi un līdzstrādnieki palīdz diskusijām atvieglot pievienošanos attīstības atbalstam.",
-    "start_contributing": "Sāciet sniegt ieguldījumu"
+    "develop": "Izstrādāt",
+    "contributor_community": "Līdzstrādnieku kopiena",
+    "contributor_community_desc": "Ieguldījumu ceļi, mentorēšanas etiķetes, pārvaldības noteikumi un palīdzības diskusijas atvieglo iesaisti izstrādē.",
+    "start_contributing": "Sāciet dot ieguldījumu"
   },
   "lt": {
     "meta_description": "DEAL pristato DEALIoT, DEALHost ir DEALData: gamybai paruoštą IoT duomenų platformą, valdomą prieglobos kelią ir duomenų valdymo sluoksnį, skirtą keičiamo dydžio lauko duomenų ekosistemoms.",
@@ -1839,9 +1839,9 @@
     "champion_decision_kit": "Čempiono sprendimų rinkinys",
     "decision_kit_desc": "Palyginimas, greitas įvertinimas ir vidinė čempionų medžiaga padeda komandoms paversti susidomėjimą išmatuotu sprendimu.",
     "open_decision_kit": "Atidarykite sprendimų rinkinį",
-    "develop": "Tobulėti",
-    "contributor_community": "Contributor bendruomenė",
-    "contributor_community_desc": "Įnašų takeliai, mentorystės etiketės, valdymo taisyklės ir bendraautorius padeda diskusijose lengviau prisijungti prie plėtros paramos.",
+    "develop": "Kurti",
+    "contributor_community": "Prisidedančiųjų bendruomenė",
+    "contributor_community_desc": "Prisidėjimo kryptys, mentorystės žymos, valdymo taisyklės ir pagalbos diskusijos palengvina įsitraukimą į kūrimą.",
     "start_contributing": "Pradėkite prisidėti"
   },
   "mt": {
@@ -1963,9 +1963,9 @@
     "decision_kit_desc": "It-tqabbil, l-evalwazzjoni rapida u l-materjali taċ-ċampjins interni jgħinu lit-timijiet jikkonvertu l-interess f’deċiżjoni ta’ adozzjoni mkejla.",
     "open_decision_kit": "Iftaħ il-kit tad-deċiżjoni",
     "develop": "Żviluppa",
-    "contributor_community": "Contributor komunità",
-    "contributor_community_desc": "Il-binarji tal-kontribuzzjoni, it-tikketti tal-mentoring, ir-regoli ta’ governanza u d-diskussjonijiet tal-kontributuri jgħinu biex l-appoġġ tal-iżvilupp ikun aktar faċli biex tissieħeb.",
-    "start_contributing": "Ibda tikkontribwixxi"
+    "contributor_community": "Komunità ta’ kontributuri",
+    "contributor_community_desc": "Mogħdijiet ta’ kontribut, tikketti ta’ mentoring, regoli ta’ governanza u diskussjonijiet ta’ għajnuna jagħmlu l-appoġġ għall-iżvilupp aktar aċċessibbli.",
+    "start_contributing": "Ibda kkontribwixxi"
   },
   "pl": {
     "meta_description": "DEAL przedstawia DEALIoT, DEALHost i DEALData: gotową do produkcji platformę danych IoT, zarządzaną ścieżkę hostingu i warstwę zarządzania danymi dla skalowalnych ekosystemów danych terenowych.",
@@ -2085,10 +2085,10 @@
     "champion_decision_kit": "Zestaw decyzji mistrza",
     "decision_kit_desc": "Porównanie, szybka ocena i wewnętrzne materiały dla mistrzów pomagają zespołom przekształcić zainteresowanie w wyważoną decyzję o przyjęciu.",
     "open_decision_kit": "Otwórz zestaw decyzyjny",
-    "develop": "Rozwijaj się",
-    "contributor_community": "Contributor społeczność",
-    "contributor_community_desc": "Ścieżki wkładu, etykiety mentorskie, zasady zarządzania i dyskusje pomagające współautorom ułatwiają dołączenie do wsparcia rozwojowego.",
-    "start_contributing": "Zacznij wnosić swój wkład"
+    "develop": "Rozwijaj",
+    "contributor_community": "Społeczność kontrybutorów",
+    "contributor_community_desc": "Ścieżki wkładu, etykiety mentoringu, zasady zarządzania i dyskusje pomocowe ułatwiają dołączenie do rozwoju projektu.",
+    "start_contributing": "Zacznij współtworzyć"
   },
   "pt": {
     "meta_description": "DEAL apresenta DEALIoT, DEALHost e DEALData: uma plataforma de dados IoT pronta para produção, caminho de hospedagem gerenciado e camada de governança de dados para ecossistemas escalonáveis ​​de dados de campo.",
@@ -2332,8 +2332,8 @@
     "decision_kit_desc": "Comparația, evaluarea rapidă și materialele interne de campion ajută echipele să transforme interesul într-o decizie de adoptare măsurată.",
     "open_decision_kit": "Deschideți trusa de decizie",
     "develop": "Dezvoltați",
-    "contributor_community": "Contributor comunitate",
-    "contributor_community_desc": "Piesele de contribuție, etichetele de mentorat, regulile de guvernare și discuțiile contribuitorilor ajută la participarea la sprijinul pentru dezvoltare.",
+    "contributor_community": "Comunitatea contributorilor",
+    "contributor_community_desc": "Traseele de contribuție, etichetele de mentorat, regulile de guvernanță și discuțiile de ajutor facilitează implicarea în dezvoltare.",
     "start_contributing": "Începeți să contribuiți"
   },
   "sk": {
@@ -2454,9 +2454,9 @@
     "champion_decision_kit": "Súprava na rozhodovanie šampiónov",
     "decision_kit_desc": "Porovnanie, rýchle vyhodnotenie a interné materiály pre šampiónov pomáhajú tímom premeniť záujem na merané rozhodnutie o prijatí.",
     "open_decision_kit": "Otvorte rozhodovaciu súpravu",
-    "develop": "Rozvíjať",
-    "contributor_community": "Contributor komunita",
-    "contributor_community_desc": "Stopy príspevkov, mentorské menovky, pravidlá riadenia a prispievateľ pomáhajú diskusiám zjednodušiť zapojenie sa do podpory rozvoja.",
+    "develop": "Vyvíjať",
+    "contributor_community": "Komunita prispievateľov",
+    "contributor_community_desc": "Cesty príspevkov, mentorské štítky, pravidlá správy a diskusie o pomoci uľahčujú zapojenie do vývoja.",
     "start_contributing": "Začnite prispievať"
   },
   "sl": {
@@ -2577,9 +2577,9 @@
     "champion_decision_kit": "Odločitveni komplet za prvaka",
     "decision_kit_desc": "Primerjava, hitra ocena in materiali za notranje prvake pomagajo ekipam spremeniti zanimanje v premišljeno odločitev o posvojitvi.",
     "open_decision_kit": "Odprite komplet za odločanje",
-    "develop": "Razviti",
-    "contributor_community": "Contributor skupnost",
-    "contributor_community_desc": "Sledi prispevkov, mentorske oznake, pravila upravljanja in razprave o pomoči sodelavcev olajšajo pridružitev razvojni podpori.",
+    "develop": "Razvijaj",
+    "contributor_community": "Skupnost prispevkarjev",
+    "contributor_community_desc": "Poti prispevanja, mentorske oznake, pravila upravljanja in razprave za pomoč olajšajo vključitev v razvoj.",
     "start_contributing": "Začnite prispevati"
   },
   "es": {
@@ -2824,8 +2824,8 @@
     "decision_kit_desc": "Jämförelse, snabb utvärdering och internt mästarmaterial hjälper team att omvandla intresse till ett avvägt adoptionsbeslut.",
     "open_decision_kit": "Öppna beslutspaketet",
     "develop": "Utveckla",
-    "contributor_community": "Contributor community",
-    "contributor_community_desc": "Bidragsspår, mentorskapsetiketter, styrningsregler och bidragsgivare hjälper diskussioner att göra utvecklingsstöd lättare att gå med.",
+    "contributor_community": "Bidragsgemenskap",
+    "contributor_community_desc": "Bidragsspår, mentorsetiketter, styrningsregler och hjälpforum gör det enklare att delta i utvecklingsstödet.",
     "start_contributing": "Börja bidra"
   }
 }
