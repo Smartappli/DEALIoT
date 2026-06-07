@@ -17,10 +17,11 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: dealiot-mqtt-kafka-bridge:ci
-  DEALIOT_MANAGEMENT_CONSOLE_IMAGE: ghcr.io/smartappli/dealiot-management-console:local-placeholder
-  DEALIOT_FLINK_PYFLINK_IMAGE: ghcr.io/smartappli/dealiot-flink-pyflink:local-placeholder
-  DEALIOT_ORCHESTRATION_IMAGE: ghcr.io/smartappli/dealiot-orchestration:local-placeholder
+  DEALIOT_SMOKE_BRIDGE_IMAGE: dealiot-mqtt-kafka-bridge:ci
+  DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-${{ github.sha }}
+  DEALIOT_MANAGEMENT_CONSOLE_IMAGE: ghcr.io/smartappli/dealiot-management-console:sha-${{ github.sha }}
+  DEALIOT_FLINK_PYFLINK_IMAGE: ghcr.io/smartappli/dealiot-flink-pyflink:sha-${{ github.sha }}
+  DEALIOT_ORCHESTRATION_IMAGE: ghcr.io/smartappli/dealiot-orchestration:sha-${{ github.sha }}
   KAFKA_BOOTSTRAP_SERVERS: kafka1.ci.internal:9092,kafka2.ci.internal:9092,kafka3.ci.internal:9092
   KAFKA_SASL_USERNAME: dealiot_ci
   KAFKA_SASL_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-kafka-sasl
@@ -50,10 +51,15 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Build bridge image for smoke deployment
-        run: docker build -t "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}" -f mqtt-kafka-bridge/Dockerfile .
+        run: docker build -t "${DEALIOT_SMOKE_BRIDGE_IMAGE}" -f mqtt-kafka-bridge/Dockerfile .
 
       - name: Render production Swarm stack
-        run: docker stack config -c deploy/swarm/dealiot-stack.yml >/tmp/dealiot-swarm-rendered.yml
+        run: |
+          docker stack config -c deploy/swarm/dealiot-stack.yml >/tmp/dealiot-swarm-rendered.yml
+          if grep -E "ghcr.io/smartappli/.*:(latest|local-placeholder)|REPLACE_WITH" /tmp/dealiot-swarm-rendered.yml; then
+            echo "Production Swarm stack must render immutable release images only." >&2
+            exit 1
+          fi
 
       - name: Initialize Swarm
         run: docker swarm init
@@ -64,7 +70,9 @@ jobs:
           printf '%s' "${KAFKA_SASL_PASSWORD}" | docker secret create kafka_sasl_password -
 
       - name: Deploy Swarm smoke stack
-        run: docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml dealiot-smoke
+        run: |
+          DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE="${DEALIOT_SMOKE_BRIDGE_IMAGE}" \
+            docker stack deploy -c deploy/swarm/dealiot-smoke-stack.yml dealiot-smoke
 
       - name: Wait for Swarm smoke service
         run: |
@@ -142,8 +150,8 @@ jobs:
 
       - name: Build and load bridge image
         run: |
-          docker build -t "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}" -f mqtt-kafka-bridge/Dockerfile .
-          kind load docker-image "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE}" --name dealiot-ci
+          docker build -t "${DEALIOT_SMOKE_BRIDGE_IMAGE}" -f mqtt-kafka-bridge/Dockerfile .
+          kind load docker-image "${DEALIOT_SMOKE_BRIDGE_IMAGE}" --name dealiot-ci
 
       - name: Deploy Kubernetes smoke overlay
         run: kubectl apply -k deploy/kubernetes/overlays/ci-smoke
