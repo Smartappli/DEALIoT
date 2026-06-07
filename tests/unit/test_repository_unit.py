@@ -548,9 +548,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn('type="application/ld+json"', index_html)
         self.assertIn("What is DEALIoT?", index_html)
         self.assertIn("Qu'est-ce que DEALIoT ?", french_html)
-        self.assertIn("@media (max-width: 920px)", styles_css)
-        self.assertIn("Fraunces", styles_css)
-        self.assertIn("Space Grotesk", styles_css)
+        self.assertIn("@media (max-width: 1120px)", styles_css)
+        self.assertIn("@media (max-width: 720px)", styles_css)
+        self.assertIn("Bricolage Grotesque", styles_css)
+        self.assertIn("Instrument Serif", styles_css)
+        self.assertIn("JetBrains Mono", styles_css)
 
         for forbidden_fragment in ("innerHTML", "outerHTML", "document.write", "eval("):
             self.assertNotIn(forbidden_fragment, app_js)
@@ -603,7 +605,7 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertEqual("/", manifest["start_url"])
         self.assertEqual("/", manifest["scope"])
         self.assertEqual("en-US", manifest["lang"])
-        self.assertEqual("#0b1110", manifest["theme_color"])
+        self.assertEqual("#050807", manifest["theme_color"])
         self.assertEqual("standalone", manifest["display"])
         self.assertIn("assets/icon-192.png", manifest["icons"][0]["src"])
         self.assertIn("assets/icon-512.png", manifest["icons"][1]["src"])

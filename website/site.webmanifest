@@ -9,8 +9,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#eef7ef",
-  "theme_color": "#0b1110",
+  "background_color": "#050807",
+  "theme_color": "#050807",
   "categories": [
     "business",
     "productivity",
