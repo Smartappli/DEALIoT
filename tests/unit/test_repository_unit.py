@@ -540,7 +540,9 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("Operate field data like a production system.", index_html)
         self.assertIn("Industrialisez vos donn\u00e9es IoT", french_html)
         self.assertIn("Star on GitHub", index_html)
-        self.assertIn("language-panel", index_html)
+        self.assertIn("language-select", index_html)
+        self.assertIn("data-language-select", index_html)
+        self.assertIn("navigateToSelectedLanguage", app_js)
         self.assertIn("https://github.com/Smartappli/DEALIoT", index_html)
         self.assertIn("mailto:contact@smartappli.com", index_html)
         self.assertIn("actions/upload-pages-artifact@", workflow)
@@ -685,6 +687,36 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertEqual("\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac", names["el"])
         self.assertEqual("Fran\u00e7ais", names["fr"])
 
+        flag_regions = {
+            "en-US": "US",
+            "bg": "BG",
+            "hr": "HR",
+            "cs": "CZ",
+            "da": "DK",
+            "nl": "NL",
+            "et": "EE",
+            "fi": "FI",
+            "fr": "FR",
+            "de": "DE",
+            "el": "GR",
+            "hu": "HU",
+            "ga": "IE",
+            "it": "IT",
+            "lv": "LV",
+            "lt": "LT",
+            "mt": "MT",
+            "pl": "PL",
+            "pt": "PT",
+            "ro": "RO",
+            "sk": "SK",
+            "sl": "SI",
+            "es": "ES",
+            "sv": "SE",
+        }
+
+        def flag_for(region: str) -> str:
+            return "".join(chr(0x1F1E6 + ord(letter) - ord("A")) for letter in region)
+
         for language in languages:
             language_path = language["path"].strip("/")
             page_path = (
@@ -694,11 +726,21 @@ class RepositoryUnitTests(unittest.TestCase):
             )
             html = page_path.read_text(encoding="utf-8")
             localized_url = f"https://smartappli.io/{language_path + '/' if language_path else ''}"
+            expected_flag = flag_for(flag_regions[language["hreflang"]])
+            self.assertEqual(expected_flag, language["flag"])
             self.assertIn(f'<html lang="{language["hreflang"]}">', html)
             self.assertIn(f'<link rel="canonical" href="{localized_url}">', html)
             self.assertEqual(25, html.count('rel="alternate"'))
             self.assertIn("language-menu", html)
-            self.assertIn("language-panel", html)
+            self.assertIn("language-select", html)
+            self.assertIn("data-language-select", html)
+            self.assertNotIn("language-panel", html)
+            self.assertNotIn("<details", html)
+            self.assertIn(
+                f'<option value="{localized_url}" lang="{language["hreflang"]}" selected>'
+                f'{expected_flag} {language["name"]}</option>',
+                html,
+            )
             self.assertIn("Star on GitHub", html)
             self.assertNotIn("????", html)
 
