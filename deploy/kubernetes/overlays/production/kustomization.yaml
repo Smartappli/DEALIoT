@@ -62,7 +62,7 @@ patches:
             topologySpreadConstraints:
               - maxSkew: 1
                 topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: ScheduleAnyway
+                whenUnsatisfiable: DoNotSchedule
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: mqtt-kafka-bridge
@@ -80,7 +80,7 @@ patches:
             topologySpreadConstraints:
               - maxSkew: 1
                 topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: ScheduleAnyway
+                whenUnsatisfiable: DoNotSchedule
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: apicurio-registry
@@ -98,7 +98,7 @@ patches:
             topologySpreadConstraints:
               - maxSkew: 1
                 topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: ScheduleAnyway
+                whenUnsatisfiable: DoNotSchedule
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: flink-taskmanager
@@ -116,7 +116,7 @@ patches:
             topologySpreadConstraints:
               - maxSkew: 1
                 topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: ScheduleAnyway
+                whenUnsatisfiable: DoNotSchedule
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: airflow
@@ -135,7 +135,7 @@ patches:
             topologySpreadConstraints:
               - maxSkew: 1
                 topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: ScheduleAnyway
+                whenUnsatisfiable: DoNotSchedule
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: airflow
@@ -154,7 +154,7 @@ patches:
             topologySpreadConstraints:
               - maxSkew: 1
                 topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: ScheduleAnyway
+                whenUnsatisfiable: DoNotSchedule
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: management-console
