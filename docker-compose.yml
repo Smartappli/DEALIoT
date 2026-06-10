@@ -331,7 +331,7 @@ services:
     command: ["haproxy", "-W", "-db", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
 
   pgbouncer-rw:
-    image: edoburu/pgbouncer:v1.25.1-p0
+    image: edoburu/pgbouncer:v1.25.2-p0
     container_name: pgbouncer-rw
     hostname: pgbouncer-rw
     restart: unless-stopped
@@ -361,7 +361,7 @@ services:
     entrypoint: ["/bin/sh", "/scripts/start-pgbouncer-rw.sh"]
 
   pgbouncer-ro:
-    image: edoburu/pgbouncer:v1.25.1-p0
+    image: edoburu/pgbouncer:v1.25.2-p0
     container_name: pgbouncer-ro
     hostname: pgbouncer-ro
     restart: unless-stopped
