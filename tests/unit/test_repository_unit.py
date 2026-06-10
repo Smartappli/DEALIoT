@@ -504,6 +504,12 @@ class RepositoryUnitTests(unittest.TestCase):
     def test_codacy_excludes_known_scanner_false_positives(self) -> None:
         codacy_config = (REPO_ROOT / ".codacy.yaml").read_text(encoding="utf-8")
 
+        self.assertTrue(codacy_config.startswith("---\n"))
+        self.assertIn("opengrep:", codacy_config)
+        self.assertIn("bandit:", codacy_config)
+        self.assertIn("pylintpython3:", codacy_config)
+        self.assertIn("management-console/static/app.js", codacy_config)
+        self.assertIn("management-console/management_console/app.py", codacy_config)
         self.assertIn(".github/ISSUE_TEMPLATE/*.yml", codacy_config)
         self.assertIn(".github/workflows/sonarqube.yml", codacy_config)
 
