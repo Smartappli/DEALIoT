@@ -331,7 +331,7 @@ services:
     command: ["haproxy", "-W", "-db", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]
 
   pgbouncer-rw:
-    image: edoburu/pgbouncer:v1.25.1-p0
+    image: edoburu/pgbouncer:v1.25.2-p0
     container_name: pgbouncer-rw
     hostname: pgbouncer-rw
     restart: unless-stopped
@@ -361,7 +361,7 @@ services:
     entrypoint: ["/bin/sh", "/scripts/start-pgbouncer-rw.sh"]
 
   pgbouncer-ro:
-    image: edoburu/pgbouncer:v1.25.1-p0
+    image: edoburu/pgbouncer:v1.25.2-p0
     container_name: pgbouncer-ro
     hostname: pgbouncer-ro
     restart: unless-stopped
@@ -1109,7 +1109,7 @@ services:
         max-file: "3"
 
   seaweedfs-init:
-    image: amazon/aws-cli:2.34.63
+    image: amazon/aws-cli:2.35.1
     container_name: seaweedfs-init
     restart: "no"
     depends_on:
@@ -1809,7 +1809,7 @@ services:
       - orchestration_net
 
   apicurio-registry-ui:
-    image: apicurio/apicurio-registry-ui:3.2.5
+    image: apicurio/apicurio-registry-ui:3.3.0
     container_name: apicurio-registry-ui
     hostname: apicurio-registry-ui
     restart: unless-stopped
