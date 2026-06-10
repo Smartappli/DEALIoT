@@ -1,5 +1,7 @@
 exclude_paths:
   - ".github/ISSUE_TEMPLATE/*.yml"
+  # Codacy flags the pinned SonarSource action commit as a SonarQube API key.
+  - ".github/workflows/sonarqube.yml"
 
 engines:
   prospector:

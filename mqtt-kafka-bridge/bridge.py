@@ -417,7 +417,11 @@ class HealthHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(payload)
 
-    def log_message(self, message_format: str, *args: Any) -> None:
+    def log_message(  # pylint: disable=arguments-differ
+        self,
+        message_format: str,
+        *args: Any,
+    ) -> None:
         LOGGER.debug("health probe: %s", message_format % args)
 
 

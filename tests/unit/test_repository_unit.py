@@ -501,10 +501,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertIn("--cov-fail-under=90", workflow)
         self.assertIn("fail_under = 90", pyproject)
 
-    def test_codacy_excludes_issue_template_unicode_false_positives(self) -> None:
+    def test_codacy_excludes_known_scanner_false_positives(self) -> None:
         codacy_config = (REPO_ROOT / ".codacy.yaml").read_text(encoding="utf-8")
 
         self.assertIn(".github/ISSUE_TEMPLATE/*.yml", codacy_config)
+        self.assertIn(".github/workflows/sonarqube.yml", codacy_config)
 
     def test_management_console_frontend_avoids_unsafe_dom_sinks(self) -> None:
         app_js = (REPO_ROOT / "management-console" / "static" / "app.js").read_text(
@@ -800,6 +801,10 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertNotIn("xml.etree", openaire_py)
         self.assertNotIn("from xml", openaire_py)
         self.assertIn("xml_escape_text", openaire_py)
+
+        bridge_py = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
+        self.assertIn("pylint: disable=arguments-differ", app_py)
+        self.assertIn("pylint: disable=arguments-differ", bridge_py)
 
     def test_github_metadata_has_no_hidden_unicode_controls(self) -> None:
         scanned_paths = [
