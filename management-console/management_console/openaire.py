@@ -192,12 +192,7 @@ def build_openaire_metadata(
 
 
 def xml_escape_text(value: Any) -> str:
-    return (
-        str(value)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def xml_escape_attr(value: Any) -> str:
