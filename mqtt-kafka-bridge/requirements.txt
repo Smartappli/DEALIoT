@@ -1,6 +1,6 @@
-kafka-python==3.0.0 \
-    --hash=sha256:c9bf82fdf8a6d9aae12b3ab1f86968d88080b96bb71e1c6184ec3a2239b6c6d4 \
-    --hash=sha256:d5fd1d3ebb0fcdc24c32bdbeb0b59812fe0cfbe395502584ce53f11742b8649d
+kafka-python==3.0.1 \
+    --hash=sha256:33585f8cc7003f5ea766c78b457453f2fa19c9b5409854af3b235b9270698a3d \
+    --hash=sha256:e4d4fd6cedefe01352faa0116ee79eb28faf99342880ced3d7444fb989c624c9
 lz4==4.4.5 \
     --hash=sha256:451039b609b9a88a934800b5fc6ee401c89ad9c175abf2f4d9f8b2e4ef1afc64
 paho-mqtt==2.1.0 \
