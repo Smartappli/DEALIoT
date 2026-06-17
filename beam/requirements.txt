@@ -4,8 +4,9 @@ boto3==1.43.31 \
 botocore==1.43.30 \
     --hash=sha256:19ed560cb35ae43bf010d37da429a553c07063bf7efea0f2cb53be8a78d3e3d5 \
     --hash=sha256:26b1dded84d89b396180916f56900bd2ab1c0d545a66d1d2c3eeb40f772935b2
-certifi==2026.5.20 \
-    --hash=sha256:3c52e209ba0a4ad7aebe60436a4ab349c39e1e602e8c134221e546902ad25897
+certifi==2026.6.17 \
+    --hash=sha256:024c88eeec92ca068db80f02b8b07c9cef7b9fe261d1d535abfd5abd6f6af432 \
+    --hash=sha256:2227dcbaafe0d2f59279d1762ddddc37783ed4354594f194ffc31d20f41fc3db
 charset-normalizer==3.4.7 \
     --hash=sha256:e044c39e41b92c845bc815e5ae4230804e8e7bc29e399b0437d64222d92809dd
 idna==3.18 \
