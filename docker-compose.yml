@@ -1745,7 +1745,7 @@ services:
       - patroni_frontend
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:v0.57.0
+    image: ghcr.io/google/cadvisor:v0.60.1
     container_name: cadvisor
     hostname: cadvisor
     restart: unless-stopped
