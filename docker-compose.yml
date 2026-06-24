@@ -450,7 +450,7 @@ services:
       start_period: 60s
 
   kafka1:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka1
     hostname: kafka1
     restart: unless-stopped
@@ -471,7 +471,7 @@ services:
       start_period: 30s
 
   kafka2:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka2
     hostname: kafka2
     restart: unless-stopped
@@ -492,7 +492,7 @@ services:
       start_period: 30s
 
   kafka3:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka3
     hostname: kafka3
     restart: unless-stopped
@@ -513,7 +513,7 @@ services:
       start_period: 30s
 
   kafka-init:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka-init
     depends_on:
       kafka1:
