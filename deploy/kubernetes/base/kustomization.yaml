@@ -8,6 +8,7 @@ resources:
   - serviceaccount.yaml
   - configmap.yaml
   - mqtt-kafka-bridge.yaml
+  - stream-normalizer.yaml
   - apicurio-registry.yaml
   - flink-session.yaml
   - airflow.yaml
@@ -15,6 +16,8 @@ resources:
 
 images:
   - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge
+    newTag: local-placeholder
+  - name: ghcr.io/smartappli/dealiot-stream-normalizer
     newTag: local-placeholder
   - name: ghcr.io/smartappli/dealiot-management-console
     newTag: local-placeholder

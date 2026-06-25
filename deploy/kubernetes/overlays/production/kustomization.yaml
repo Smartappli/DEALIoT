@@ -26,6 +26,8 @@ labels:
 images:
   - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge
     newTag: sha-REPLACE_WITH_RELEASE_SHA
+  - name: ghcr.io/smartappli/dealiot-stream-normalizer
+    newTag: sha-REPLACE_WITH_RELEASE_SHA
   - name: ghcr.io/smartappli/dealiot-management-console
     newTag: sha-REPLACE_WITH_RELEASE_SHA
   - name: ghcr.io/smartappli/dealiot-flink-pyflink
@@ -37,6 +39,8 @@ images:
 
 replicas:
   - name: mqtt-kafka-bridge
+    count: 3
+  - name: stream-normalizer
     count: 3
   - name: apicurio-registry
     count: 3
@@ -86,6 +90,24 @@ patches:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: apicurio-registry
+  - target:
+      kind: Deployment
+      name: stream-normalizer
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: stream-normalizer
+      spec:
+        template:
+          spec:
+            topologySpreadConstraints:
+              - maxSkew: 1
+                topologyKey: kubernetes.io/hostname
+                whenUnsatisfiable: DoNotSchedule
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: stream-normalizer
   - target:
       kind: Deployment
       name: flink-taskmanager
