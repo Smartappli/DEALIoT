@@ -1,3 +1,11 @@
+FROM rust:1.85-bookworm AS runner-builder
+
+WORKDIR /src
+COPY Cargo.toml Cargo.lock ./
+COPY wildfi-decoder-runner/Cargo.toml wildfi-decoder-runner/Cargo.toml
+COPY wildfi-decoder-runner/src wildfi-decoder-runner/src
+RUN cargo build --release --locked -p dealiot-wildfi-decoder-runner
+
 FROM eclipse-temurin:21-jre-jammy AS source
 
 ARG WILDFI_DECODER_GIT_REF=b4002eb9a6111de140b95e5a35c3f3bd552d51be
@@ -35,7 +43,9 @@ COPY --from=source --chown=wildfi:wildfi \
     /src/WildFiDecoder/WildFiDecoderMultiThreaded/WildFiDecoderStandalone.jar \
     /src/WildFiDecoder/WildFiDecoderMultiThreaded/WildFiDecoderConfig.txt \
     /opt/wildfi-decoder/
-COPY --chown=wildfi:wildfi --chmod=0555 wildfi-decoder/run-wildfi-decoder.sh /usr/local/bin/run-wildfi-decoder
+COPY --from=runner-builder --chown=wildfi:wildfi --chmod=0555 \
+    /src/target/release/run-wildfi-decoder \
+    /usr/local/bin/run-wildfi-decoder
 
 USER wildfi
 WORKDIR /work
