@@ -69,18 +69,28 @@ pub struct BridgeConfig {
 impl BridgeConfig {
     pub fn from_env() -> Result<Self, BridgeError> {
         let mqtt_port = env_u16("MQTT_PORT", 1883)?;
-        let legacy_topic = env::var("MQTT_TOPIC").ok().filter(|value| !value.trim().is_empty());
+        let legacy_topic = env::var("MQTT_TOPIC")
+            .ok()
+            .filter(|value| !value.trim().is_empty());
         let mqtt_topics_default = legacy_topic.as_deref().unwrap_or(DEFAULT_MQTT_TOPICS);
 
         Ok(Self {
             mqtt_host: env_or_default("MQTT_HOST", "vernemq1"),
             mqtt_port,
-            mqtt_username: env::var("MQTT_USERNAME").ok().filter(|value| !value.is_empty()),
+            mqtt_username: env::var("MQTT_USERNAME")
+                .ok()
+                .filter(|value| !value.is_empty()),
             mqtt_password: env_or_secret_file("MQTT_PASSWORD")?,
             mqtt_tls_enabled: bool_env("MQTT_TLS_ENABLED", mqtt_port == MQTT_TLS_DEFAULT_PORT),
-            mqtt_tls_ca_file: env::var("MQTT_TLS_CA_FILE").ok().filter(|value| !value.is_empty()),
-            mqtt_tls_cert_file: env::var("MQTT_TLS_CERT_FILE").ok().filter(|value| !value.is_empty()),
-            mqtt_tls_key_file: env::var("MQTT_TLS_KEY_FILE").ok().filter(|value| !value.is_empty()),
+            mqtt_tls_ca_file: env::var("MQTT_TLS_CA_FILE")
+                .ok()
+                .filter(|value| !value.is_empty()),
+            mqtt_tls_cert_file: env::var("MQTT_TLS_CERT_FILE")
+                .ok()
+                .filter(|value| !value.is_empty()),
+            mqtt_tls_key_file: env::var("MQTT_TLS_KEY_FILE")
+                .ok()
+                .filter(|value| !value.is_empty()),
             mqtt_tls_insecure_skip_verify: bool_env("MQTT_TLS_INSECURE_SKIP_VERIFY", false),
             mqtt_topics: csv_env_or_default("MQTT_TOPICS", mqtt_topics_default),
             wildfi_topic_prefixes: csv_env_or_default("WILDFI_TOPIC_PREFIXES", "wildfi,wild-fi"),
@@ -145,7 +155,10 @@ pub fn env_or_secret_file(name: &str) -> Result<Option<String>, BridgeError> {
     };
     let secret_path = fs::canonicalize(secret_file)?;
     let allowed = allowed_secret_directories()?;
-    if !allowed.iter().any(|directory| secret_path.starts_with(directory)) {
+    if !allowed
+        .iter()
+        .any(|directory| secret_path.starts_with(directory))
+    {
         return Err(BridgeError::Config(format!(
             "{name}_FILE must point to an allowed secret directory"
         )));
@@ -196,7 +209,11 @@ pub fn normalized_timestamp(value: Option<&Value>, fallback: &str) -> String {
         Some(Value::Number(number)) => number.as_f64().map_or_else(
             || fallback.to_string(),
             |raw| {
-                let seconds = if raw > UNIX_MILLISECONDS_THRESHOLD { raw / 1000.0 } else { raw };
+                let seconds = if raw > UNIX_MILLISECONDS_THRESHOLD {
+                    raw / 1000.0
+                } else {
+                    raw
+                };
                 let whole = seconds.trunc() as i64;
                 let nanos = ((seconds.fract()) * 1_000_000_000.0) as u32;
                 Utc.timestamp_opt(whole, nanos)
@@ -226,21 +243,38 @@ pub fn pick_kafka_topic(topic: &str, default_topic: &str, wildfi_prefixes: &[Str
     let lowered = topic.to_ascii_lowercase();
     let patterns = [
         (RAW_GPS_TOPIC, vec!["gps", "/gnss/", "rawgps"]),
-        (RAW_VIDEO3D_META_TOPIC, vec!["video3d", "/stereo-video/", "/volumetric-video/"]),
-        (RAW_VIDEO2D_META_TOPIC, vec!["video2d", "/video/", "/camera-stream/"]),
-        (RAW_IMAGE2D_META_TOPIC, vec!["image2d", "/camera/", "/image/"]),
-        (RAW_IMAGE3D_META_TOPIC, vec!["image3d", "/lidar/", "/pointcloud/"]),
+        (
+            RAW_VIDEO3D_META_TOPIC,
+            vec!["video3d", "/stereo-video/", "/volumetric-video/"],
+        ),
+        (
+            RAW_VIDEO2D_META_TOPIC,
+            vec!["video2d", "/video/", "/camera-stream/"],
+        ),
+        (
+            RAW_IMAGE2D_META_TOPIC,
+            vec!["image2d", "/camera/", "/image/"],
+        ),
+        (
+            RAW_IMAGE3D_META_TOPIC,
+            vec!["image3d", "/lidar/", "/pointcloud/"],
+        ),
     ];
 
     for (kafka_topic, topic_patterns) in patterns {
-        if topic_patterns.iter().any(|pattern| lowered.contains(pattern)) {
+        if topic_patterns
+            .iter()
+            .any(|pattern| lowered.contains(pattern))
+        {
             return kafka_topic.to_string();
         }
     }
 
     if lowered.contains("sensor")
         || (is_wildfi_topic(topic, wildfi_prefixes)
-            && WILDFI_SENSOR_MARKERS.iter().any(|marker| lowered.contains(marker)))
+            && WILDFI_SENSOR_MARKERS
+                .iter()
+                .any(|marker| lowered.contains(marker)))
     {
         return RAW_SENSOR_TOPIC.to_string();
     }
@@ -260,7 +294,10 @@ pub fn derive_device_id(topic: &str, wildfi_prefixes: &[String]) -> String {
         }
     }
 
-    for marker in WILDFI_TOPIC_MARKERS.iter().chain(wildfi_prefixes.iter().map(String::as_str)) {
+    for marker in WILDFI_TOPIC_MARKERS
+        .iter()
+        .chain(wildfi_prefixes.iter().map(String::as_str))
+    {
         if let Some(idx) = lowered_parts.iter().position(|part| part == marker) {
             let next_idx = idx + 1;
             if let Some(value) = parts.get(next_idx) {
@@ -274,7 +311,9 @@ pub fn derive_device_id(topic: &str, wildfi_prefixes: &[String]) -> String {
         }
     }
 
-    parts.last().map_or_else(|| "unknown".to_string(), |value| (*value).to_string())
+    parts
+        .last()
+        .map_or_else(|| "unknown".to_string(), |value| (*value).to_string())
 }
 
 pub fn pick_key(topic: &str, wildfi_prefixes: &[String]) -> Vec<u8> {
@@ -303,7 +342,10 @@ pub fn build_event(msg: &MqttMessage, config: &BridgeConfig) -> BuiltEvent {
 
     let mut event = Map::new();
     if kafka_topic == RAW_SENSOR_TOPIC {
-        let payload = decoded.as_object().cloned().map_or_else(|| json!({ "value": decoded }), Value::Object);
+        let payload = decoded
+            .as_object()
+            .cloned()
+            .map_or_else(|| json!({ "value": decoded }), Value::Object);
         event.insert("device_id".to_string(), Value::String(device_id));
         event.insert("timestamp".to_string(), Value::String(timestamp));
         event.insert("ingested_at".to_string(), Value::String(ingested_at));
@@ -311,18 +353,43 @@ pub fn build_event(msg: &MqttMessage, config: &BridgeConfig) -> BuiltEvent {
     } else if kafka_topic == RAW_GPS_TOPIC {
         let payload = decoded.as_object().cloned().unwrap_or_default();
         event.insert("device_id".to_string(), Value::String(device_id));
-        event.insert("timestamp".to_string(), Value::String(pick_event_timestamp(&Value::Object(payload.clone()), &timestamp)));
+        event.insert(
+            "timestamp".to_string(),
+            Value::String(pick_event_timestamp(
+                &Value::Object(payload.clone()),
+                &timestamp,
+            )),
+        );
         event.insert("ingested_at".to_string(), Value::String(ingested_at));
-        event.insert("latitude".to_string(), payload_value(&payload, &["latitude", "latitude_deg", "lat"], json!(0.0)));
-        event.insert("longitude".to_string(), payload_value(&payload, &["longitude", "longitude_deg", "lon"], json!(0.0)));
-        event.insert("altitude_m".to_string(), payload_value(&payload, &["altitude_m", "altitude"], Value::Null));
-        event.insert("speed_m_s".to_string(), payload_value(&payload, &["speed_m_s", "speed"], Value::Null));
-        event.insert("heading_deg".to_string(), payload_value(&payload, &["heading_deg", "heading"], Value::Null));
+        event.insert(
+            "latitude".to_string(),
+            payload_value(&payload, &["latitude", "latitude_deg", "lat"], json!(0.0)),
+        );
+        event.insert(
+            "longitude".to_string(),
+            payload_value(&payload, &["longitude", "longitude_deg", "lon"], json!(0.0)),
+        );
+        event.insert(
+            "altitude_m".to_string(),
+            payload_value(&payload, &["altitude_m", "altitude"], Value::Null),
+        );
+        event.insert(
+            "speed_m_s".to_string(),
+            payload_value(&payload, &["speed_m_s", "speed"], Value::Null),
+        );
+        event.insert(
+            "heading_deg".to_string(),
+            payload_value(&payload, &["heading_deg", "heading"], Value::Null),
+        );
         event.insert("payload".to_string(), Value::Object(payload));
     } else {
         event = decoded.as_object().cloned().unwrap_or_default();
-        event.entry("device_id".to_string()).or_insert_with(|| Value::String(device_id));
-        event.entry("timestamp".to_string()).or_insert_with(|| Value::String(timestamp));
+        event
+            .entry("device_id".to_string())
+            .or_insert_with(|| Value::String(device_id));
+        event
+            .entry("timestamp".to_string())
+            .or_insert_with(|| Value::String(timestamp));
         event.insert("ingested_at".to_string(), Value::String(ingested_at));
     }
 
@@ -371,7 +438,9 @@ fn env_u16(name: &str, default: u16) -> Result<u16, BridgeError> {
         .ok()
         .filter(|value| !value.trim().is_empty())
         .map_or(Ok(default), |value| {
-            value.parse::<u16>().map_err(|_| BridgeError::Config(format!("{name} must be a valid port")))
+            value
+                .parse::<u16>()
+                .map_err(|_| BridgeError::Config(format!("{name} must be a valid port")))
         })
 }
 
@@ -392,7 +461,9 @@ fn topic_parts_lower(topic: &str) -> Vec<String> {
 }
 
 fn value_to_string(value: &Value) -> String {
-    value.as_str().map_or_else(|| value.to_string(), ToString::to_string)
+    value
+        .as_str()
+        .map_or_else(|| value.to_string(), ToString::to_string)
 }
 
 #[cfg(test)]
@@ -429,21 +500,34 @@ mod tests {
     fn routes_topics_and_derives_device_ids() {
         let config = test_config();
         assert_eq!(
-            pick_kafka_topic("devices/a1/gnss/fix", &config.default_kafka_topic, &config.wildfi_topic_prefixes),
+            pick_kafka_topic(
+                "devices/a1/gnss/fix",
+                &config.default_kafka_topic,
+                &config.wildfi_topic_prefixes
+            ),
             RAW_GPS_TOPIC
         );
         assert_eq!(
             derive_device_id("wildfi/tags/WF-001/gps", &config.wildfi_topic_prefixes),
             "WF-001"
         );
-        assert_eq!(derive_device_id("/", &config.wildfi_topic_prefixes), "unknown");
+        assert_eq!(
+            derive_device_id("/", &config.wildfi_topic_prefixes),
+            "unknown"
+        );
     }
 
     #[test]
     fn normalizes_seconds_and_milliseconds() {
         let fallback = "2026-01-01T00:00:00+00:00";
-        assert_eq!(normalized_timestamp(Some(&json!(1_704_067_200)), fallback), "2024-01-01T00:00:00+00:00");
-        assert_eq!(normalized_timestamp(Some(&json!(1_704_067_200_000i64)), fallback), "2024-01-01T00:00:00+00:00");
+        assert_eq!(
+            normalized_timestamp(Some(&json!(1_704_067_200)), fallback),
+            "2024-01-01T00:00:00+00:00"
+        );
+        assert_eq!(
+            normalized_timestamp(Some(&json!(1_704_067_200_000i64)), fallback),
+            "2024-01-01T00:00:00+00:00"
+        );
     }
 
     #[test]

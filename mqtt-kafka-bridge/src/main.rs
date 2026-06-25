@@ -70,11 +70,17 @@ async fn run_bridge(config: &BridgeConfig) -> Result<(), BridgeError> {
                         Timeout::Never,
                     )
                     .await
-                    .map_err(|(error, _)| BridgeError::Config(format!("Kafka send failed: {error}")))?;
+                    .map_err(|(error, _)| {
+                        BridgeError::Config(format!("Kafka send failed: {error}"))
+                    })?;
                 info!("Forwarded MQTT message to Kafka topic={send_topic}");
             }
             Ok(_) => {}
-            Err(error) => return Err(BridgeError::Config(format!("MQTT event loop failed: {error}"))),
+            Err(error) => {
+                return Err(BridgeError::Config(format!(
+                    "MQTT event loop failed: {error}"
+                )))
+            }
         }
     }
 }
@@ -97,8 +103,8 @@ fn kafka_producer(config: &BridgeConfig) -> Result<FutureProducer, BridgeError> 
 }
 
 fn apply_kafka_security_config(client_config: &mut ClientConfig) -> Result<(), BridgeError> {
-    let security_protocol = std::env::var("KAFKA_SECURITY_PROTOCOL")
-        .unwrap_or_else(|_| "PLAINTEXT".to_string());
+    let security_protocol =
+        std::env::var("KAFKA_SECURITY_PROTOCOL").unwrap_or_else(|_| "PLAINTEXT".to_string());
     client_config.set("security.protocol", security_protocol.trim());
 
     if security_protocol.starts_with("SASL_") {
@@ -113,7 +119,8 @@ fn apply_kafka_security_config(client_config: &mut ClientConfig) -> Result<(), B
         client_config
             .set(
                 "sasl.mechanisms",
-                std::env::var("KAFKA_SASL_MECHANISM").unwrap_or_else(|_| "SCRAM-SHA-512".to_string()),
+                std::env::var("KAFKA_SASL_MECHANISM")
+                    .unwrap_or_else(|_| "SCRAM-SHA-512".to_string()),
             )
             .set("sasl.username", username)
             .set("sasl.password", password);
@@ -121,7 +128,11 @@ fn apply_kafka_security_config(client_config: &mut ClientConfig) -> Result<(), B
 
     if security_protocol.contains("SSL") {
         set_optional(client_config, "ssl.ca.location", "KAFKA_SSL_CAFILE");
-        set_optional(client_config, "ssl.certificate.location", "KAFKA_SSL_CERTFILE");
+        set_optional(
+            client_config,
+            "ssl.certificate.location",
+            "KAFKA_SSL_CERTFILE",
+        );
         set_optional(client_config, "ssl.key.location", "KAFKA_SSL_KEYFILE");
         if !dealiot_mqtt_kafka_bridge::bool_env("KAFKA_SSL_CHECK_HOSTNAME", true) {
             client_config.set("enable.ssl.certificate.verification", "false");
@@ -139,9 +150,14 @@ fn set_optional(client_config: &mut ClientConfig, property: &str, env_name: &str
     }
 }
 
-fn configure_mqtt_tls(config: &BridgeConfig, mqtt_options: &mut MqttOptions) -> Result<(), BridgeError> {
+fn configure_mqtt_tls(
+    config: &BridgeConfig,
+    mqtt_options: &mut MqttOptions,
+) -> Result<(), BridgeError> {
     if config.mqtt_tls_insecure_skip_verify {
-        warn!("MQTT_TLS_INSECURE_SKIP_VERIFY is not supported by the Rust bridge; using verified TLS");
+        warn!(
+            "MQTT_TLS_INSECURE_SKIP_VERIFY is not supported by the Rust bridge; using verified TLS"
+        );
     }
 
     let ca = config
@@ -153,12 +169,10 @@ fn configure_mqtt_tls(config: &BridgeConfig, mqtt_options: &mut MqttOptions) -> 
     let client_auth = match (&config.mqtt_tls_cert_file, &config.mqtt_tls_key_file) {
         (Some(cert), Some(key)) => Some((fs::read(cert)?, fs::read(key)?)),
         (None, None) => None,
-        _ => {
-            return Err(BridgeError::Config(
-                "MQTT_TLS_CERT_FILE and MQTT_TLS_KEY_FILE must both be set for MQTT client TLS auth"
-                    .to_string(),
-            ))
-        }
+        _ => return Err(BridgeError::Config(
+            "MQTT_TLS_CERT_FILE and MQTT_TLS_KEY_FILE must both be set for MQTT client TLS auth"
+                .to_string(),
+        )),
     };
 
     mqtt_options.set_transport(rumqttc::Transport::tls_with_config(
@@ -174,7 +188,8 @@ fn configure_mqtt_tls(config: &BridgeConfig, mqtt_options: &mut MqttOptions) -> 
 fn validate_auth_config(config: &BridgeConfig) -> Result<(), BridgeError> {
     if config.mqtt_username.is_some() != config.mqtt_password.is_some() {
         return Err(BridgeError::Config(
-            "MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled".to_string(),
+            "MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled"
+                .to_string(),
         ));
     }
     Ok(())
