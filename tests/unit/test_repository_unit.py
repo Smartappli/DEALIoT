@@ -192,6 +192,9 @@ class RepositoryUnitTests(unittest.TestCase):
         )
 
         self.assertIn("--topic state.latest", compose_text)
+        self.assertIn('STATE_TOPIC: "state.latest"', compose_text)
+        self.assertIn('FEATURES_TOPIC: "features.events"', compose_text)
+        self.assertIn('profiles: ["rust-normalizer"]', compose_text)
         self.assertIn(
             'env_or_default("STATE_TOPIC", "state.latest")',
             flink_text,

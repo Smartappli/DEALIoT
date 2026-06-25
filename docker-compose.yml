@@ -1231,6 +1231,28 @@ services:
       - ingest_net
       - kafka_net
 
+  stream-normalizer:
+    profiles: ["rust-normalizer"]
+    build:
+      context: .
+      dockerfile: stream-normalizer/Dockerfile
+    image: dealiot-stream-normalizer:local
+    container_name: stream-normalizer
+    hostname: stream-normalizer
+    restart: unless-stopped
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
+      STREAM_NORMALIZER_CONSUMER_GROUP: "stream-normalizer-v1"
+      STREAM_NORMALIZER_SOURCE_TOPICS: "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,raw.video2d.meta,raw.video3d.meta"
+      FEATURES_TOPIC: "features.events"
+      STATE_TOPIC: "state.latest"
+      KAFKA_AUTO_OFFSET_RESET: "earliest"
+    networks:
+      - kafka_net
+
   flink-jobmanager:
     build: *flink-py-build
     image: custom-flink-py:2.0.0

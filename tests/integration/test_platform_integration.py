@@ -40,6 +40,7 @@ class PlatformIntegrationTests(unittest.TestCase):
             "flink-taskmanager-1",
             "beam-jobserver",
             "mqtt-kafka-bridge",
+            "stream-normalizer",
         ]
         for service in expected_services:
             self.assertIn(f"  {service}:", compose_text, f"Missing integration service: {service}")
@@ -95,6 +96,7 @@ class PlatformIntegrationTests(unittest.TestCase):
 
         self.assertIn("dockerfile: orchestration/Dockerfile", compose_text)
         self.assertIn("dockerfile: mqtt-kafka-bridge/Dockerfile", compose_text)
+        self.assertIn("dockerfile: stream-normalizer/Dockerfile", compose_text)
         self.assertIn("./dealiot_contracts:/opt/airflow/dealiot_contracts:ro", compose_text)
 
 

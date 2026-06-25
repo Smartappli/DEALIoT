@@ -35,6 +35,7 @@ class ApplicationSmokeTests(unittest.TestCase):
             "airflow-scheduler",
             "airflow-worker",
             "mqtt-kafka-bridge",
+            "stream-normalizer",
             "management-console",
             "apicurio-registry",
         ]
