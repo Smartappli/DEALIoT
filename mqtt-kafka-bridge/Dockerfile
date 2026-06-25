@@ -12,7 +12,7 @@ COPY --chmod=0444 Cargo.toml /src/Cargo.toml
 COPY --chmod=0444 mqtt-kafka-bridge/Cargo.toml /src/mqtt-kafka-bridge/Cargo.toml
 COPY --chmod=0444 mqtt-kafka-bridge/src /src/mqtt-kafka-bridge/src
 
-RUN cargo build --release --locked || cargo build --release
+RUN cargo build --release
 
 FROM debian:bookworm-slim
 

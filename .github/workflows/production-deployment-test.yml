@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "deploy/**"
+      - "Cargo.toml"
       - "mqtt-kafka-bridge/**"
       - "dealiot_contracts/**"
       - "flink/**"

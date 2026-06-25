@@ -7,6 +7,7 @@ on:
       - "docker-compose*.yml"
       - "scripts/smoke-e2e.sh"
       - "scripts/start-*.sh"
+      - "Cargo.toml"
       - "mqtt-kafka-bridge/**"
       - "dealiot_contracts/**"
       - "flink/jobs/**"
