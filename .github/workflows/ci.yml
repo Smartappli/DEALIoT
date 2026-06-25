@@ -102,8 +102,8 @@ jobs:
       - name: Rust bridge checks
         run: |
           cargo fmt --check --all
-          cargo test --workspace
-          cargo check --workspace
+          cargo test --workspace --locked
+          cargo check --workspace --locked
 
       - name: Unit test suite
         run: uv run python -m unittest discover -s tests/unit -p "test_*.py" -v
