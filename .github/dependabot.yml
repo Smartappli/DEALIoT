@@ -18,6 +18,13 @@ updates:
       - "🤖 Dependabot"
       - "docker"
 
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    labels:
+      - "rust"
+
   - package-ecosystem: "docker-compose"
     directory: "/"
     schedule:
