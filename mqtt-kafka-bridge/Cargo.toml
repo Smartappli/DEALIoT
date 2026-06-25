@@ -7,6 +7,7 @@ license.workspace = true
 [dependencies]
 base64 = "0.22"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+dealiot-event-contracts = { path = "../dealiot-event-contracts" }
 env_logger = "0.11"
 log = "0.4"
 rdkafka = { version = "0.36", features = ["cmake-build", "ssl", "sasl"] }

@@ -1,5 +1,8 @@
 [workspace]
-members = ["mqtt-kafka-bridge"]
+members = [
+    "dealiot-event-contracts",
+    "mqtt-kafka-bridge",
+]
 resolver = "2"
 
 [workspace.package]

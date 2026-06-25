@@ -1,8 +1,6 @@
-pub mod contracts;
-
 use base64::Engine;
 use chrono::{TimeZone, Utc};
-use contracts::{
+use dealiot_event_contracts::{
     build_dlq_event, now_iso, validate_event, DLQ_TOPIC, RAW_GPS_TOPIC, RAW_IMAGE2D_META_TOPIC,
     RAW_IMAGE3D_META_TOPIC, RAW_SENSOR_TOPIC, RAW_VIDEO2D_META_TOPIC, RAW_VIDEO3D_META_TOPIC,
 };

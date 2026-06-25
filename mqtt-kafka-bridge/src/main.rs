@@ -235,7 +235,7 @@ fn qos_number(qos: QoS) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dealiot_mqtt_kafka_bridge::contracts::RAW_SENSOR_TOPIC;
+    use dealiot_event_contracts::RAW_SENSOR_TOPIC;
     use std::path::Path;
     use tempfile::tempdir;
 
