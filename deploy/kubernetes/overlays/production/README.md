@@ -14,6 +14,7 @@ Replace the placeholder tags before deployment:
 RELEASE_SHA="$(git rev-parse HEAD)"
 kustomize edit set image \
   ghcr.io/smartappli/dealiot-mqtt-kafka-bridge=ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-"$RELEASE_SHA" \
+  ghcr.io/smartappli/dealiot-stream-normalizer=ghcr.io/smartappli/dealiot-stream-normalizer:sha-"$RELEASE_SHA" \
   ghcr.io/smartappli/dealiot-management-console=ghcr.io/smartappli/dealiot-management-console:sha-"$RELEASE_SHA" \
   ghcr.io/smartappli/dealiot-flink-pyflink=ghcr.io/smartappli/dealiot-flink-pyflink:sha-"$RELEASE_SHA" \
   ghcr.io/smartappli/dealiot-orchestration=ghcr.io/smartappli/dealiot-orchestration:sha-"$RELEASE_SHA"

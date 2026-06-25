@@ -241,6 +241,7 @@ class DeploymentReadinessTests(unittest.TestCase):
             image_tags,
             {
                 "ghcr.io/smartappli/dealiot-mqtt-kafka-bridge": "sha-REPLACE_WITH_RELEASE_SHA",
+                "ghcr.io/smartappli/dealiot-stream-normalizer": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-management-console": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-flink-pyflink": "sha-REPLACE_WITH_RELEASE_SHA",
                 "ghcr.io/smartappli/dealiot-orchestration": "sha-REPLACE_WITH_RELEASE_SHA",
@@ -277,6 +278,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertEqual(runtime_config["WILDFI_TOPIC_PREFIXES"], "wildfi,wild-fi")
         self.assertEqual(runtime_config["MQTT_USERNAME"], "dealiot_ingestor")
         self.assertEqual(runtime_config["MQTT_TLS_ENABLED"], "true")
+        self.assertEqual(runtime_config["FEATURES_TOPIC"], "features.events")
+        self.assertEqual(runtime_config["STATE_TOPIC"], "state.latest")
+        self.assertIn("raw.sensor", runtime_config["STREAM_NORMALIZER_SOURCE_TOPICS"])
+        self.assertIn("raw.gps", runtime_config["STREAM_NORMALIZER_SOURCE_TOPICS"])
         self.assertEqual(runtime_config["KAFKA_SECURITY_PROTOCOL"], "SASL_SSL")
         self.assertEqual(runtime_config["KAFKA_SASL_MECHANISM"], "SCRAM-SHA-512")
         self.assertEqual(runtime_config["KAFKA_SASL_USERNAME"], "dealiot_runtime")
@@ -467,6 +472,23 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("readinessProbe", bridge_container)
         self.assertIn("livenessProbe", bridge_container)
         self.assertEqual(bridge_container["ports"][0]["name"], "health")
+
+        normalizer = next(
+            document
+            for document in yaml.safe_load_all(
+                (REPO_ROOT / "deploy" / "kubernetes" / "base" / "stream-normalizer.yaml").read_text(
+                    encoding="utf-8"
+                )
+            )
+            if document and document.get("kind") == "Deployment"
+        )
+        normalizer_container = normalizer["spec"]["template"]["spec"]["containers"][0]
+        normalizer_env_names = {item["name"] for item in normalizer_container["env"]}
+        self.assertIn("KAFKA_SASL_PASSWORD", normalizer_env_names)
+        self.assertEqual(
+            normalizer_container["image"],
+            "ghcr.io/smartappli/dealiot-stream-normalizer:local-placeholder",
+        )
 
         flink_docs = [
             document
@@ -698,6 +720,9 @@ class DeploymentReadinessTests(unittest.TestCase):
         bridge_dockerfile = (REPO_ROOT / "mqtt-kafka-bridge" / "Dockerfile").read_text(
             encoding="utf-8"
         )
+        normalizer_dockerfile = (REPO_ROOT / "stream-normalizer" / "Dockerfile").read_text(
+            encoding="utf-8"
+        )
         bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "src" / "main.rs").read_text(
             encoding="utf-8"
         )
@@ -718,6 +743,12 @@ class DeploymentReadinessTests(unittest.TestCase):
             "COPY --from=builder --chown=root:root --chmod=0555",
             bridge_dockerfile,
         )
+        self.assertIn("FROM rust:", normalizer_dockerfile)
+        self.assertIn(
+            "cargo build --release --locked -p dealiot-stream-normalizer",
+            normalizer_dockerfile,
+        )
+        self.assertIn("dealiot-stream-normalizer", normalizer_dockerfile)
         self.assertIn(
             "COPY --chown=root:0 --chmod=0444 orchestration/requirements.txt",
             orchestration_dockerfile,

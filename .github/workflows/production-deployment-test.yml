@@ -8,6 +8,9 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "mqtt-kafka-bridge/**"
+      - "dealiot-event-contracts/**"
+      - "stream-normalizer/**"
+      - "wildfi-decoder-runner/**"
       - "dealiot_contracts/**"
       - "flink/**"
       - "orchestration/**"
@@ -21,6 +24,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   DEALIOT_SMOKE_BRIDGE_IMAGE: dealiot-mqtt-kafka-bridge:ci
   DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:sha-${{ github.sha }}
+  DEALIOT_STREAM_NORMALIZER_IMAGE: ghcr.io/smartappli/dealiot-stream-normalizer:sha-${{ github.sha }}
   DEALIOT_MANAGEMENT_CONSOLE_IMAGE: ghcr.io/smartappli/dealiot-management-console:sha-${{ github.sha }}
   DEALIOT_FLINK_PYFLINK_IMAGE: ghcr.io/smartappli/dealiot-flink-pyflink:sha-${{ github.sha }}
   DEALIOT_ORCHESTRATION_IMAGE: ghcr.io/smartappli/dealiot-orchestration:sha-${{ github.sha }}
