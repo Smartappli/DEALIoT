@@ -48,7 +48,8 @@ pub fn build_dlq_event(
 
 pub fn validate_event(topic: &str, event: &Map<String, Value>) -> Vec<String> {
     let mut errors = Vec::new();
-    let Some(required) = required_fields().get(topic) else {
+    let required_by_topic = required_fields();
+    let Some(required) = required_by_topic.get(topic) else {
         return errors;
     };
 
@@ -59,7 +60,8 @@ pub fn validate_event(topic: &str, event: &Map<String, Value>) -> Vec<String> {
     }
 
     if media_topics().contains(topic) {
-        if let Some(allowed) = media_allowed_fields().get(topic) {
+        let allowed_by_topic = media_allowed_fields();
+        if let Some(allowed) = allowed_by_topic.get(topic) {
             for field in sorted_keys(event) {
                 if !allowed.contains(field.as_str()) {
                     errors.push(format!("field not allowed by {topic}: {field}"));

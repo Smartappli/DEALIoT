@@ -198,6 +198,7 @@ pub fn is_wildfi_topic(topic: &str, prefixes: &[String]) -> bool {
     let parts: BTreeSet<_> = topic_parts_lower(topic).into_iter().collect();
     WILDFI_TOPIC_MARKERS
         .iter()
+        .copied()
         .chain(prefixes.iter().map(String::as_str))
         .any(|marker| parts.contains(marker))
 }
@@ -296,6 +297,7 @@ pub fn derive_device_id(topic: &str, wildfi_prefixes: &[String]) -> String {
 
     for marker in WILDFI_TOPIC_MARKERS
         .iter()
+        .copied()
         .chain(wildfi_prefixes.iter().map(String::as_str))
     {
         if let Some(idx) = lowered_parts.iter().position(|part| part == marker) {
