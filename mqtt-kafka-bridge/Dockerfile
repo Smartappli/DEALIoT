@@ -5,10 +5,11 @@ FROM rust:1.85-bookworm AS builder
 WORKDIR /src
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends cmake pkg-config libssl-dev ca-certificates \
+ && apt-get install -y --no-install-recommends cmake pkg-config libssl-dev libsasl2-dev ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --chmod=0444 Cargo.toml /src/Cargo.toml
+COPY --chmod=0444 Cargo.lock /src/Cargo.lock
 COPY --chmod=0444 mqtt-kafka-bridge/Cargo.toml /src/mqtt-kafka-bridge/Cargo.toml
 COPY --chmod=0444 mqtt-kafka-bridge/src /src/mqtt-kafka-bridge/src
 
@@ -17,7 +18,7 @@ RUN cargo build --release
 FROM debian:bookworm-slim
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates \
+ && apt-get install -y --no-install-recommends ca-certificates libsasl2-2 \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --system --create-home --shell /usr/sbin/nologin appuser
 
