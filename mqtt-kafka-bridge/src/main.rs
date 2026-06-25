@@ -29,13 +29,13 @@ async fn run_bridge(config: &BridgeConfig) -> Result<(), BridgeError> {
     let producer = kafka_producer(config)?;
     let mut mqtt_options = MqttOptions::new(
         format!("mqtt-kafka-bridge-{}", &Uuid::new_v4().to_string()[..12]),
-        &config.mqtt_host,
+        config.mqtt_host.clone(),
         config.mqtt_port,
     );
     mqtt_options.set_keep_alive(Duration::from_secs(30));
 
     if let (Some(username), Some(password)) = (&config.mqtt_username, &config.mqtt_password) {
-        mqtt_options.set_credentials(username, password);
+        mqtt_options.set_credentials(username.clone(), password.clone());
     }
 
     if config.mqtt_tls_enabled {
@@ -82,7 +82,7 @@ async fn run_bridge(config: &BridgeConfig) -> Result<(), BridgeError> {
 fn kafka_producer(config: &BridgeConfig) -> Result<FutureProducer, BridgeError> {
     let mut client_config = ClientConfig::new();
     client_config
-        .set("bootstrap.servers", &config.kafka_bootstrap_servers)
+        .set("bootstrap.servers", config.kafka_bootstrap_servers.as_str())
         .set("acks", "all")
         .set("retries", "10")
         .set("linger.ms", "50")
@@ -195,7 +195,7 @@ fn start_health_server(bind: String, port: u16) {
                 let response = Response::from_string(r#"{"status":"ok"}"#)
                     .with_status_code(StatusCode(200))
                     .with_header(
-                        Header::from_bytes("Content-Type", "application/json")
+                        Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
                             .expect("static header is valid"),
                     );
                 let _ = request.respond(response);
