@@ -18,7 +18,9 @@ List commands run and important manual checks.
 ```bash
 # example
 uv run python -m unittest discover -s tests/unit -p "test_*.py" -v
-cargo test --workspace
+cargo fmt --check --all
+cargo clippy --workspace --locked -- -D warnings
+cargo test --workspace --locked
 ```
 
 ## Operational Impact

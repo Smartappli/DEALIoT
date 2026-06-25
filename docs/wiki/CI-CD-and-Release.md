@@ -40,7 +40,9 @@ The Swarm render check rejects mutable or placeholder production images.
 
 ```bash
 uv run python -m unittest discover -s tests/unit -p "test_*.py" -v
-cargo test --workspace
+cargo fmt --check --all
+cargo clippy --workspace --locked -- -D warnings
+cargo test --workspace --locked
 uv run python -m unittest -v tests/integration/test_platform_integration.py
 uv run --with PyYAML python -m unittest -v tests/deployment/test_deployment_readiness.py
 uv run python -m unittest -v tests/test_application_smoke.py
