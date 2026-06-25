@@ -6,6 +6,7 @@ on:
     paths:
       - "deploy/**"
       - "Cargo.toml"
+      - "Cargo.lock"
       - "mqtt-kafka-bridge/**"
       - "dealiot_contracts/**"
       - "flink/**"
