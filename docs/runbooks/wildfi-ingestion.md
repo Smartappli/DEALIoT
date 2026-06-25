@@ -49,7 +49,9 @@ includes `wildfi-decoder-config.yaml` with the decoder conversion factors and th
 mapping.
 
 The decoder image is built from the `WildFiDecoderMultiThreaded` component at pinned Git ref
-`b4002eb9a6111de140b95e5a35c3f3bd552d51be`. The Kubernetes production overlay includes a suspended
+`b4002eb9a6111de140b95e5a35c3f3bd552d51be`. A Rust runner drives the packaged
+`WildFiDecoderStandalone.jar` with the documented environment variables; the WildFi binary format
+itself still belongs to the upstream Java decoder. The Kubernetes production overlay includes a suspended
 Job named `wildfi-decoder`; mount a PVC named `wildfi-decoder-workdir` containing the `.bin` files,
 choose `WILDFI_DECODER_MODE`, then unsuspend a copied job for a decoding run.
 

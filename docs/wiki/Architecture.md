@@ -32,7 +32,7 @@ Default topic filters:
 - `$share/ingestors/devices/#`
 - `$share/ingestors/wildfi/#`
 
-The bridge validates core event contracts in its Rust contract module and routes invalid payloads to `dlq.events`. The Python `dealiot_contracts` package remains available for pipelines and compatibility tests that need the same topic semantics.
+The bridge validates core event contracts through the shared Rust `dealiot-event-contracts` crate and routes invalid payloads to `dlq.events`. The Python `dealiot_contracts` package remains available for pipelines and compatibility tests that need the same topic semantics.
 
 ## Kafka And Schemas
 
@@ -61,6 +61,8 @@ Flink owns continuous stateful processing. Checkpoints and savepoints are stored
 - `s3://flink-savepoints/streaming`
 
 Airflow owns scheduled orchestration, replay, export, and bounded backfill workflows. Beam images are available for portable pipelines.
+
+For lightweight normalization, the Rust `stream-normalizer` service can consume raw Kafka topics and produce `features.events` plus `state.latest`. The PyFlink job remains available for deployments that need Flink checkpointing, savepoints, or richer stateful processing.
 
 ## Production Runtime Model
 
