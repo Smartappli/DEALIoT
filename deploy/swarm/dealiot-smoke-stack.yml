@@ -4,12 +4,11 @@ services:
   mqtt-kafka-bridge:
     image: "${DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE:-dealiot-mqtt-kafka-bridge:ci}"
     command:
-      - python
+      - sh
       - -c
       - >
-        import dealiot_contracts, time;
-        print("dealiot bridge image ready", flush=True);
-        time.sleep(3600)
+        echo "dealiot rust bridge image ready";
+        sleep 3600
     environment:
       MQTT_HOST: "localhost"
       MQTT_PORT: "1883"

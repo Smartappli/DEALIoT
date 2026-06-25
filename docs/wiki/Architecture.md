@@ -25,14 +25,14 @@ flowchart LR
 
 ## Ingestion
 
-The MQTT-Kafka bridge subscribes through shared MQTT subscriptions so replicas can scale horizontally without duplicate processing. Production MQTT defaults to TLS on port `8883`.
+The MQTT-Kafka bridge is packaged as a Rust service. It subscribes through shared MQTT subscriptions so replicas can scale horizontally without duplicate processing. Production MQTT defaults to TLS on port `8883`.
 
 Default topic filters:
 
 - `$share/ingestors/devices/#`
 - `$share/ingestors/wildfi/#`
 
-The bridge validates core event contracts and routes invalid payloads to `dlq.events`.
+The bridge validates core event contracts in its Rust contract module and routes invalid payloads to `dlq.events`. The Python `dealiot_contracts` package remains available for pipelines and compatibility tests that need the same topic semantics.
 
 ## Kafka And Schemas
 

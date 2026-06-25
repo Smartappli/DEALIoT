@@ -35,7 +35,7 @@ DEALIoT provides six runtime planes:
 
 | Plane | Responsibility | Primary components |
 |---|---|---|
-| Ingestion | Secure MQTT ingestion and routing to Kafka topics | VerneMQ, MQTT-Kafka bridge |
+| Ingestion | Secure MQTT ingestion and routing to Kafka topics | VerneMQ, Rust MQTT-Kafka bridge |
 | Event backbone | Durable event transport and schema governance | Kafka KRaft, Apicurio Registry |
 | Object storage | Raw and derived media object storage | SeaweedFS S3 locally, managed S3 in production |
 | Processing | Stream processing, feature projection, replay, and backfill | Flink, Beam, Airflow |
@@ -117,14 +117,14 @@ flowchart LR
 .github/workflows/                         CI, security scans, image build, deployment validation
 airflow/dags/                              Airflow DAGs
 apicurio/bootstrap/                        Registry schema bootstrap payloads
-dealiot_contracts/                         Shared event contract helpers
+dealiot_contracts/                         Python event contract helpers for tests and pipelines
 deploy/kubernetes/base/                    Kubernetes base runtime manifests
 deploy/kubernetes/overlays/production/     Production Kustomize overlay
 deploy/swarm/                              Docker Swarm runtime and smoke stacks
 docs/                                      Architecture, compliance, and runbooks
 flink/jobs/                                PyFlink streaming jobs
 management-console/                        Internal operational console
-mqtt-kafka-bridge/                         MQTT to Kafka ingestion bridge
+mqtt-kafka-bridge/                         Rust MQTT to Kafka ingestion bridge
 pipelines/                                 Replay and backfill utilities
 scripts/                                   Bootstrap and smoke-test scripts
 tests/                                     Unit, integration, and deployment guardrail tests
@@ -157,6 +157,7 @@ Governance, Data Act, DGA, security, resilience, and compliance evidence topics 
 - Docker Engine with Compose v2
 - Python 3.12 or newer for local tests
 - `uv` for reproducible Python tooling
+- Rust toolchain for native MQTT-Kafka bridge checks
 - `kubectl` for rendering Kubernetes overlays
 
 ### Configure Local Secrets
