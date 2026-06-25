@@ -7,7 +7,6 @@ use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::Message;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::Timeout;
-use rdkafka::Offset;
 use std::time::Duration;
 use thiserror::Error;
 
@@ -80,7 +79,7 @@ async fn run(config: NormalizerConfig) -> Result<(), NormalizerError> {
                         .map_err(|(error, _)| NormalizerError::Config(format!("state send failed: {error}")))?;
                 }
 
-                consumer.store_offset(message.topic(), message.partition(), Offset::Offset(message.offset() + 1))?;
+                consumer.store_offset(message.topic(), message.partition(), message.offset() + 1)?;
             }
             signal = tokio::signal::ctrl_c() => {
                 signal.map_err(|error| NormalizerError::Config(format!("signal handler failed: {error}")))?;
