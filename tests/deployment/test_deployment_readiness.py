@@ -743,6 +743,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("COPY --chown=root:root --chmod=0555 pipelines", beam_runtime_dockerfile)
         self.assertIn("FROM rust:", bridge_dockerfile)
         self.assertIn("cargo build --release", bridge_dockerfile)
+        self.assertIn("ca-certificates libsasl2-2 wget", bridge_dockerfile)
         self.assertIn(
             "COPY --from=builder --chown=root:root --chmod=0555",
             bridge_dockerfile,
@@ -753,6 +754,7 @@ class DeploymentReadinessTests(unittest.TestCase):
             normalizer_dockerfile,
         )
         self.assertIn("dealiot-stream-normalizer", normalizer_dockerfile)
+        self.assertIn("ca-certificates libsasl2-2 wget", normalizer_dockerfile)
         self.assertIn(
             "COPY --chown=root:0 --chmod=0444 orchestration/requirements.txt",
             orchestration_dockerfile,

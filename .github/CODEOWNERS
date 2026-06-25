@@ -5,4 +5,8 @@
 /deploy/ @Smartappli
 /management-console/ @Smartappli
 /mqtt-kafka-bridge/ @Smartappli
+/stream-normalizer/ @Smartappli
+/dealiot-event-contracts/ @Smartappli
+/wildfi-decoder-runner/ @Smartappli
+/wildfi-decoder/ @Smartappli
 /dealiot_contracts/ @Smartappli
