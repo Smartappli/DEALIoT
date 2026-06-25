@@ -1,0 +1,215 @@
+use dealiot_mqtt_kafka_bridge::{build_event, route_event, BridgeConfig, BridgeError, MqttMessage};
+use log::{error, info, warn};
+use rdkafka::config::ClientConfig;
+use rdkafka::producer::{FutureProducer, FutureRecord};
+use rdkafka::util::Timeout;
+use rumqttc::{AsyncClient, Event, Incoming, MqttOptions, QoS};
+use std::fs;
+use std::thread;
+use std::time::Duration;
+use tiny_http::{Header, Response, Server, StatusCode};
+use uuid::Uuid;
+
+#[tokio::main]
+async fn main() -> Result<(), BridgeError> {
+    env_logger::init();
+    let config = BridgeConfig::from_env()?;
+    validate_auth_config(&config)?;
+    start_health_server(config.bridge_health_bind.clone(), config.bridge_health_port);
+
+    loop {
+        if let Err(error) = run_bridge(&config).await {
+            error!("Bridge error; retry in 5s: {error}");
+            tokio::time::sleep(Duration::from_secs(5)).await;
+        }
+    }
+}
+
+async fn run_bridge(config: &BridgeConfig) -> Result<(), BridgeError> {
+    let producer = kafka_producer(config)?;
+    let mut mqtt_options = MqttOptions::new(
+        format!("mqtt-kafka-bridge-{}", &Uuid::new_v4().to_string()[..12]),
+        &config.mqtt_host,
+        config.mqtt_port,
+    );
+    mqtt_options.set_keep_alive(Duration::from_secs(30));
+
+    if let (Some(username), Some(password)) = (&config.mqtt_username, &config.mqtt_password) {
+        mqtt_options.set_credentials(username, password);
+    }
+
+    if config.mqtt_tls_enabled {
+        configure_mqtt_tls(config, &mut mqtt_options)?;
+    }
+
+    let (client, mut eventloop) = AsyncClient::new(mqtt_options, 100);
+    for topic in &config.mqtt_topics {
+        client
+            .subscribe(topic, QoS::AtLeastOnce)
+            .await
+            .map_err(|error| BridgeError::Config(format!("MQTT subscribe failed: {error}")))?;
+        info!("Subscribed to {topic}");
+    }
+
+    loop {
+        match eventloop.poll().await {
+            Ok(Event::Incoming(Incoming::Publish(publish))) => {
+                let msg = MqttMessage {
+                    topic: publish.topic,
+                    payload: publish.payload.to_vec(),
+                    qos: qos_number(publish.qos),
+                    retain: publish.retain,
+                };
+                let built = build_event(&msg, config);
+                let (send_topic, send_event) = route_event(&built.topic, built.event);
+                let payload = serde_json::to_vec(&send_event)?;
+                let key = built.key;
+                producer
+                    .send(
+                        FutureRecord::to(&send_topic).key(&key).payload(&payload),
+                        Timeout::Never,
+                    )
+                    .await
+                    .map_err(|(error, _)| BridgeError::Config(format!("Kafka send failed: {error}")))?;
+                info!("Forwarded MQTT message to Kafka topic={send_topic}");
+            }
+            Ok(_) => {}
+            Err(error) => return Err(BridgeError::Config(format!("MQTT event loop failed: {error}"))),
+        }
+    }
+}
+
+fn kafka_producer(config: &BridgeConfig) -> Result<FutureProducer, BridgeError> {
+    let mut client_config = ClientConfig::new();
+    client_config
+        .set("bootstrap.servers", &config.kafka_bootstrap_servers)
+        .set("acks", "all")
+        .set("retries", "10")
+        .set("linger.ms", "50")
+        .set("batch.size", "131072")
+        .set("compression.type", "lz4")
+        .set("max.in.flight.requests.per.connection", "1");
+
+    apply_kafka_security_config(&mut client_config)?;
+    client_config
+        .create()
+        .map_err(|error| BridgeError::Config(format!("Kafka producer init failed: {error}")))
+}
+
+fn apply_kafka_security_config(client_config: &mut ClientConfig) -> Result<(), BridgeError> {
+    let security_protocol = std::env::var("KAFKA_SECURITY_PROTOCOL")
+        .unwrap_or_else(|_| "PLAINTEXT".to_string());
+    client_config.set("security.protocol", security_protocol.trim());
+
+    if security_protocol.starts_with("SASL_") {
+        let username = std::env::var("KAFKA_SASL_USERNAME").ok();
+        let password = dealiot_mqtt_kafka_bridge::env_or_secret_file("KAFKA_SASL_PASSWORD")?;
+        let (Some(username), Some(password)) = (username, password) else {
+            return Err(BridgeError::Config(
+                "KAFKA_SASL_USERNAME and KAFKA_SASL_PASSWORD must both be set when Kafka SASL is enabled"
+                    .to_string(),
+            ));
+        };
+        client_config
+            .set(
+                "sasl.mechanisms",
+                std::env::var("KAFKA_SASL_MECHANISM").unwrap_or_else(|_| "SCRAM-SHA-512".to_string()),
+            )
+            .set("sasl.username", username)
+            .set("sasl.password", password);
+    }
+
+    if security_protocol.contains("SSL") {
+        set_optional(client_config, "ssl.ca.location", "KAFKA_SSL_CAFILE");
+        set_optional(client_config, "ssl.certificate.location", "KAFKA_SSL_CERTFILE");
+        set_optional(client_config, "ssl.key.location", "KAFKA_SSL_KEYFILE");
+        if !dealiot_mqtt_kafka_bridge::bool_env("KAFKA_SSL_CHECK_HOSTNAME", true) {
+            client_config.set("enable.ssl.certificate.verification", "false");
+        }
+    }
+
+    Ok(())
+}
+
+fn set_optional(client_config: &mut ClientConfig, property: &str, env_name: &str) {
+    if let Ok(value) = std::env::var(env_name) {
+        if !value.is_empty() {
+            client_config.set(property, value);
+        }
+    }
+}
+
+fn configure_mqtt_tls(config: &BridgeConfig, mqtt_options: &mut MqttOptions) -> Result<(), BridgeError> {
+    if config.mqtt_tls_insecure_skip_verify {
+        warn!("MQTT_TLS_INSECURE_SKIP_VERIFY is not supported by the Rust bridge; using verified TLS");
+    }
+
+    let ca = config
+        .mqtt_tls_ca_file
+        .as_ref()
+        .map(fs::read)
+        .transpose()?
+        .unwrap_or_default();
+    let client_auth = match (&config.mqtt_tls_cert_file, &config.mqtt_tls_key_file) {
+        (Some(cert), Some(key)) => Some((fs::read(cert)?, fs::read(key)?)),
+        (None, None) => None,
+        _ => {
+            return Err(BridgeError::Config(
+                "MQTT_TLS_CERT_FILE and MQTT_TLS_KEY_FILE must both be set for MQTT client TLS auth"
+                    .to_string(),
+            ))
+        }
+    };
+
+    mqtt_options.set_transport(rumqttc::Transport::tls_with_config(
+        rumqttc::TlsConfiguration::Simple {
+            ca,
+            alpn: None,
+            client_auth,
+        },
+    ));
+    Ok(())
+}
+
+fn validate_auth_config(config: &BridgeConfig) -> Result<(), BridgeError> {
+    if config.mqtt_username.is_some() != config.mqtt_password.is_some() {
+        return Err(BridgeError::Config(
+            "MQTT_USERNAME and MQTT_PASSWORD must both be set when MQTT auth is enabled".to_string(),
+        ));
+    }
+    Ok(())
+}
+
+fn start_health_server(bind: String, port: u16) {
+    thread::spawn(move || {
+        let server = match Server::http((bind.as_str(), port)) {
+            Ok(server) => server,
+            Err(error) => {
+                error!("health server failed to bind: {error}");
+                return;
+            }
+        };
+
+        for request in server.incoming_requests() {
+            if request.url() == "/healthz" {
+                let response = Response::from_string(r#"{"status":"ok"}"#)
+                    .with_status_code(StatusCode(200))
+                    .with_header(
+                        Header::from_bytes("Content-Type", "application/json")
+                            .expect("static header is valid"),
+                    );
+                let _ = request.respond(response);
+            } else {
+                let _ = request.respond(Response::empty(StatusCode(404)));
+            }
+        }
+    });
+}
+
+fn qos_number(qos: QoS) -> i32 {
+    match qos {
+        QoS::AtMostOnce => 0,
+        QoS::AtLeastOnce => 1,
+        QoS::ExactlyOnce => 2,
+    }
+}
