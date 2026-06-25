@@ -89,7 +89,7 @@ impl LatestState {
 
 pub fn normalize_record(source_topic: &str, raw_json: &str) -> Option<NormalizedEvent> {
     let record: Value = serde_json::from_str(raw_json).ok()?;
-    let mqtt_topic = string_field(&record, "mqtt_topic");
+    let mqtt_topic = string_field(&record, "mqtt_topic").unwrap_or_default();
     let entity_id = string_field(&record, "device_id")
         .filter(|value| !value.is_empty())
         .unwrap_or_else(|| infer_entity_id(&mqtt_topic));
