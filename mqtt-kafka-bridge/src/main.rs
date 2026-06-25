@@ -231,3 +231,92 @@ fn qos_number(qos: QoS) -> i32 {
         QoS::ExactlyOnce => 2,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dealiot_mqtt_kafka_bridge::contracts::RAW_SENSOR_TOPIC;
+    use std::path::Path;
+    use tempfile::tempdir;
+
+    fn test_config() -> BridgeConfig {
+        BridgeConfig {
+            mqtt_host: "localhost".to_string(),
+            mqtt_port: 8883,
+            mqtt_username: None,
+            mqtt_password: None,
+            mqtt_tls_enabled: true,
+            mqtt_tls_ca_file: None,
+            mqtt_tls_cert_file: None,
+            mqtt_tls_key_file: None,
+            mqtt_tls_insecure_skip_verify: false,
+            mqtt_topics: vec!["devices/#".to_string()],
+            wildfi_topic_prefixes: vec!["wildfi".to_string(), "wild-fi".to_string()],
+            kafka_bootstrap_servers: "localhost:9092".to_string(),
+            default_kafka_topic: RAW_SENSOR_TOPIC.to_string(),
+            bridge_health_port: 8080,
+            bridge_health_bind: "127.0.0.1".to_string(),
+        }
+    }
+
+    fn mqtt_options() -> MqttOptions {
+        MqttOptions::new("unit-test", "localhost", 8883)
+    }
+
+    fn write_tls_file(directory: &Path, name: &str) -> String {
+        let path = directory.join(name);
+        fs::write(&path, b"test pem bytes").expect("test TLS file can be written");
+        path.to_string_lossy().into_owned()
+    }
+
+    #[test]
+    fn mqtt_tls_uses_platform_roots_without_explicit_ca() {
+        let config = test_config();
+        let mut options = mqtt_options();
+
+        configure_mqtt_tls(&config, &mut options).expect("server-only TLS should be valid");
+    }
+
+    #[test]
+    fn mqtt_tls_requires_client_cert_and_key_together() {
+        let temp = tempdir().expect("tempdir");
+        let cert = write_tls_file(temp.path(), "client.pem");
+        let mut config = test_config();
+        config.mqtt_tls_cert_file = Some(cert);
+        let mut options = mqtt_options();
+
+        let error = configure_mqtt_tls(&config, &mut options).expect_err("missing key fails");
+
+        assert!(error
+            .to_string()
+            .contains("MQTT_TLS_CERT_FILE and MQTT_TLS_KEY_FILE must both be set"));
+    }
+
+    #[test]
+    fn mqtt_tls_requires_ca_for_client_certificate_auth() {
+        let temp = tempdir().expect("tempdir");
+        let mut config = test_config();
+        config.mqtt_tls_cert_file = Some(write_tls_file(temp.path(), "client.pem"));
+        config.mqtt_tls_key_file = Some(write_tls_file(temp.path(), "client.key"));
+        let mut options = mqtt_options();
+
+        let error =
+            configure_mqtt_tls(&config, &mut options).expect_err("client auth without CA fails");
+
+        assert!(error
+            .to_string()
+            .contains("MQTT_TLS_CA_FILE must be set when MQTT client TLS auth is enabled"));
+    }
+
+    #[test]
+    fn mqtt_tls_accepts_ca_with_client_certificate_auth() {
+        let temp = tempdir().expect("tempdir");
+        let mut config = test_config();
+        config.mqtt_tls_ca_file = Some(write_tls_file(temp.path(), "ca.pem"));
+        config.mqtt_tls_cert_file = Some(write_tls_file(temp.path(), "client.pem"));
+        config.mqtt_tls_key_file = Some(write_tls_file(temp.path(), "client.key"));
+        let mut options = mqtt_options();
+
+        configure_mqtt_tls(&config, &mut options).expect("complete client TLS auth should work");
+    }
+}
