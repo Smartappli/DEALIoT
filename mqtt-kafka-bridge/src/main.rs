@@ -160,12 +160,6 @@ fn configure_mqtt_tls(
         );
     }
 
-    let ca = config
-        .mqtt_tls_ca_file
-        .as_ref()
-        .map(fs::read)
-        .transpose()?
-        .unwrap_or_default();
     let client_auth = match (&config.mqtt_tls_cert_file, &config.mqtt_tls_key_file) {
         (Some(cert), Some(key)) => Some((fs::read(cert)?, fs::read(key)?)),
         (None, None) => None,
@@ -175,13 +169,22 @@ fn configure_mqtt_tls(
         )),
     };
 
-    mqtt_options.set_transport(rumqttc::Transport::tls_with_config(
+    let tls_config = if let Some(ca_file) = &config.mqtt_tls_ca_file {
+        let ca = fs::read(ca_file)?;
         rumqttc::TlsConfiguration::Simple {
             ca,
             alpn: None,
             client_auth,
-        },
-    ));
+        }
+    } else if client_auth.is_none() {
+        rumqttc::TlsConfiguration::default()
+    } else {
+        return Err(BridgeError::Config(
+            "MQTT_TLS_CA_FILE must be set when MQTT client TLS auth is enabled".to_string(),
+        ));
+    };
+
+    mqtt_options.set_transport(rumqttc::Transport::tls_with_config(tls_config));
     Ok(())
 }
 
