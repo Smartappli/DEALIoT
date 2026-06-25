@@ -9,8 +9,12 @@ RUN apt-get update \
 COPY Cargo.toml Cargo.lock ./
 COPY dealiot-event-contracts/Cargo.toml dealiot-event-contracts/Cargo.toml
 COPY dealiot-event-contracts/src dealiot-event-contracts/src
+COPY mqtt-kafka-bridge/Cargo.toml mqtt-kafka-bridge/Cargo.toml
+COPY mqtt-kafka-bridge/src mqtt-kafka-bridge/src
 COPY stream-normalizer/Cargo.toml stream-normalizer/Cargo.toml
 COPY stream-normalizer/src stream-normalizer/src
+COPY wildfi-decoder-runner/Cargo.toml wildfi-decoder-runner/Cargo.toml
+COPY wildfi-decoder-runner/src wildfi-decoder-runner/src
 
 RUN cargo build --release --locked -p dealiot-stream-normalizer
 

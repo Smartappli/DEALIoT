@@ -51,11 +51,7 @@ impl DecoderConfig {
         match self.mode.as_str() {
             "1" | "2" => Ok(Some(format!(
                 "{}\n{}\n{}\n{}\n{}\n\n99\n",
-                self.mode,
-                self.burst_form,
-                self.file_index,
-                self.tag_selection,
-                self.imu_frequency
+                self.mode, self.burst_form, self.file_index, self.tag_selection, self.imu_frequency
             ))),
             "3" | "4" | "5" | "6" | "7" | "8" => Ok(Some(format!("{}\n\n99\n", self.mode))),
             _ => Err(DecoderConfigError::UnsupportedMode(self.mode.clone())),

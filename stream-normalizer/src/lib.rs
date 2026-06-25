@@ -42,8 +42,14 @@ impl NormalizerConfig {
                 "KAFKA_BOOTSTRAP_SERVERS",
                 "kafka1:9092,kafka2:9092,kafka3:9092",
             ),
-            consumer_group: env_or_default("STREAM_NORMALIZER_CONSUMER_GROUP", "stream-normalizer-v1"),
-            source_topics: csv_env_or_default("STREAM_NORMALIZER_SOURCE_TOPICS", DEFAULT_SOURCE_TOPICS),
+            consumer_group: env_or_default(
+                "STREAM_NORMALIZER_CONSUMER_GROUP",
+                "stream-normalizer-v1",
+            ),
+            source_topics: csv_env_or_default(
+                "STREAM_NORMALIZER_SOURCE_TOPICS",
+                DEFAULT_SOURCE_TOPICS,
+            ),
             features_topic: env_or_default("FEATURES_TOPIC", FEATURES_EVENTS_TOPIC),
             state_topic: env_or_default("STATE_TOPIC", STATE_LATEST_TOPIC),
         }
@@ -112,7 +118,10 @@ pub fn normalized_event_json(event: &NormalizedEvent) -> Result<String, serde_js
 }
 
 pub fn infer_entity_id(mqtt_topic: &str) -> String {
-    let parts: Vec<_> = mqtt_topic.split('/').filter(|part| !part.is_empty()).collect();
+    let parts: Vec<_> = mqtt_topic
+        .split('/')
+        .filter(|part| !part.is_empty())
+        .collect();
     let lowered_parts: Vec<_> = parts.iter().map(|part| part.to_ascii_lowercase()).collect();
 
     for marker in WILDFI_TAG_MARKERS {
@@ -156,7 +165,10 @@ pub fn infer_event_kind(source_topic: &str, mqtt_topic: &str) -> String {
     let lowered = mqtt_topic.to_ascii_lowercase();
     let patterns = [
         ("gps", &["gps", "/gnss/"][..]),
-        ("video3d", &["video3d", "/stereo-video/", "/volumetric-video/"][..]),
+        (
+            "video3d",
+            &["video3d", "/stereo-video/", "/volumetric-video/"][..],
+        ),
         ("video2d", &["video2d", "/video/", "/camera-stream/"][..]),
         ("image3d", &["image3d", "/lidar/", "/pointcloud/"][..]),
         ("image2d", &["image2d", "/camera/", "/image/"][..]),

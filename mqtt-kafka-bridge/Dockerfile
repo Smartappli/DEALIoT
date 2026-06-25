@@ -10,10 +10,16 @@ RUN apt-get update \
 
 COPY --chmod=0444 Cargo.toml /src/Cargo.toml
 COPY --chmod=0444 Cargo.lock /src/Cargo.lock
+COPY --chmod=0444 dealiot-event-contracts/Cargo.toml /src/dealiot-event-contracts/Cargo.toml
+COPY --chmod=0444 dealiot-event-contracts/src /src/dealiot-event-contracts/src
 COPY --chmod=0444 mqtt-kafka-bridge/Cargo.toml /src/mqtt-kafka-bridge/Cargo.toml
 COPY --chmod=0444 mqtt-kafka-bridge/src /src/mqtt-kafka-bridge/src
+COPY --chmod=0444 stream-normalizer/Cargo.toml /src/stream-normalizer/Cargo.toml
+COPY --chmod=0444 stream-normalizer/src /src/stream-normalizer/src
+COPY --chmod=0444 wildfi-decoder-runner/Cargo.toml /src/wildfi-decoder-runner/Cargo.toml
+COPY --chmod=0444 wildfi-decoder-runner/src /src/wildfi-decoder-runner/src
 
-RUN cargo build --release --locked
+RUN cargo build --release --locked -p dealiot-mqtt-kafka-bridge
 
 FROM debian:bookworm-slim
 

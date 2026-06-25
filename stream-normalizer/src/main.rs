@@ -33,7 +33,10 @@ async fn run(config: NormalizerConfig) -> Result<(), NormalizerError> {
     let producer = kafka_producer(&config)?;
     let topics: Vec<_> = config.source_topics.iter().map(String::as_str).collect();
     consumer.subscribe(&topics)?;
-    info!("Subscribed to source topics: {}", config.source_topics.join(","));
+    info!(
+        "Subscribed to source topics: {}",
+        config.source_topics.join(",")
+    );
 
     let mut latest = LatestState::default();
 
@@ -96,7 +99,10 @@ fn kafka_consumer(config: &NormalizerConfig) -> Result<StreamConsumer, Normalize
         .set("group.id", config.consumer_group.as_str())
         .set("enable.auto.commit", "false")
         .set("enable.auto.offset.store", "false")
-        .set("auto.offset.reset", std::env::var("KAFKA_AUTO_OFFSET_RESET").unwrap_or_else(|_| "earliest".to_string()));
+        .set(
+            "auto.offset.reset",
+            std::env::var("KAFKA_AUTO_OFFSET_RESET").unwrap_or_else(|_| "earliest".to_string()),
+        );
     client_config.create().map_err(Into::into)
 }
 
@@ -135,7 +141,10 @@ fn apply_security_config(client_config: &mut ClientConfig) {
 
     if security_protocol.contains("SSL")
         && std::env::var("KAFKA_SSL_CHECK_HOSTNAME").is_ok_and(|value| {
-            matches!(value.trim().to_ascii_lowercase().as_str(), "0" | "false" | "no" | "off")
+            matches!(
+                value.trim().to_ascii_lowercase().as_str(),
+                "0" | "false" | "no" | "off"
+            )
         })
     {
         client_config.set("enable.ssl.certificate.verification", "false");
