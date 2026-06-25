@@ -45,7 +45,7 @@ async fn run_bridge(config: &BridgeConfig) -> Result<(), BridgeError> {
     let (client, mut eventloop) = AsyncClient::new(mqtt_options, 100);
     for topic in &config.mqtt_topics {
         client
-            .subscribe(topic, QoS::AtLeastOnce)
+            .subscribe(topic.clone(), QoS::AtLeastOnce)
             .await
             .map_err(|error| BridgeError::Config(format!("MQTT subscribe failed: {error}")))?;
         info!("Subscribed to {topic}");
