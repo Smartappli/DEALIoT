@@ -1,17 +1,30 @@
 # syntax=docker/dockerfile:1.7
 
-FROM python:3.13-slim
+FROM rust:1.85-bookworm AS builder
 
-WORKDIR /app
+WORKDIR /src
 
-COPY --chmod=0444 mqtt-kafka-bridge/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir --only-binary :all: --require-hashes --requirement /tmp/requirements.txt \
- && useradd --create-home --shell /bin/bash appuser
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends cmake pkg-config libssl-dev ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
-COPY --chown=root:root --chmod=0444 mqtt-kafka-bridge/bridge.py /app/bridge.py
-COPY --chown=root:root --chmod=0555 dealiot_contracts /app/dealiot_contracts
+COPY --chmod=0444 Cargo.toml /src/Cargo.toml
+COPY --chmod=0444 mqtt-kafka-bridge/Cargo.toml /src/mqtt-kafka-bridge/Cargo.toml
+COPY --chmod=0444 mqtt-kafka-bridge/src /src/mqtt-kafka-bridge/src
+
+RUN cargo build --release --locked || cargo build --release
+
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd --system --create-home --shell /usr/sbin/nologin appuser
+
+COPY --from=builder --chown=root:root --chmod=0555 \
+  /src/target/release/dealiot-mqtt-kafka-bridge \
+  /usr/local/bin/dealiot-mqtt-kafka-bridge
 
 USER appuser
-ENV PYTHONDONTWRITEBYTECODE="1" \
-    PYTHONPATH="/app"
-CMD ["python", "-u", "/app/bridge.py"]
+ENV RUST_LOG="info"
+CMD ["dealiot-mqtt-kafka-bridge"]

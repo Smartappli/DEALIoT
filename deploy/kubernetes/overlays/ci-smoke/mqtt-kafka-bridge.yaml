@@ -29,12 +29,11 @@ spec:
           image: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:local-placeholder
           imagePullPolicy: IfNotPresent
           command:
-            - python
+            - sh
             - -c
             - >-
-              import dealiot_contracts, time;
-              print("dealiot bridge image ready", flush=True);
-              time.sleep(3600)
+              echo "dealiot rust bridge image ready";
+              sleep 3600
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
