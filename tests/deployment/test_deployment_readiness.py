@@ -698,7 +698,9 @@ class DeploymentReadinessTests(unittest.TestCase):
         bridge_dockerfile = (REPO_ROOT / "mqtt-kafka-bridge" / "Dockerfile").read_text(
             encoding="utf-8"
         )
-        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
+        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "src" / "main.rs").read_text(
+            encoding="utf-8"
+        )
 
         self.assertIn("--chown=root:root --chmod=0444 /out/jars", beam_jobserver_dockerfile)
         self.assertIn(
@@ -710,11 +712,12 @@ class DeploymentReadinessTests(unittest.TestCase):
             beam_runtime_dockerfile,
         )
         self.assertIn("COPY --chown=root:root --chmod=0555 pipelines", beam_runtime_dockerfile)
+        self.assertIn("FROM rust:", bridge_dockerfile)
+        self.assertIn("cargo build --release", bridge_dockerfile)
         self.assertIn(
-            "COPY --chown=root:root --chmod=0444 mqtt-kafka-bridge/bridge.py",
+            "COPY --from=builder --chown=root:root --chmod=0555",
             bridge_dockerfile,
         )
-        self.assertIn("COPY --chown=root:root --chmod=0555 dealiot_contracts", bridge_dockerfile)
         self.assertIn(
             "COPY --chown=root:0 --chmod=0444 orchestration/requirements.txt",
             orchestration_dockerfile,
@@ -730,10 +733,10 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("flink-sql-connector-kafka", flink_dockerfile)
         self.assertIn("flink-connector-base", flink_dockerfile)
         self.assertIn("jdk_only_exports", flink_dockerfile)
-        self.assertIn("def env_or_secret_file", bridge_source)
-        self.assertIn("def kafka_security_config", bridge_source)
-        self.assertIn("def configure_mqtt_tls", bridge_source)
-        self.assertIn("def start_health_server", bridge_source)
+        self.assertIn("env_or_secret_file", bridge_source)
+        self.assertIn("apply_kafka_security_config", bridge_source)
+        self.assertIn("configure_mqtt_tls", bridge_source)
+        self.assertIn("start_health_server", bridge_source)
         self.assertIn(
             "COPY --chown=root:root --chmod=0555 management-console/management_console",
             management_console_dockerfile,

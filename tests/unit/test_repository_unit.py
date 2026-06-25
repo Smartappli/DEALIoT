@@ -438,7 +438,9 @@ class RepositoryUnitTests(unittest.TestCase):
         )
 
     def test_wildfi_ingestion_is_configured(self) -> None:
-        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
+        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "src" / "lib.rs").read_text(
+            encoding="utf-8"
+        )
         compose_text = (REPO_ROOT / "docker-compose.yml").read_text(encoding="utf-8")
         runbook_text = (REPO_ROOT / "docs" / "runbooks" / "wildfi-ingestion.md").read_text(
             encoding="utf-8"
@@ -808,9 +810,11 @@ class RepositoryUnitTests(unittest.TestCase):
         self.assertNotIn("from xml", openaire_py)
         self.assertIn("xml_escape_text", openaire_py)
 
-        bridge_py = (REPO_ROOT / "mqtt-kafka-bridge" / "bridge.py").read_text(encoding="utf-8")
         self.assertIn("pylint: disable=arguments-differ", app_py)
-        self.assertIn("pylint: disable=arguments-differ", bridge_py)
+        bridge_rs = (REPO_ROOT / "mqtt-kafka-bridge" / "src" / "main.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("start_health_server", bridge_rs)
 
     def test_github_metadata_has_no_hidden_unicode_controls(self) -> None:
         scanned_paths = [
