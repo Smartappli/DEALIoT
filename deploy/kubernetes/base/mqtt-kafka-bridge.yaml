@@ -38,6 +38,8 @@ spec:
             - configMapRef:
                 name: dealiot-runtime-config
           env:
+            - name: BRIDGE_HEALTH_BIND
+              value: 0.0.0.0
             - name: MQTT_PASSWORD_FILE
               value: /var/run/dealiot-secrets/mqtt-password
             - name: KAFKA_SASL_PASSWORD
