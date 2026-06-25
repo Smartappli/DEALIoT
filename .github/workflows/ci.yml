@@ -101,7 +101,9 @@ jobs:
 
       - name: Rust bridge checks
         run: |
+          rustup component add clippy
           cargo fmt --check --all
+          cargo clippy --workspace --locked -- -D warnings
           cargo test --workspace --locked
           cargo check --workspace --locked
 

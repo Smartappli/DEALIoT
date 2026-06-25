@@ -53,6 +53,8 @@ The bridge supports:
 - `MQTT_TLS_KEY_FILE`
 - `MQTT_TLS_INSECURE_SKIP_VERIFY`
 
+When `MQTT_TLS_CA_FILE` is unset, the Rust bridge uses the platform root certificate store for server verification. Set `MQTT_TLS_CA_FILE` for private broker CAs and whenever `MQTT_TLS_CERT_FILE`/`MQTT_TLS_KEY_FILE` enable MQTT client certificate authentication.
+
 `MQTT_TLS_INSECURE_SKIP_VERIFY` must stay disabled in production unless a temporary break-glass exception is documented.
 
 ## Management Console Auth
