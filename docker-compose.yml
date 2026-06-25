@@ -1227,6 +1227,12 @@ services:
       WILDFI_TOPIC_PREFIXES: "${WILDFI_TOPIC_PREFIXES:-wildfi,wild-fi}"
       KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
       DEFAULT_KAFKA_TOPIC: "raw.sensor"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - ingest_net
       - kafka_net
@@ -1250,6 +1256,12 @@ services:
       FEATURES_TOPIC: "features.events"
       STATE_TOPIC: "state.latest"
       KAFKA_AUTO_OFFSET_RESET: "earliest"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     networks:
       - kafka_net
 

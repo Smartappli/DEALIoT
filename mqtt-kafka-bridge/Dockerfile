@@ -24,7 +24,7 @@ RUN cargo build --release --locked -p dealiot-mqtt-kafka-bridge
 FROM debian:bookworm-slim
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates libsasl2-2 \
+ && apt-get install -y --no-install-recommends ca-certificates libsasl2-2 wget \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --system --create-home --shell /usr/sbin/nologin appuser
 

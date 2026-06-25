@@ -97,6 +97,7 @@ class PlatformIntegrationTests(unittest.TestCase):
         self.assertIn("dockerfile: orchestration/Dockerfile", compose_text)
         self.assertIn("dockerfile: mqtt-kafka-bridge/Dockerfile", compose_text)
         self.assertIn("dockerfile: stream-normalizer/Dockerfile", compose_text)
+        self.assertIn("http://127.0.0.1:8080/healthz", compose_text)
         self.assertIn("./dealiot_contracts:/opt/airflow/dealiot_contracts:ro", compose_text)
 
 

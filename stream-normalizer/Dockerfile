@@ -21,7 +21,7 @@ RUN cargo build --release --locked -p dealiot-stream-normalizer
 FROM debian:bookworm-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates libsasl2-2 \
+    && apt-get install -y --no-install-recommends ca-certificates libsasl2-2 wget \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --system appuser \
     && useradd --system --gid appuser --home-dir /nonexistent --shell /usr/sbin/nologin appuser
