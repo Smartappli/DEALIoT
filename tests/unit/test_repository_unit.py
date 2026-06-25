@@ -85,7 +85,8 @@ class RepositoryUnitTests(unittest.TestCase):
             REPO_ROOT / ".github" / "workflows" / "e2e-smoke.yml",
             REPO_ROOT / "bandit.yaml",
             REPO_ROOT / "wildfi-decoder" / "Dockerfile",
-            REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh",
+            REPO_ROOT / "wildfi-decoder-runner" / "src" / "lib.rs",
+            REPO_ROOT / "wildfi-decoder-runner" / "src" / "main.rs",
             REPO_ROOT / "management-console" / "Dockerfile",
             REPO_ROOT / "management-console" / "management_console" / "app.py",
             REPO_ROOT / "management-console" / "management_console" / "openaire.py",
@@ -455,17 +456,24 @@ class RepositoryUnitTests(unittest.TestCase):
 
     def test_wildfi_decoder_image_is_pinned_and_wrapped_for_batch_decoding(self) -> None:
         dockerfile = (REPO_ROOT / "wildfi-decoder" / "Dockerfile").read_text(encoding="utf-8")
-        wrapper = (REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh").read_text(
+        runner = (REPO_ROOT / "wildfi-decoder-runner" / "src" / "lib.rs").read_text(
+            encoding="utf-8"
+        )
+        runner_main = (REPO_ROOT / "wildfi-decoder-runner" / "src" / "main.rs").read_text(
             encoding="utf-8"
         )
 
+        self.assertIn("FROM rust:", dockerfile)
         self.assertIn("https://github.com/wildlab/WildFiDecoder.git", dockerfile)
         self.assertIn("b4002eb9a6111de140b95e5a35c3f3bd552d51be", dockerfile)
         self.assertIn('test "$(git rev-parse HEAD)" = "${WILDFI_DECODER_GIT_REF}"', dockerfile)
         self.assertIn("WildFiDecoderStandalone.jar", dockerfile)
-        self.assertIn("WILDFI_DECODER_RAW_INPUT", wrapper)
-        self.assertIn("WILDFI_DECODER_MODE", wrapper)
-        self.assertIn("env -u JAVA_TOOL_OPTIONS -u JDK_JAVA_OPTIONS", wrapper)
+        self.assertIn("cargo build --release --locked -p dealiot-wildfi-decoder-runner", dockerfile)
+        self.assertIn("COPY --from=runner-builder", dockerfile)
+        self.assertIn("WILDFI_DECODER_RAW_INPUT", runner)
+        self.assertIn("WILDFI_DECODER_MODE", runner)
+        self.assertIn('Command::new("java")', runner_main)
+        self.assertIn('env_remove("JAVA_TOOL_OPTIONS")', runner_main)
 
     def test_ci_assets_do_not_contain_static_placeholder_secrets(self) -> None:
         scanned_paths = [

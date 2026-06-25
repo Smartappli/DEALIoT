@@ -121,33 +121,33 @@ class WildFiIngestionUnitTests(unittest.TestCase):
 
 class WildFiDecoderWrapperUnitTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.wrapper = (REPO_ROOT / "wildfi-decoder" / "run-wildfi-decoder.sh").read_text(
+        self.runner = (REPO_ROOT / "wildfi-decoder-runner" / "src" / "lib.rs").read_text(
+            encoding="utf-8"
+        )
+        self.runner_main = (REPO_ROOT / "wildfi-decoder-runner" / "src" / "main.rs").read_text(
             encoding="utf-8"
         )
 
     def test_raw_decoder_input_is_forwarded_to_standalone_jar(self) -> None:
-        self.assertIn("WILDFI_DECODER_RAW_INPUT:-", self.wrapper)
-        self.assertIn("printf '%b' \"$WILDFI_DECODER_RAW_INPUT\"", self.wrapper)
-        self.assertIn("run_decoder", self.wrapper)
-        self.assertIn("env -u JAVA_TOOL_OPTIONS -u JDK_JAVA_OPTIONS", self.wrapper)
-        self.assertIn(
-            'java -Djava.io.tmpdir="${TMPDIR:-/tmp}" '
-            '-jar "${decoder_home}/WildFiDecoderStandalone.jar"',
-            self.wrapper,
-        )
+        self.assertIn("WILDFI_DECODER_RAW_INPUT", self.runner)
+        self.assertIn("unescape_raw_input", self.runner)
+        self.assertIn('Command::new("java")', self.runner_main)
+        self.assertIn('env_remove("JAVA_TOOL_OPTIONS")', self.runner_main)
+        self.assertIn('env_remove("JDK_JAVA_OPTIONS")', self.runner_main)
+        self.assertIn("WildFiDecoderStandalone.jar", self.runner)
 
     def test_batch_decode_modes_send_expected_interactive_answers(self) -> None:
-        self.assertIn("1 | 2)", self.wrapper)
-        self.assertIn("WILDFI_DECODER_BURST_FORM:-0", self.wrapper)
-        self.assertIn("WILDFI_DECODER_FILE_INDEX:-0", self.wrapper)
-        self.assertIn("WILDFI_DECODER_TAG_SELECTION:-0", self.wrapper)
-        self.assertIn("WILDFI_IMU_FREQUENCY:-25", self.wrapper)
-        self.assertIn("3 | 4 | 5 | 6 | 7 | 8)", self.wrapper)
-        self.assertIn("99", self.wrapper)
+        self.assertIn('"1" | "2"', self.runner)
+        self.assertIn("WILDFI_DECODER_BURST_FORM", self.runner)
+        self.assertIn("WILDFI_DECODER_FILE_INDEX", self.runner)
+        self.assertIn("WILDFI_DECODER_TAG_SELECTION", self.runner)
+        self.assertIn("WILDFI_IMU_FREQUENCY", self.runner)
+        self.assertIn('"3" | "4" | "5" | "6" | "7" | "8"', self.runner)
+        self.assertIn("99", self.runner)
 
     def test_invalid_decode_mode_fails_with_usage_error(self) -> None:
-        self.assertIn("Unsupported WILDFI_DECODER_MODE=$mode", self.wrapper)
-        self.assertIn("exit 64", self.wrapper)
+        self.assertIn("Unsupported WILDFI_DECODER_MODE", self.runner)
+        self.assertIn("std::process::exit(64)", self.runner_main)
 
 
 if __name__ == "__main__":
