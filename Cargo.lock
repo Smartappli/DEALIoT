@@ -215,6 +215,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 1.0.69",
+ "tiny_http",
  "tokio",
 ]
 
