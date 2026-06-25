@@ -9,6 +9,7 @@
 __pycache__
 *.py[cod]
 htmlcov
+target/
 
 .env
 .env.*

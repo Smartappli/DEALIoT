@@ -18,6 +18,7 @@ List commands run and important manual checks.
 ```bash
 # example
 uv run python -m unittest discover -s tests/unit -p "test_*.py" -v
+cargo test --workspace
 ```
 
 ## Operational Impact
