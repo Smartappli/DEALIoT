@@ -31,15 +31,32 @@ spec:
         - name: normalizer
           image: ghcr.io/smartappli/dealiot-stream-normalizer:local-placeholder
           imagePullPolicy: IfNotPresent
+          ports:
+            - name: health
+              containerPort: 8080
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
           env:
+            - name: STREAM_NORMALIZER_HEALTH_BIND
+              value: 0.0.0.0
             - name: KAFKA_SASL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: dealiot-secrets
                   key: KAFKA_SASL_PASSWORD
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 30
+            periodSeconds: 30
           resources:
             requests:
               cpu: 250m

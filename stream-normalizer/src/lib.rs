@@ -33,6 +33,8 @@ pub struct NormalizerConfig {
     pub source_topics: Vec<String>,
     pub features_topic: String,
     pub state_topic: String,
+    pub health_bind: String,
+    pub health_port: u16,
 }
 
 impl NormalizerConfig {
@@ -52,6 +54,8 @@ impl NormalizerConfig {
             ),
             features_topic: env_or_default("FEATURES_TOPIC", FEATURES_EVENTS_TOPIC),
             state_topic: env_or_default("STATE_TOPIC", STATE_LATEST_TOPIC),
+            health_bind: env_or_default("STREAM_NORMALIZER_HEALTH_BIND", "127.0.0.1"),
+            health_port: env_u16("STREAM_NORMALIZER_HEALTH_PORT", 8080),
         }
     }
 }
@@ -202,6 +206,14 @@ pub fn csv_env_or_default(name: &str, default: &str) -> Vec<String> {
     }
 }
 
+pub fn env_u16(name: &str, default: u16) -> u16 {
+    std::env::var(name)
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .and_then(|value| value.parse::<u16>().ok())
+        .unwrap_or(default)
+}
+
 fn csv_items(value: &str) -> Vec<String> {
     value
         .split(',')
@@ -266,5 +278,10 @@ mod tests {
 
         assert!(state.accepts(&newer));
         assert!(!state.accepts(&old));
+    }
+
+    #[test]
+    fn env_u16_falls_back_for_missing_or_invalid_values() {
+        assert_eq!(env_u16("STREAM_NORMALIZER_UNIT_MISSING", 8080), 8080);
     }
 }

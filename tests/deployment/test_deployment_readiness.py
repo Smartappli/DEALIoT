@@ -485,10 +485,14 @@ class DeploymentReadinessTests(unittest.TestCase):
         normalizer_container = normalizer["spec"]["template"]["spec"]["containers"][0]
         normalizer_env_names = {item["name"] for item in normalizer_container["env"]}
         self.assertIn("KAFKA_SASL_PASSWORD", normalizer_env_names)
+        self.assertIn("STREAM_NORMALIZER_HEALTH_BIND", normalizer_env_names)
         self.assertEqual(
             normalizer_container["image"],
             "ghcr.io/smartappli/dealiot-stream-normalizer:local-placeholder",
         )
+        self.assertIn("readinessProbe", normalizer_container)
+        self.assertIn("livenessProbe", normalizer_container)
+        self.assertEqual(normalizer_container["ports"][0]["name"], "health")
 
         flink_docs = [
             document

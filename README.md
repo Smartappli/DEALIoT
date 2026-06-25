@@ -178,6 +178,16 @@ Populate the secret files listed in `README` runbooks and `.env.example`. Local 
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 ```
 
+To run the lightweight Rust Kafka-to-Kafka normalizer locally instead of submitting the PyFlink
+minimal streaming job, enable its Compose profile:
+
+```bash
+docker compose --profile rust-normalizer -f docker-compose.yml up -d --build stream-normalizer
+```
+
+Do not run the Rust normalizer and the PyFlink minimal job against the same `features.events` and
+`state.latest` topics unless you are intentionally comparing both implementations.
+
 Useful local endpoints when the development overlay is active:
 
 | Service | Endpoint |

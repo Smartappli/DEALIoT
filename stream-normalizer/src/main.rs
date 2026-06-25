@@ -7,8 +7,10 @@ use rdkafka::consumer::{Consumer, StreamConsumer};
 use rdkafka::message::Message;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::Timeout;
+use std::thread;
 use std::time::Duration;
 use thiserror::Error;
+use tiny_http::{Header, Response, Server, StatusCode};
 
 #[derive(Debug, Error)]
 enum NormalizerError {
@@ -24,6 +26,7 @@ enum NormalizerError {
 async fn main() -> Result<(), NormalizerError> {
     env_logger::init();
     let config = NormalizerConfig::from_env();
+    start_health_server(config.health_bind.clone(), config.health_port);
     run(config).await
 }
 
@@ -148,4 +151,30 @@ fn apply_security_config(client_config: &mut ClientConfig) {
     {
         client_config.set("enable.ssl.certificate.verification", "false");
     }
+}
+
+fn start_health_server(bind: String, port: u16) {
+    thread::spawn(move || {
+        let server = match Server::http((bind.as_str(), port)) {
+            Ok(server) => server,
+            Err(error) => {
+                error!("health server failed to bind: {error}");
+                return;
+            }
+        };
+
+        for request in server.incoming_requests() {
+            if request.url() == "/healthz" {
+                let response = Response::from_string(r#"{"status":"ok"}"#)
+                    .with_status_code(StatusCode(200))
+                    .with_header(
+                        Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
+                            .expect("static header is valid"),
+                    );
+                let _ = request.respond(response);
+            } else {
+                let _ = request.respond(Response::empty(StatusCode(404)));
+            }
+        }
+    });
 }
