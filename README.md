@@ -125,6 +125,9 @@ docs/                                      Architecture, compliance, and runbook
 flink/jobs/                                PyFlink streaming jobs
 management-console/                        Internal operational console
 mqtt-kafka-bridge/                         Rust MQTT to Kafka ingestion bridge
+stream-normalizer/                         Rust Kafka-to-Kafka lightweight stream normalizer
+dealiot-event-contracts/                   Shared Rust event contracts and validators
+wildfi-decoder-runner/                     Rust runner for the packaged WildFi Java decoder
 pipelines/                                 Replay and backfill utilities
 scripts/                                   Bootstrap and smoke-test scripts
 tests/                                     Unit, integration, and deployment guardrail tests
@@ -287,7 +290,7 @@ DEALIoT supports WildFi telemetry through:
 - MQTT subscription to `$share/ingestors/wildfi/#`.
 - Routing decoded GPS/GNSS payloads to `raw.gps`.
 - Routing decoded IMU, environment, proximity, movement, and metadata payloads to `raw.sensor`.
-- Offline binary decoding through the packaged `wildfi-decoder` image.
+- Offline binary decoding through the packaged `wildfi-decoder` image, driven by a Rust runner around the pinned upstream Java decoder.
 
 References:
 
