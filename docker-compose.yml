@@ -1811,7 +1811,7 @@ services:
       - orchestration_net
 
   postgres-exporter-rw:
-    image: quay.io/prometheuscommunity/postgres-exporter:v0.19.1
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.20.0
     container_name: postgres-exporter-rw
     hostname: postgres-exporter-rw
     restart: unless-stopped
