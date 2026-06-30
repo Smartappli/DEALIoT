@@ -223,7 +223,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "tiny_http",
  "tokio",
  "uuid",
@@ -239,7 +239,7 @@ dependencies = [
  "rdkafka",
  "serde",
  "serde_json",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "tiny_http",
  "tokio",
 ]
@@ -248,7 +248,7 @@ dependencies = [
 name = "dealiot-wildfi-decoder-runner"
 version = "0.1.0"
 dependencies = [
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
