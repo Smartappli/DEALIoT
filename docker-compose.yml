@@ -1472,7 +1472,7 @@ services:
       - kafka_net
 
   beam-python-harness:
-    image: apache/beam_python3.13_sdk:2.74.0
+    image: apache/beam_python3.13_sdk:2.75.0
     container_name: beam-python-harness
     hostname: beam-python-harness
     restart: unless-stopped
@@ -1501,7 +1501,7 @@ services:
       start_period: 30s
 
   beam-cli:
-    image: apache/beam_python3.13_sdk:2.74.0
+    image: apache/beam_python3.13_sdk:2.75.0
     container_name: beam-cli
     hostname: beam-cli
     profiles: ["tools"]
