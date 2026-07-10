@@ -7,14 +7,12 @@ resources:
   - namespace.yaml
   - serviceaccount.yaml
   - configmap.yaml
+  - mqtt-broker.yaml
+  - kafka.yaml
   - mqtt-kafka-bridge.yaml
+  - verifier.yaml
 
 images:
   - name: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge
     newName: dealiot-mqtt-kafka-bridge
     newTag: ci
-
-secretGenerator:
-  - name: dealiot-secrets
-    literals:
-      - MQTT_PASSWORD=unused-smoke-placeholder

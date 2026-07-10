@@ -154,6 +154,7 @@ data:
           - media-raw-3d-videos
           - flink-checkpoints
           - flink-savepoints
+          - flink-ha
       airflow_metadata_db:
         required_security: tls
         required_secret_keys:
@@ -167,7 +168,7 @@ data:
       keys:
         - MQTT_PASSWORD
         - KAFKA_SASL_PASSWORD
-        - MANAGEMENT_CONSOLE_TOKEN
+        - MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET
         - AWS_ACCESS_KEY_ID
         - AWS_SECRET_ACCESS_KEY
         - AIRFLOW__CORE__FERNET_KEY
@@ -177,3 +178,5 @@ data:
         - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
         - AIRFLOW__CELERY__RESULT_BACKEND
         - AIRFLOW__CELERY__BROKER_URL
+      optional_keys:
+        - MANAGEMENT_CONSOLE_TOKEN

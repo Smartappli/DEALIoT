@@ -1,12 +1,11 @@
 # syntax=docker/dockerfile:1.7
 
-ARG FLINK_BASE_IMAGE=apache/flink:2.0.0-scala_2.12-java17
+ARG FLINK_BASE_IMAGE=apache/flink:2.2.1-scala_2.12-java17
 FROM ${FLINK_BASE_IMAGE}
 
 USER root
 
-ARG FLINK_CONNECTOR_BASE_VERSION=2.0.0
-ARG FLINK_KAFKA_CONNECTOR_VERSION=4.0.1-2.0
+ARG FLINK_KAFKA_CONNECTOR_VERSION=5.0.0-2.2
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -49,16 +48,7 @@ import os
 from pathlib import Path
 from urllib.request import urlretrieve
 
-artifacts = (
-    (
-        "flink-sql-connector-kafka",
-        os.environ["FLINK_KAFKA_CONNECTOR_VERSION"],
-    ),
-    (
-        "flink-connector-base",
-        os.environ["FLINK_CONNECTOR_BASE_VERSION"],
-    ),
-)
+artifacts = (("flink-sql-connector-kafka", os.environ["FLINK_KAFKA_CONNECTOR_VERSION"]),)
 
 lib_dir = Path("/opt/flink/lib")
 for artifact, version in artifacts:

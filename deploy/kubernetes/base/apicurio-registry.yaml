@@ -74,6 +74,10 @@ spec:
                   key: APICURIO_EVENTS_KAFKA_TOPIC
             - name: APICURIO_STORAGE_ENABLE_AUTOMATIC_GROUP_CREATION
               value: "true"
+            - name: APICURIO_RULES_GLOBAL_VALIDITY
+              value: FULL
+            - name: APICURIO_RULES_GLOBAL_COMPATIBILITY
+              value: BACKWARD_TRANSITIVE
           readinessProbe:
             httpGet:
               path: /apis/registry/v3/system/info

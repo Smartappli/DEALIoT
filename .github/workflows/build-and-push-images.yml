@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
       packages: write
     strategy:
       fail-fast: false
@@ -66,6 +67,9 @@ jobs:
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
       - name: Build and push ${{ matrix.image_name }}
         run: |
           OWNER_LC="${GITHUB_REPOSITORY_OWNER,,}"
@@ -82,9 +86,14 @@ jobs:
             --push \
             --sbom=true \
             --provenance=true \
+            --metadata-file "${RUNNER_TEMP}/build-metadata.json" \
             "${TAGS[@]}" \
             "${BUILD_ARGS[@]}" \
             --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
             --label "org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
             --file "${{ matrix.dockerfile }}" \
             "${{ matrix.context }}"
+          DIGEST="$(jq -r '."containerimage.digest"' "${RUNNER_TEMP}/build-metadata.json")"
+          test -n "${DIGEST}"
+          test "${DIGEST}" != "null"
+          cosign sign --yes "${IMAGE}@${DIGEST}"

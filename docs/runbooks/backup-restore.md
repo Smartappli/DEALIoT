@@ -61,4 +61,13 @@ The drill must finish with:
 
 ```bash
 bash scripts/smoke-e2e.sh
+bash scripts/fault-injection-smoke.sh
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait airflow-postgres
+bash scripts/backup-restore-drill.sh
 ```
+
+The automated restore drill dumps Airflow PostgreSQL, restores it into an isolated database,
+compares public table counts, verifies critical Kafka topic definitions, enforces
+`RESTORE_RTO_SECONDS` (300 seconds by default), and publishes a result to
+`resilience.backup.tests`. Production providers still require their native point-in-time recovery,
+cross-region Kafka replication, and object-storage versioning procedures.

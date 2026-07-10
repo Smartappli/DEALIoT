@@ -1,27 +1,31 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mqtt-kafka-bridge
   labels:
     app.kubernetes.io/name: mqtt-kafka-bridge
     app.kubernetes.io/part-of: dealiot
 spec:
+  serviceName: mqtt-kafka-bridge
+  podManagementPolicy: Parallel
   replicas: 2
   revisionHistoryLimit: 3
-  strategy:
+  updateStrategy:
     type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
   selector:
     matchLabels:
       app.kubernetes.io/name: mqtt-kafka-bridge
   template:
     metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
       labels:
         app.kubernetes.io/name: mqtt-kafka-bridge
         app.kubernetes.io/part-of: dealiot
     spec:
+      terminationGracePeriodSeconds: 60
       serviceAccountName: dealiot-runtime
       automountServiceAccountToken: false
       securityContext:
@@ -40,6 +44,12 @@ spec:
           env:
             - name: BRIDGE_HEALTH_BIND
               value: 0.0.0.0
+            - name: MQTT_CLIENT_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MQTT_CLEAN_SESSION
+              value: "false"
             - name: MQTT_PASSWORD_FILE
               value: /var/run/dealiot-secrets/mqtt-password
             - name: KAFKA_SASL_PASSWORD
@@ -53,10 +63,16 @@ spec:
               readOnly: true
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /readyz
               port: health
             initialDelaySeconds: 10
             periodSeconds: 15
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 5
+            failureThreshold: 12
           livenessProbe:
             httpGet:
               path: /healthz
@@ -83,6 +99,23 @@ spec:
             items:
               - key: MQTT_PASSWORD
                 path: mqtt-password
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mqtt-kafka-bridge
+  labels:
+    app.kubernetes.io/name: mqtt-kafka-bridge
+    app.kubernetes.io/part-of: dealiot
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: mqtt-kafka-bridge
+  ports:
+    - name: health
+      port: 8080
+      targetPort: health
 ---
 apiVersion: policy/v1
 kind: PodDisruptionBudget

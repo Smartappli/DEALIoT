@@ -59,3 +59,17 @@ scrape_configs:
     static_configs:
       - targets:
           - apicurio-registry:8080
+
+  - job_name: mqtt-kafka-bridge
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - mqtt-kafka-bridge:8080
+
+  - job_name: stream-normalizer
+    metrics_path: /metrics
+    dns_sd_configs:
+      - names:
+          - stream-normalizer
+        type: A
+        port: 8080

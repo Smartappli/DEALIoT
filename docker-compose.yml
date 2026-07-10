@@ -105,9 +105,8 @@ x-flink-py-build: &flink-py-build
   context: .
   dockerfile: flink/Dockerfile.pyflink
   args:
-    FLINK_BASE_IMAGE: "apache/flink:2.0.0-scala_2.12-java17"
-    FLINK_CONNECTOR_BASE_VERSION: "2.0.0"
-    FLINK_KAFKA_CONNECTOR_VERSION: "4.0.1-2.0"
+    FLINK_BASE_IMAGE: "apache/flink:2.2.1-scala_2.12-java17"
+    FLINK_KAFKA_CONNECTOR_VERSION: "5.0.0-2.2"
 
 x-etcd-health: &etcd-health
   healthcheck:
@@ -1221,6 +1220,8 @@ services:
     environment:
       MQTT_HOST: "vernemq1"
       MQTT_PORT: "1883"
+      MQTT_CLIENT_ID: "mqtt-kafka-bridge"
+      MQTT_CLEAN_SESSION: "false"
       MQTT_USERNAME: "admin"
       MQTT_PASSWORD: "${VERNEMQ_ADMIN_PASSWORD:?define VERNEMQ_ADMIN_PASSWORD in .env}"
       MQTT_TOPICS: "${MQTT_TOPICS:-$$share/ingestors/devices/#,$$share/ingestors/wildfi/#}"
@@ -1228,7 +1229,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: "kafka1:9092,kafka2:9092,kafka3:9092"
       DEFAULT_KAFKA_TOPIC: "raw.sensor"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/readyz"]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -1255,9 +1256,10 @@ services:
       STREAM_NORMALIZER_SOURCE_TOPICS: "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,raw.video2d.meta,raw.video3d.meta"
       FEATURES_TOPIC: "features.events"
       STATE_TOPIC: "state.latest"
+      STREAM_NORMALIZER_STATE_OUTPUT_ENABLED: "false"
       KAFKA_AUTO_OFFSET_RESET: "earliest"
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/healthz"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/readyz"]
       interval: 30s
       timeout: 5s
       retries: 5
@@ -1267,7 +1269,7 @@ services:
 
   flink-jobmanager:
     build: *flink-py-build
-    image: custom-flink-py:2.0.0
+    image: custom-flink-py:2.2.1
     container_name: flink-jobmanager
     hostname: flink-jobmanager
     restart: unless-stopped
@@ -1278,7 +1280,7 @@ services:
       - source: seaweedfs_s3_secret_key
         target: seaweedfs_s3_secret_key
     environment:
-      ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.0.0.jar"
+      ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.2.1.jar;flink-metrics-prometheus-2.2.1.jar"
       FLINK_PYTHON: "/opt/flink/venv/bin/python"
       PYFLINK_CLIENT_EXECUTABLE: "/opt/flink/venv/bin/python"
       FLINK_PROPERTIES: |
@@ -1324,7 +1326,7 @@ services:
       start_period: 45s
 
   flink-taskmanager-1:
-    image: custom-flink-py:2.0.0
+    image: custom-flink-py:2.2.1
     pull_policy: never
     container_name: flink-taskmanager-1
     hostname: flink-taskmanager-1
@@ -1342,7 +1344,7 @@ services:
       seaweedfs-init:
         condition: service_completed_successfully
     environment:
-      ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.0.0.jar"
+      ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.2.1.jar;flink-metrics-prometheus-2.2.1.jar"
       FLINK_PYTHON: "/opt/flink/venv/bin/python"
       PYFLINK_CLIENT_EXECUTABLE: "/opt/flink/venv/bin/python"
       FLINK_PROPERTIES: |
@@ -1374,7 +1376,7 @@ services:
       - orchestration_net
 
   flink-taskmanager-2:
-    image: custom-flink-py:2.0.0
+    image: custom-flink-py:2.2.1
     pull_policy: never
     container_name: flink-taskmanager-2
     hostname: flink-taskmanager-2
@@ -1392,7 +1394,7 @@ services:
       seaweedfs-init:
         condition: service_completed_successfully
     environment:
-      ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.0.0.jar"
+      ENABLE_BUILT_IN_PLUGINS: "flink-s3-fs-hadoop-2.2.1.jar;flink-metrics-prometheus-2.2.1.jar"
       FLINK_PYTHON: "/opt/flink/venv/bin/python"
       PYFLINK_CLIENT_EXECUTABLE: "/opt/flink/venv/bin/python"
       FLINK_PROPERTIES: |
@@ -1425,7 +1427,7 @@ services:
 
   flink-cli:
     build: *flink-py-build
-    image: custom-flink-py:2.0.0
+    image: custom-flink-py:2.2.1
     container_name: flink-cli
     hostname: flink-cli
     profiles: ["tools"]

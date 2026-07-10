@@ -7,10 +7,9 @@ metadata:
     dealiot.io/environment: ci-smoke
 data:
   DEFAULT_KAFKA_TOPIC: "raw.sensor"
-  KAFKA_BOOTSTRAP_SERVERS: "localhost:9092"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
   LOG_LEVEL: "INFO"
-  MQTT_HOST: "localhost"
+  MQTT_HOST: "mqtt-broker"
   MQTT_PORT: "1883"
   MQTT_TOPICS: "$share/ingestors/devices/#,$share/ingestors/wildfi/#"
-  MQTT_USERNAME: "admin"
   WILDFI_TOPIC_PREFIXES: "wildfi,wild-fi"

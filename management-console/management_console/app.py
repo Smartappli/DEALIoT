@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import base64
 import concurrent.futures
+import hmac
 import http.client
 import ipaddress
 import json
+import logging
 import os
 import socket
 from datetime import UTC, datetime
@@ -12,7 +14,7 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, cast
-from urllib.parse import ParseResult, urlparse
+from urllib.parse import ParseResult, urlencode, urlparse
 
 from management_console.catalog import (
     COMPONENTS,
@@ -44,11 +46,102 @@ STATIC_DIR = Path(__file__).resolve().parents[1] / "static"
 DEFAULT_TIMEOUT_SECONDS = 2.0
 MAX_REQUEST_BYTES = 65536
 TRUTHY_ENV_VALUES = {"1", "true", "yes", "on"}
+LOGGER = logging.getLogger("dealiot.management_console")
 
 
 def management_console_token() -> str | None:
     value = os.getenv("MANAGEMENT_CONSOLE_TOKEN", "").strip()
     return value or None
+
+
+def csv_env(name: str, default: str) -> set[str]:
+    return {item.strip() for item in os.getenv(name, default).split(",") if item.strip()}
+
+
+def token_roles(claims: dict[str, Any]) -> set[str]:
+    roles = set(claims.get("roles", [])) if isinstance(claims.get("roles"), list) else set()
+    realm_access = claims.get("realm_access")
+    if isinstance(realm_access, dict) and isinstance(realm_access.get("roles"), list):
+        roles.update(str(role) for role in realm_access["roles"])
+    scope = claims.get("scope")
+    if isinstance(scope, str):
+        roles.update(scope.split())
+    return {str(role) for role in roles}
+
+
+def introspect_oidc_token(token: str) -> dict[str, Any] | None:
+    endpoint = os.getenv("MANAGEMENT_CONSOLE_OIDC_INTROSPECTION_URL", "").strip()
+    if not endpoint:
+        return None
+
+    client_id = os.getenv("MANAGEMENT_CONSOLE_OIDC_CLIENT_ID", "").strip()
+    client_secret = os.getenv("MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET", "").strip()
+    if not client_id or not client_secret:
+        LOGGER.error("OIDC introspection is configured without client credentials")
+        return {}
+
+    credentials = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode("ascii")
+    body = urlencode({"token": token}).encode("ascii")
+    try:
+        response = open_http_request(
+            "POST",
+            endpoint,
+            timeout=timeout_seconds(),
+            body=body,
+            headers={
+                "Authorization": f"Basic {credentials}",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
+            },
+        )
+    except (OSError, ValueError) as exc:
+        LOGGER.warning("OIDC introspection failed: %s", exc)
+        return {}
+
+    if response.getcode() >= HTTPStatus.BAD_REQUEST:
+        return {}
+    try:
+        claims = json.loads(response.read().decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    if not isinstance(claims, dict) or claims.get("active") is not True:
+        return {}
+    return claims
+
+
+def bearer_token(authorization: str | None) -> str | None:
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.removeprefix("Bearer ").strip()
+    return token or None
+
+
+def authorization_level(authorization: str | None) -> str | None:
+    token = bearer_token(authorization)
+    if token is None:
+        return None
+
+    if os.getenv("MANAGEMENT_CONSOLE_OIDC_INTROSPECTION_URL", "").strip():
+        claims = introspect_oidc_token(token) or {}
+        roles = token_roles(claims)
+        write_roles = csv_env(
+            "MANAGEMENT_CONSOLE_OIDC_WRITE_ROLES",
+            "dealiot-write,dealiot-admin",
+        )
+        read_roles = csv_env(
+            "MANAGEMENT_CONSOLE_OIDC_READ_ROLES",
+            "dealiot-read,dealiot-write,dealiot-admin",
+        )
+        if roles & write_roles:
+            return "write"
+        if roles & read_roles:
+            return "read"
+        return None
+
+    legacy_token = management_console_token()
+    if legacy_token is not None and hmac.compare_digest(token, legacy_token):
+        return "write"
+    return None
 
 
 def bool_env(name: str) -> bool:
@@ -350,19 +443,27 @@ def read_json_body(handler: Any) -> dict[str, Any]:
 class ManagementConsoleHandler(BaseHTTPRequestHandler):
     server_version = "DEALIoTManagementConsole/1.0"
 
-    def request_authorized(self) -> bool:
-        token = management_console_token()
-        if token is None:
+    def request_authorized(self, required_level: str = "read") -> bool:
+        if (
+            not os.getenv("MANAGEMENT_CONSOLE_OIDC_INTROSPECTION_URL", "").strip()
+            and management_console_token() is None
+        ):
             return True
-        return self.headers.get("Authorization") == f"Bearer {token}"
+        level = authorization_level(self.headers.get("Authorization"))
+        return level == "write" or (level == "read" and required_level == "read")
 
     def discard_request_body(self) -> None:
         length = int(self.headers.get("Content-Length", "0") or "0")
         if length > 0:
             self.rfile.read(min(length, MAX_REQUEST_BYTES + 1))
 
-    def require_authorization(self, *, discard_body: bool = False) -> bool:
-        if self.request_authorized():
+    def require_authorization(
+        self,
+        *,
+        required_level: str = "read",
+        discard_body: bool = False,
+    ) -> bool:
+        if self.request_authorized(required_level):
             return True
         if discard_body:
             self.discard_request_body()
@@ -400,7 +501,7 @@ class ManagementConsoleHandler(BaseHTTPRequestHandler):
         self.serve_static()
 
     def do_POST(self) -> None:
-        if not self.require_authorization(discard_body=True):
+        if not self.require_authorization(required_level="write", discard_body=True):
             return
 
         actions = {

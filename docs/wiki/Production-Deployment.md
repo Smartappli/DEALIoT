@@ -45,7 +45,8 @@ Create `dealiot-secrets` with these keys:
 |---|---|
 | `MQTT_PASSWORD` | MQTT-Kafka bridge |
 | `KAFKA_SASL_PASSWORD` | Bridge, Flink, Airflow/backfill, Apicurio |
-| `MANAGEMENT_CONSOLE_TOKEN` | Management Console API auth |
+| `MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET` | Management Console OIDC introspection |
+| `MANAGEMENT_CONSOLE_TOKEN` | Local or migration API auth fallback |
 | `AWS_ACCESS_KEY_ID` | Flink and Airflow/backfill |
 | `AWS_SECRET_ACCESS_KEY` | Flink and Airflow/backfill |
 | `AIRFLOW__CORE__FERNET_KEY` | Airflow |
@@ -72,12 +73,12 @@ The rendered stack must use immutable production image tags and must not render 
 
 - Kubernetes: use rollout history, GitOps revision rollback, or image tag rollback.
 - Swarm: update configuration uses `failure_action: rollback`.
-- Flink: use savepoints before risky job upgrades. A future Flink Operator migration should make savepoint-driven upgrades first class.
+- Flink: production uses operator-managed savepoint upgrades and job-aware autoscaling.
 
 ## Go-Live Blockers To Resolve Per Environment
 
 - Private dependency endpoints and CIDRs.
-- Real secret-manager integration.
-- Cluster admission policy for image signature verification.
-- Staging E2E test against real Kafka, MQTT, and S3 dependencies.
-- SLOs and alert thresholds for Kafka lag, ingest latency, DLQ rate, Flink checkpointing, Airflow failures, and storage availability.
+- Real secret-store, OIDC, and signer mappings.
+- Installation of the optional secret, admission, monitoring, and Flink operator controllers.
+- Execution of E2E, fault-injection, and restore drills against staging-managed dependencies.
+- Site-calibrated SLO thresholds after the initial staging observation window.

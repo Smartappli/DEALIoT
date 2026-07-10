@@ -46,6 +46,8 @@ LONGITUDE_MIN = -180
 LONGITUDE_MAX = 180
 HEADING_MIN = 0
 HEADING_MAX = 360
+EVENT_ID_LENGTH = 64
+SEMANTIC_VERSION_PARTS = 3
 
 MEDIA_TOPICS = {
     RAW_IMAGE2D_META_TOPIC,
@@ -101,6 +103,9 @@ MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
         "format",
         "height",
         "ingested_at",
+        "event_id",
+        "occurred_at",
+        "schema_version",
         "mqtt_topic",
         "object_key",
         "object_uri",
@@ -121,6 +126,9 @@ MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
         "device_id",
         "format",
         "ingested_at",
+        "event_id",
+        "occurred_at",
+        "schema_version",
         "mqtt_topic",
         "object_key",
         "object_uri",
@@ -146,6 +154,9 @@ MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
         "frame_rate",
         "height",
         "ingested_at",
+        "event_id",
+        "occurred_at",
+        "schema_version",
         "mqtt_topic",
         "object_key",
         "object_uri",
@@ -169,6 +180,9 @@ MEDIA_ALLOWED_FIELDS: dict[str, set[str]] = {
         "frame_rate",
         "height",
         "ingested_at",
+        "event_id",
+        "occurred_at",
+        "schema_version",
         "mqtt_topic",
         "object_key",
         "object_uri",
@@ -194,13 +208,16 @@ STRING_FIELDS = {
     "content_type",
     "coordinate_frame",
     "device_id",
+    "event_id",
     "format",
     "ingested_at",
     "mqtt_topic",
     "object_key",
     "object_uri",
+    "occurred_at",
     "representation",
     "rig_id",
+    "schema_version",
     "sensor_id",
     "source",
     "timestamp",
@@ -272,7 +289,26 @@ def validate_event(topic: str, event: dict[str, Any]) -> list[str]:
 
     _validate_types(event, errors)
     _validate_ranges(event, errors)
+    _validate_envelope(event, errors)
     return errors
+
+
+def _validate_envelope(event: dict[str, Any], errors: list[str]) -> None:
+    event_id = event.get("event_id")
+    if event_id is not None and (
+        not isinstance(event_id, str)
+        or len(event_id) != EVENT_ID_LENGTH
+        or any(character not in "0123456789abcdef" for character in event_id)
+    ):
+        errors.append("event_id must be a 64-character hexadecimal SHA-256 digest")
+
+    schema_version = event.get("schema_version")
+    if schema_version is not None and (
+        not isinstance(schema_version, str)
+        or len(schema_version.split(".")) != SEMANTIC_VERSION_PARTS
+        or not all(part.isdigit() for part in schema_version.split("."))
+    ):
+        errors.append("schema_version must use semantic version format")
 
 
 def _validate_types(event: dict[str, Any], errors: list[str]) -> None:

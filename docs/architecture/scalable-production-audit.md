@@ -80,35 +80,110 @@ Corrections:
 - Added versioned wiki source pages under `docs/wiki` so documentation can be published as soon as the GitHub Wiki is enabled.
 - Added this audit record as a durable architecture decision trail.
 
-## Rust Conversion Decision
+## Iteration 6: Delivery Semantics And Truthful Health
 
-Rust was considered for performance-sensitive ingestion paths. No Rust refactor was applied in this iteration because:
+Findings:
 
-- The local environment has no Rust toolchain, so a Rust component could not be compiled or tested.
-- The current bottlenecks are deployment, security, and scaling contracts rather than CPU-bound parsing.
-- Replacing the MQTT-Kafka bridge without binary CI and operational soak tests would increase production risk.
+- The Rust normalizer disabled Kafka auto-commit and stored offsets locally, but never committed
+  them to Kafka. A restart could therefore replay an unbounded range of already processed records.
+- The Rust health endpoints always returned success, even while MQTT or Kafka was unavailable.
+- MQTT messages were acknowledged by the client event loop before the downstream Kafka guarantee
+  was explicit, leaving an avoidable loss window.
+- Random bridge client IDs prevented reliable MQTT session recovery after reconnects.
 
-Recommended future Rust candidates:
+Corrections:
 
-- A standalone high-throughput MQTT-Kafka bridge once a Rust toolchain, container build, integration tests, and canary rollout path are added.
-- CPU-heavy binary decoding or validation steps that can be isolated behind stable input/output contracts.
+- The normalizer now commits each source message synchronously after all required output records
+  are acknowledged.
+- Both Rust producers enable Kafka idempotence.
+- The bridge uses manual MQTT acknowledgements after Kafka delivery and persistent sessions with a
+  stable client ID.
+- Kubernetes runs the bridge as a StatefulSet; Swarm derives the client ID from the stable task
+  slot. Bridge scale-down is deliberately rate-limited.
+- `/healthz` remains a liveness endpoint, while `/readyz` reflects dependency readiness.
+- Deployment tests enforce the delivery and workload identity contract.
+
+## Rust Runtime Status
+
+The production MQTT-Kafka bridge, stream normalizer, shared event contracts, and WildFi decoder
+runner are Rust workspace members and are built and tested in CI. The Python bridge module remains
+only as a compatibility reference for existing unit fixtures; production images execute the Rust
+binary.
+
+## Iteration 7: Job-Aware Flink Scaling
+
+Findings:
+
+- The production overlay attached a CPU-based HPA directly to standalone Flink TaskManager pods.
+- Adding TaskManagers does not change the parallelism of an already submitted standalone job, and
+  removing them can force task recovery without a coordinated rescale or savepoint.
+
+Corrections:
+
+- Removed the TaskManager HPA and retained the explicit three-replica production floor.
+- Documented savepoint-driven manual capacity changes as the current operating model.
+- Kept Flink Kubernetes Operator adoption as the prerequisite for automatic, job-aware scaling.
 
 ## Current Go-Live Readiness
 
+## Iteration 8: Processing Ownership And Operator Lifecycle
+
+- Accepted Flink as the sole authoritative owner of `state.latest` in production.
+- Split Flink and Rust into mutually exclusive Kustomize packages.
+- Migrated production to Flink Kubernetes Operator application mode with Kubernetes HA metadata,
+  S3 checkpoints/savepoints, savepoint upgrades, and job-aware autoscaling.
+- Aligned the Flink JVM image, PyFlink wheel, driver/plugins, and Kafka connector on the operator
+  1.15 validated Flink 2.2 line.
+- Disabled state output by default in the stateless Rust alternative.
+
+## Iteration 9: Contracts, Identity, And Registry Governance
+
+- Added deterministic SHA-256 event IDs, schema versions, and occurrence timestamps at ingestion.
+- Added shared cross-language envelope fixtures and validation in Python and Rust.
+- Made Apicurio schemas canonical, enabled full validity and backward-transitive compatibility, and
+  documented a provider-neutral Kafka topic/principal contract.
+
+## Iteration 10: Identity And Supply Chain
+
+- Added OIDC token introspection and read/write role mapping to Management Console.
+- Enabled OIDC and role/owner authorization for Apicurio production.
+- Added keyless Cosign signing to the image workflow and a Kyverno admission policy for the
+  protected workflow identity.
+- Added an External Secrets contract so literal production secrets are not required.
+
+## Iteration 11: Runtime Evidence And SLOs
+
+- Added dependency-aware startup/readiness, SIGTERM draining, and Prometheus metrics to Rust
+  runtimes.
+- Replaced sleeping smoke placeholders with real MQTT publication and Kafka consumption in both
+  kind and Swarm.
+- Added PodMonitor, alert-rule, SLO, error-budget, and ownership contracts.
+
+## Iteration 12: Recovery Evidence
+
+- Added an automated broker/bridge fault-injection drill that checks no loss and bounded duplicates.
+- Added an Airflow PostgreSQL logical backup/isolated restore drill with table-count verification,
+  an RTO gate, Kafka topic recovery checks, and evidence publication.
+- Integrated both drills into the E2E workflow.
+
 Ready for staging:
 
-- Runtime security defaults are wired.
-- Kubernetes and Swarm production render contracts are tested.
-- Pod Security `restricted` is declared and tested.
-- CI validates deployment manifests and runtime behavior.
-- Documentation source is versioned.
+- Processing ownership, event identity, delivery semantics, restore verification, and fault
+  injection are executable contracts.
+- Kubernetes and Swarm perform actual MQTT-to-Kafka flow tests.
+- OIDC, immutable signed images, optional admission verification, default deny, and secret-manager
+  integration are represented in deployment assets.
 
-Still environment-specific before real production:
+Environment-specific before production:
 
-- Replace example endpoints with private production endpoints.
-- Provide secrets through a real secret manager.
-- Narrow NetworkPolicy CIDRs.
-- Configure image signature admission verification.
-- Run E2E tests against real staging Kafka, MQTT, S3, PostgreSQL, and Redis.
-- Define SLOs and alert thresholds.
-- Decide whether Flink should move from session deployment to Flink Operator for savepoint-driven lifecycle management.
+- Replace example endpoints/CIDRs and bind the OIDC roles to the real identity provider.
+- Install and configure External Secrets Operator, Kyverno, Prometheus Operator, and Flink Operator.
+- Patch the remote secret store and signer identity, then enable the optional platform components.
+- Run the drills against staging-managed dependencies and calibrate SLO thresholds from observed
+  telemetry.
+
+## Residual Finding
+
+The legacy Python bridge remains as a compatibility fixture while Rust defines the production
+ingestion behavior. Retiring those fixtures is a cleanup task and no longer blocks the production
+architecture.

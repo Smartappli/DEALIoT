@@ -4,6 +4,7 @@ use dealiot_event_contracts::{
     build_dlq_event, now_iso, validate_event, DLQ_TOPIC, RAW_GPS_TOPIC, RAW_IMAGE2D_META_TOPIC,
     RAW_IMAGE3D_META_TOPIC, RAW_SENSOR_TOPIC, RAW_VIDEO2D_META_TOPIC, RAW_VIDEO3D_META_TOPIC,
 };
+use ring::digest::{digest, SHA256};
 use serde_json::{json, Map, Value};
 use std::collections::BTreeSet;
 use std::env;
@@ -47,6 +48,8 @@ pub enum BridgeError {
 
 #[derive(Debug, Clone)]
 pub struct BridgeConfig {
+    pub mqtt_client_id: String,
+    pub mqtt_clean_session: bool,
     pub mqtt_host: String,
     pub mqtt_port: u16,
     pub mqtt_username: Option<String>,
@@ -73,6 +76,8 @@ impl BridgeConfig {
         let mqtt_topics_default = legacy_topic.as_deref().unwrap_or(DEFAULT_MQTT_TOPICS);
 
         Ok(Self {
+            mqtt_client_id: mqtt_client_id(),
+            mqtt_clean_session: bool_env("MQTT_CLEAN_SESSION", false),
             mqtt_host: env_or_default("MQTT_HOST", "vernemq1"),
             mqtt_port,
             mqtt_username: env::var("MQTT_USERNAME")
@@ -101,6 +106,21 @@ impl BridgeConfig {
             bridge_health_bind: env_or_default("BRIDGE_HEALTH_BIND", "127.0.0.1"),
         })
     }
+}
+
+fn mqtt_client_id() -> String {
+    env::var("MQTT_CLIENT_ID")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| {
+            env::var("HOSTNAME")
+                .ok()
+                .filter(|value| !value.trim().is_empty())
+        })
+        .map_or_else(
+            || format!("mqtt-kafka-bridge-{}", std::process::id()),
+            |value| value.trim().to_string(),
+        )
 }
 
 #[derive(Debug, Clone)]
@@ -339,6 +359,7 @@ pub fn build_event(msg: &MqttMessage, config: &BridgeConfig) -> BuiltEvent {
     let ingested_at = now_iso();
     let timestamp = pick_event_timestamp(&decoded, &ingested_at);
     let source = event_source_for_topic(&msg.topic, &config.wildfi_topic_prefixes);
+    let event_id = deterministic_event_id(source, &msg.topic, &msg.payload);
 
     let mut event = Map::new();
     if kafka_topic == RAW_SENSOR_TOPIC {
@@ -394,6 +415,12 @@ pub fn build_event(msg: &MqttMessage, config: &BridgeConfig) -> BuiltEvent {
     }
 
     event.insert("mqtt_topic".to_string(), Value::String(msg.topic.clone()));
+    event.insert("event_id".to_string(), Value::String(event_id));
+    event.insert(
+        "schema_version".to_string(),
+        Value::String("1.0.0".to_string()),
+    );
+    event.insert("occurred_at".to_string(), Value::String(timestamp));
     event.insert("qos".to_string(), json!(msg.qos));
     event.insert("retain".to_string(), json!(msg.retain));
     event.insert("source".to_string(), Value::String(source.to_string()));
@@ -403,6 +430,21 @@ pub fn build_event(msg: &MqttMessage, config: &BridgeConfig) -> BuiltEvent {
         key: pick_key(&msg.topic, &config.wildfi_topic_prefixes),
         event,
     }
+}
+
+pub fn deterministic_event_id(source: &str, source_topic: &str, payload: &[u8]) -> String {
+    let mut material = Vec::with_capacity(source.len() + source_topic.len() + payload.len() + 2);
+    material.extend_from_slice(source.as_bytes());
+    material.push(0);
+    material.extend_from_slice(source_topic.as_bytes());
+    material.push(0);
+    material.extend_from_slice(payload);
+
+    digest(&SHA256, &material)
+        .as_ref()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 pub fn route_event(kafka_topic: &str, event: Map<String, Value>) -> (String, Value) {
@@ -473,6 +515,8 @@ mod tests {
 
     fn test_config() -> BridgeConfig {
         BridgeConfig {
+            mqtt_client_id: "mqtt-kafka-bridge-test".to_string(),
+            mqtt_clean_session: false,
             mqtt_host: "localhost".to_string(),
             mqtt_port: 1883,
             mqtt_username: None,
@@ -564,5 +608,18 @@ mod tests {
         assert_eq!(built.key, b"WF-001");
         assert_eq!(built.event["timestamp"], "2024-01-01T00:00:00+00:00");
         assert_eq!(built.event["source"], "wildfi-mqtt");
+        assert_eq!(built.event["schema_version"], "1.0.0");
+        assert_eq!(built.event["occurred_at"], "2024-01-01T00:00:00+00:00");
+        assert_eq!(built.event["event_id"].as_str().unwrap().len(), 64);
+    }
+
+    #[test]
+    fn event_identity_is_stable_and_payload_sensitive() {
+        let first = deterministic_event_id("mqtt-bridge", "devices/a", b"one");
+        let replay = deterministic_event_id("mqtt-bridge", "devices/a", b"one");
+        let changed = deterministic_event_id("mqtt-bridge", "devices/a", b"two");
+
+        assert_eq!(first, replay);
+        assert_ne!(first, changed);
     }
 }

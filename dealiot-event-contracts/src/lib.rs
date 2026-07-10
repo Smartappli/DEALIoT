@@ -18,6 +18,7 @@ const LONGITUDE_MIN: f64 = -180.0;
 const LONGITUDE_MAX: f64 = 180.0;
 const HEADING_MIN: f64 = 0.0;
 const HEADING_MAX: f64 = 360.0;
+const EVENT_ID_LENGTH: usize = 64;
 
 pub fn now_iso() -> String {
     Utc::now().to_rfc3339()
@@ -74,7 +75,34 @@ pub fn validate_event(topic: &str, event: &Map<String, Value>) -> Vec<String> {
 
     validate_types(event, &mut errors);
     validate_ranges(event, &mut errors);
+    validate_envelope(event, &mut errors);
     errors
+}
+
+fn validate_envelope(event: &Map<String, Value>, errors: &mut Vec<String>) {
+    if let Some(event_id) = event.get("event_id") {
+        let valid = event_id.as_str().is_some_and(|value| {
+            value.len() == EVENT_ID_LENGTH
+                && value
+                    .bytes()
+                    .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        });
+        if !valid {
+            errors.push("event_id must be a 64-character hexadecimal SHA-256 digest".to_string());
+        }
+    }
+
+    if let Some(schema_version) = event.get("schema_version") {
+        if !schema_version.as_str().is_some_and(|value| {
+            let parts = value.split('.').collect::<Vec<_>>();
+            parts.len() == 3
+                && parts
+                    .iter()
+                    .all(|part| !part.is_empty() && part.bytes().all(|byte| byte.is_ascii_digit()))
+        }) {
+            errors.push("schema_version must use semantic version format".to_string());
+        }
+    }
 }
 
 fn required_fields() -> HashMap<&'static str, BTreeSet<&'static str>> {
@@ -147,6 +175,9 @@ fn media_allowed_fields() -> HashMap<&'static str, BTreeSet<&'static str>> {
                 "format",
                 "height",
                 "ingested_at",
+                "event_id",
+                "occurred_at",
+                "schema_version",
                 "mqtt_topic",
                 "object_key",
                 "object_uri",
@@ -170,6 +201,9 @@ fn media_allowed_fields() -> HashMap<&'static str, BTreeSet<&'static str>> {
                 "device_id",
                 "format",
                 "ingested_at",
+                "event_id",
+                "occurred_at",
+                "schema_version",
                 "mqtt_topic",
                 "object_key",
                 "object_uri",
@@ -198,6 +232,9 @@ fn media_allowed_fields() -> HashMap<&'static str, BTreeSet<&'static str>> {
                 "frame_rate",
                 "height",
                 "ingested_at",
+                "event_id",
+                "occurred_at",
+                "schema_version",
                 "mqtt_topic",
                 "object_key",
                 "object_uri",
@@ -224,6 +261,9 @@ fn media_allowed_fields() -> HashMap<&'static str, BTreeSet<&'static str>> {
                 "frame_rate",
                 "height",
                 "ingested_at",
+                "event_id",
+                "occurred_at",
+                "schema_version",
                 "mqtt_topic",
                 "object_key",
                 "object_uri",
@@ -373,13 +413,16 @@ fn string_fields() -> BTreeSet<&'static str> {
         "content_type",
         "coordinate_frame",
         "device_id",
+        "event_id",
         "format",
         "ingested_at",
         "mqtt_topic",
         "object_key",
         "object_uri",
+        "occurred_at",
         "representation",
         "rig_id",
+        "schema_version",
         "sensor_id",
         "source",
         "timestamp",
@@ -445,5 +488,25 @@ mod tests {
 
         assert!(errors.contains(&"latitude out of range: -90..90".to_string()));
         assert!(errors.contains(&"field must be numeric: longitude".to_string()));
+    }
+
+    #[test]
+    fn shared_envelope_fixtures_match_rust_validation() {
+        let fixtures: Value = serde_json::from_str(include_str!(
+            "../../contracts/fixtures/event-envelope-cases.json"
+        ))
+        .expect("shared fixtures are valid JSON");
+
+        for case in fixtures.as_array().expect("fixtures are an array") {
+            let topic = case["topic"].as_str().expect("fixture topic");
+            let event = case["event"].as_object().expect("fixture event");
+            let expected: Vec<String> = case["expected_errors"]
+                .as_array()
+                .expect("fixture errors")
+                .iter()
+                .map(|value| value.as_str().expect("error string").to_string())
+                .collect();
+            assert_eq!(validate_event(topic, event), expected, "{}", case["name"]);
+        }
     }
 }

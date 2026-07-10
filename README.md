@@ -38,7 +38,7 @@ DEALIoT provides six runtime planes:
 | Ingestion | Secure MQTT ingestion and routing to Kafka topics | VerneMQ, Rust MQTT-Kafka bridge |
 | Event backbone | Durable event transport and schema governance | Kafka KRaft, Apicurio Registry |
 | Object storage | Raw and derived media object storage | SeaweedFS S3 locally, managed S3 in production |
-| Processing | Stream processing, feature projection, replay, and backfill | Flink, Beam, Airflow |
+| Processing | Stream processing, feature projection, replay, and backfill | Flink Kubernetes Operator, Beam, Airflow |
 | Storage | Operational SQL state and connection pooling | TimescaleDB, Patroni, HAProxy, PgBouncer |
 | Operations | Observability, control surfaces, and compliance evidence | Prometheus, Grafana, Management Console |
 
@@ -90,12 +90,13 @@ flowchart LR
   MQTT --> Bridge[MQTT-Kafka bridge]
   Bridge --> Kafka[(Kafka)]
   S3 --> Kafka
-  Kafka --> Registry[Apicurio Registry]
-  Kafka --> Flink[Flink streaming jobs]
+  Registry[Apicurio Registry] -. schema governance .-> Kafka
+  Kafka --> Flink[Flink Operator-managed job]
+  Flink --> Derived[(features.events / state.latest)]
   Kafka --> Beam[Beam pipelines]
   Airflow[Airflow orchestration] --> S3
   Airflow --> Kafka
-  Flink --> State[(TimescaleDB / state stores)]
+  Kafka --> State[(TimescaleDB / downstream stores)]
   Prometheus[Prometheus] --> Grafana[Grafana]
   Console[Management Console] --> Airflow
   Console --> Registry
@@ -110,6 +111,8 @@ flowchart LR
 - Runtime dependency traffic is encrypted or private: Kafka `SASL_SSL`, MQTT TLS, S3 TLS, PostgreSQL private connectivity, and Redis private connectivity.
 - Kubernetes production uses default-deny NetworkPolicies, Pod Security `restricted`, immutable image tags, readiness/liveness probes, HPA, PDB, and topology spread constraints.
 - Secrets are expected from a secret manager, External Secrets Operator, or equivalent out-of-band mechanism.
+- Flink is the authoritative production state owner; the Rust normalizer is an explicitly selected stateless alternative.
+- Production images are signed keylessly and the optional security component verifies the protected workflow identity at admission.
 
 ## Repository Layout
 
@@ -119,6 +122,7 @@ airflow/dags/                              Airflow DAGs
 apicurio/bootstrap/                        Registry schema bootstrap payloads
 dealiot_contracts/                         Python event contract helpers for tests and pipelines
 deploy/kubernetes/base/                    Kubernetes base runtime manifests
+deploy/kubernetes/processing/              Mutually exclusive Flink and Rust processing packages
 deploy/kubernetes/overlays/production/     Production Kustomize overlay
 deploy/swarm/                              Docker Swarm runtime and smoke stacks
 docs/                                      Architecture, compliance, and runbooks
@@ -152,6 +156,7 @@ Core runtime topics include:
 | `dlq.events` | Invalid or unroutable event records |
 
 Governance, Data Act, DGA, security, resilience, and compliance evidence topics are defined in `docker-compose.yml`, `apicurio/bootstrap/`, and `docs/runbooks/security-resilience-compliance.md`.
+The provider-neutral production topic and principal contract is maintained in `deploy/kafka/topics.yaml`.
 
 ## Local Development
 
@@ -252,6 +257,12 @@ The production runtime contract requires:
 - Default-deny Kubernetes NetworkPolicies.
 - Immutable image tags and CI checks that reject mutable tags and unresolved placeholders.
 - Container resources, readiness/liveness probes, dropped Linux capabilities, and disabled service-account token automounting.
+
+The ingestion path uses at-least-once delivery semantics. The Rust bridge acknowledges MQTT QoS 1
+messages only after Kafka confirms delivery, and the normalizer commits source offsets only after
+both derived records have been acknowledged. Kafka idempotent producers prevent duplicates caused
+by internal producer retries; consumers must still tolerate a duplicate if a process stops between
+downstream delivery and source acknowledgement.
 
 ## Testing And Quality Gates
 

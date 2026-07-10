@@ -8,9 +8,7 @@ resources:
   - serviceaccount.yaml
   - configmap.yaml
   - mqtt-kafka-bridge.yaml
-  - stream-normalizer.yaml
   - apicurio-registry.yaml
-  - flink-session.yaml
   - airflow.yaml
   - management-console.yaml
 

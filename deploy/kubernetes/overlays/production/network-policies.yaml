@@ -39,21 +39,120 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-namespace-internal
+  name: allow-required-east-west-egress
   labels:
     app.kubernetes.io/part-of: dealiot
     dealiot.io/environment: production
 spec:
-  podSelector: {}
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: dealiot
   policyTypes:
-    - Ingress
     - Egress
-  ingress:
-    - from:
-        - podSelector: {}
   egress:
     - to:
-        - podSelector: {}
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: airflow
+      ports:
+        - protocol: TCP
+          port: 8080
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: apicurio-registry
+      ports:
+        - protocol: TCP
+          port: 8080
+    - to:
+        - podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - flink-jobmanager
+                  - flink-taskmanager
+                  - flink-runtime
+      ports:
+        - protocol: TCP
+          port: 6122
+        - protocol: TCP
+          port: 6123
+        - protocol: TCP
+          port: 8081
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-control-plane-ingress
+  labels:
+    app.kubernetes.io/part-of: dealiot
+    dealiot.io/environment: production
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - airflow
+          - apicurio-registry
+          - flink-jobmanager
+          - flink-taskmanager
+          - flink-runtime
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              dealiot.io/flink-operator: allowed
+      ports:
+        - protocol: TCP
+          port: 8081
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - airflow
+                  - management-console
+                  - flink-jobmanager
+                  - flink-taskmanager
+                  - flink-runtime
+      ports:
+        - protocol: TCP
+          port: 6122
+        - protocol: TCP
+          port: 6123
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8081
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scrape
+  labels:
+    app.kubernetes.io/part-of: dealiot
+    dealiot.io/environment: production
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: dealiot
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              dealiot.io/monitoring: allowed
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 9250
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

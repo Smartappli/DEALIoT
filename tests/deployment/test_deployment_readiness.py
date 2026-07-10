@@ -10,11 +10,20 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 FULL_LENGTH_SHA = re.compile(r"^[0-9a-f]{40}$")
 WORKLOAD_MANIFEST_PATHS = [
     REPO_ROOT / "deploy" / "kubernetes" / "base" / "mqtt-kafka-bridge.yaml",
+    REPO_ROOT
+    / "deploy"
+    / "kubernetes"
+    / "processing"
+    / "rust-normalizer"
+    / "stream-normalizer.yaml",
     REPO_ROOT / "deploy" / "kubernetes" / "base" / "apicurio-registry.yaml",
-    REPO_ROOT / "deploy" / "kubernetes" / "base" / "flink-session.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "processing" / "flink" / "flink-session.yaml",
     REPO_ROOT / "deploy" / "kubernetes" / "base" / "airflow.yaml",
     REPO_ROOT / "deploy" / "kubernetes" / "base" / "management-console.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "mqtt-broker.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "kafka.yaml",
     REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "mqtt-kafka-bridge.yaml",
+    REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "verifier.yaml",
     REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "production" / "wildfi-decoder-job.yaml",
 ]
 
@@ -198,13 +207,23 @@ class DeploymentReadinessTests(unittest.TestCase):
                 "namespace.yaml",
                 "serviceaccount.yaml",
                 "configmap.yaml",
+                "mqtt-broker.yaml",
+                "kafka.yaml",
                 "mqtt-kafka-bridge.yaml",
+                "verifier.yaml",
             ],
         )
         self.assertFalse(
             any(resource.startswith("../../base/") for resource in overlay["resources"]),
             "kubectl apply -k rejects individual files loaded from outside the overlay root",
         )
+        verifier = yaml.safe_load(
+            (
+                REPO_ROOT / "deploy" / "kubernetes" / "overlays" / "ci-smoke" / "verifier.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(verifier["kind"], "Job")
+        self.assertTrue(verifier["spec"]["template"]["spec"]["initContainers"])
 
     def test_kubernetes_production_overlay_uses_immutable_images(self) -> None:
         overlay = yaml.safe_load(
@@ -225,6 +244,7 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("availability.yaml", overlay["resources"])
         self.assertIn("wildfi-decoder-config.yaml", overlay["resources"])
         self.assertIn("wildfi-decoder-job.yaml", overlay["resources"])
+        self.assertIn("../../processing/flink-operator", overlay["resources"])
         self.assertEqual(
             overlay["configMapGenerator"],
             [
@@ -305,7 +325,6 @@ class DeploymentReadinessTests(unittest.TestCase):
         for workload_name in (
             "mqtt-kafka-bridge",
             "apicurio-registry",
-            "flink-taskmanager",
             "airflow-worker",
         ):
             self.assertGreaterEqual(replicas[workload_name], 3)
@@ -345,7 +364,6 @@ class DeploymentReadinessTests(unittest.TestCase):
         hpas = {document["metadata"]["name"]: document for document in autoscaling_docs}
         for workload in (
             "mqtt-kafka-bridge",
-            "flink-taskmanager",
             "airflow-worker",
             "management-console",
         ):
@@ -356,6 +374,18 @@ class DeploymentReadinessTests(unittest.TestCase):
                 hpa_spec["maxReplicas"],
                 hpa_spec["minReplicas"],
             )
+        self.assertEqual(
+            hpas["mqtt-kafka-bridge"]["spec"]["scaleTargetRef"]["kind"],
+            "StatefulSet",
+        )
+        self.assertEqual(
+            hpas["mqtt-kafka-bridge"]["spec"]["behavior"]["scaleDown"],
+            {
+                "stabilizationWindowSeconds": 600,
+                "policies": [{"type": "Pods", "value": 1, "periodSeconds": 60}],
+            },
+        )
+        self.assertNotIn("flink-taskmanager", hpas)
 
         pdbs = {document["metadata"]["name"]: document for document in availability_docs}
         self.assertEqual(pdbs["airflow-worker"]["spec"]["minAvailable"], 2)
@@ -411,12 +441,13 @@ class DeploymentReadinessTests(unittest.TestCase):
         for required_secret in (
             "MQTT_PASSWORD",
             "KAFKA_SASL_PASSWORD",
-            "MANAGEMENT_CONSOLE_TOKEN",
+            "MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET",
             "AWS_SECRET_ACCESS_KEY",
             "AIRFLOW__CORE__FERNET_KEY",
             "AIRFLOW__API__SECRET_KEY",
         ):
             self.assertIn(required_secret, contract_text)
+        self.assertIn("optional_keys:\n    - MANAGEMENT_CONSOLE_TOKEN", contract_text)
         for required_evidence_topic in (
             "governance.dataset.catalog",
             "governance.data_management_plans",
@@ -456,6 +487,26 @@ class DeploymentReadinessTests(unittest.TestCase):
             contract_text,
         )
 
+        external_contract = yaml.safe_load(contract_text)
+        kafka_contract = yaml.safe_load(
+            (REPO_ROOT / "deploy" / "kafka" / "topics.yaml").read_text(encoding="utf-8")
+        )
+        required_topics = set(external_contract["required_services"]["kafka"]["required_topics"])
+        provisioned_topics = {topic["name"] for topic in kafka_contract["spec"]["topics"]}
+        self.assertLessEqual(required_topics, provisioned_topics)
+        principal_names = {principal["name"] for principal in kafka_contract["spec"]["principals"]}
+        self.assertEqual(
+            principal_names,
+            {
+                "dealiot-ingestion",
+                "dealiot-flink",
+                "dealiot-normalizer",
+                "dealiot-apicurio",
+                "dealiot-orchestration",
+                "dealiot-operations",
+            },
+        )
+
     def test_kubernetes_runtime_manifests_wire_security_and_health_probes(self) -> None:
         bridge = next(
             document
@@ -464,21 +515,31 @@ class DeploymentReadinessTests(unittest.TestCase):
                     encoding="utf-8"
                 )
             )
-            if document and document.get("kind") == "Deployment"
+            if document and document.get("kind") == "StatefulSet"
         )
         bridge_container = bridge["spec"]["template"]["spec"]["containers"][0]
         bridge_env_names = {item["name"] for item in bridge_container["env"]}
         self.assertIn("KAFKA_SASL_PASSWORD", bridge_env_names)
+        self.assertIn("MQTT_CLIENT_ID", bridge_env_names)
+        self.assertIn("MQTT_CLEAN_SESSION", bridge_env_names)
+        self.assertEqual(bridge["spec"]["serviceName"], "mqtt-kafka-bridge")
         self.assertIn("readinessProbe", bridge_container)
         self.assertIn("livenessProbe", bridge_container)
+        self.assertEqual(bridge_container["readinessProbe"]["httpGet"]["path"], "/readyz")
+        self.assertEqual(bridge_container["livenessProbe"]["httpGet"]["path"], "/healthz")
         self.assertEqual(bridge_container["ports"][0]["name"], "health")
 
         normalizer = next(
             document
             for document in yaml.safe_load_all(
-                (REPO_ROOT / "deploy" / "kubernetes" / "base" / "stream-normalizer.yaml").read_text(
-                    encoding="utf-8"
-                )
+                (
+                    REPO_ROOT
+                    / "deploy"
+                    / "kubernetes"
+                    / "processing"
+                    / "rust-normalizer"
+                    / "stream-normalizer.yaml"
+                ).read_text(encoding="utf-8")
             )
             if document and document.get("kind") == "Deployment"
         )
@@ -492,23 +553,29 @@ class DeploymentReadinessTests(unittest.TestCase):
         )
         self.assertIn("readinessProbe", normalizer_container)
         self.assertIn("livenessProbe", normalizer_container)
+        self.assertEqual(normalizer_container["readinessProbe"]["httpGet"]["path"], "/readyz")
+        self.assertEqual(normalizer_container["livenessProbe"]["httpGet"]["path"], "/healthz")
         self.assertEqual(normalizer_container["ports"][0]["name"], "health")
 
-        flink_docs = [
-            document
-            for document in yaml.safe_load_all(
-                (REPO_ROOT / "deploy" / "kubernetes" / "base" / "flink-session.yaml").read_text(
-                    encoding="utf-8"
-                )
-            )
-            if document and document.get("kind") == "Deployment"
-        ]
-        for deployment in flink_docs:
-            container = deployment["spec"]["template"]["spec"]["containers"][0]
-            env_names = {item["name"] for item in container["env"]}
-            self.assertIn("KAFKA_SASL_PASSWORD", env_names)
-            self.assertIn("readinessProbe", container)
-            self.assertIn("livenessProbe", container)
+        flink_deployment = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "processing"
+                / "flink-operator"
+                / "flink-deployment.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(flink_deployment["kind"], "FlinkDeployment")
+        flink_spec = flink_deployment["spec"]
+        self.assertEqual(flink_spec["job"]["upgradeMode"], "savepoint")
+        self.assertEqual(flink_spec["flinkConfiguration"]["high-availability.type"], "kubernetes")
+        self.assertEqual(flink_spec["flinkConfiguration"]["job.autoscaler.enabled"], "true")
+        flink_container = flink_spec["podTemplate"]["spec"]["containers"][0]
+        flink_env_names = {item["name"] for item in flink_container["env"]}
+        self.assertIn("KAFKA_SASL_PASSWORD", flink_env_names)
+        self.assertFalse(flink_container["securityContext"]["allowPrivilegeEscalation"])
 
         management_console = next(
             document
@@ -542,7 +609,11 @@ class DeploymentReadinessTests(unittest.TestCase):
         for manifest_path in WORKLOAD_MANIFEST_PATHS:
             documents = yaml.safe_load_all(manifest_path.read_text(encoding="utf-8"))
             for document in documents:
-                if not document or document.get("kind") not in {"Deployment", "Job"}:
+                if not document or document.get("kind") not in {
+                    "Deployment",
+                    "Job",
+                    "StatefulSet",
+                }:
                     continue
 
                 pod_spec = document["spec"]["template"]["spec"]
@@ -554,7 +625,7 @@ class DeploymentReadinessTests(unittest.TestCase):
                     context,
                 )
 
-                for container in pod_spec["containers"]:
+                for container in pod_spec.get("initContainers", []) + pod_spec["containers"]:
                     container_context = f"{context}:{container['name']}"
                     security_context = container["securityContext"]
                     self.assertFalse(
@@ -567,6 +638,113 @@ class DeploymentReadinessTests(unittest.TestCase):
                     self.assertIn("memory", container["resources"]["requests"])
                     self.assertIn("cpu", container["resources"]["limits"])
                     self.assertIn("memory", container["resources"]["limits"])
+
+    def test_processing_modes_are_exclusive_and_operator_managed(self) -> None:
+        production = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "overlays"
+                / "production"
+                / "kustomization.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        rust = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "overlays"
+                / "rust-normalizer"
+                / "kustomization.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertIn("../../processing/flink-operator", production["resources"])
+        self.assertNotIn("../../processing/rust-normalizer", production["resources"])
+        self.assertIn("../../processing/rust-normalizer", rust["resources"])
+        self.assertNotIn("../../processing/flink-operator", rust["resources"])
+
+        workflow = (
+            REPO_ROOT / ".github" / "workflows" / "production-deployment-test.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("FLINK_KUBERNETES_OPERATOR_VERSION: 1.15.0", workflow)
+        self.assertIn("flink-operator-repo/flink-kubernetes-operator", workflow)
+
+        dockerfile = (REPO_ROOT / "flink" / "Dockerfile.pyflink").read_text(encoding="utf-8")
+        requirements = (REPO_ROOT / "flink" / "requirements-pyflink.txt").read_text(
+            encoding="utf-8"
+        )
+        flink_resource = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "processing"
+                / "flink-operator"
+                / "flink-deployment.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertIn("apache/flink:2.2.1-scala_2.12-java17", dockerfile)
+        self.assertIn("apache-flink==2.2.1", requirements)
+        self.assertEqual(flink_resource["spec"]["flinkVersion"], "v2_2")
+        self.assertIn("flink-python-2.2.1.jar", flink_resource["spec"]["job"]["jarURI"])
+
+    def test_supply_chain_and_resilience_controls_are_executable(self) -> None:
+        image_workflow = (
+            REPO_ROOT / ".github" / "workflows" / "build-and-push-images.yml"
+        ).read_text(encoding="utf-8")
+        self.assertIn("id-token: write", image_workflow)
+        self.assertIn("cosign sign --yes", image_workflow)
+
+        policy = yaml.safe_load(
+            (
+                REPO_ROOT
+                / "deploy"
+                / "kubernetes"
+                / "components"
+                / "security-platform"
+                / "image-verification-policy.yaml"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(policy["kind"], "NamespacedImageValidatingPolicy")
+        self.assertEqual(policy["spec"]["validationActions"], ["Deny"])
+
+        backup_drill = (REPO_ROOT / "scripts" / "backup-restore-drill.sh").read_text(
+            encoding="utf-8"
+        )
+        fault_drill = (REPO_ROOT / "scripts" / "fault-injection-smoke.sh").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("pg_dump", backup_drill)
+        self.assertIn("resilience.backup.tests", backup_drill)
+        self.assertIn('docker kill "$bridge_container"', fault_drill)
+        self.assertIn("compose stop kafka1 kafka2 kafka3", fault_drill)
+        self.assertIn("compose stop kafka1", fault_drill)
+
+    def test_ingestion_delivery_contract_is_at_least_once(self) -> None:
+        bridge_source = (REPO_ROOT / "mqtt-kafka-bridge" / "src" / "main.rs").read_text(
+            encoding="utf-8"
+        )
+        normalizer_source = (REPO_ROOT / "stream-normalizer" / "src" / "main.rs").read_text(
+            encoding="utf-8"
+        )
+        swarm_stack = (REPO_ROOT / "deploy" / "swarm" / "dealiot-stack.yml").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn(".set_manual_acks(true)", bridge_source)
+        self.assertIn("client.ack(&publish).await", bridge_source)
+        self.assertIn('.set("enable.idempotence", "true")', bridge_source)
+        self.assertIn('request.url() == "/readyz"', bridge_source)
+
+        self.assertIn('.set("enable.auto.commit", "false")', normalizer_source)
+        self.assertIn("consumer.commit_message(&message, CommitMode::Sync)", normalizer_source)
+        self.assertIn('.set("enable.idempotence", "true")', normalizer_source)
+        self.assertIn('request.url() == "/readyz"', normalizer_source)
+
+        self.assertIn('MQTT_CLIENT_ID: "dealiot-bridge-{{.Task.Slot}}"', swarm_stack)
+        self.assertIn('MQTT_CLEAN_SESSION: "false"', swarm_stack)
 
     def test_kubernetes_production_wildfi_contract_is_explicit(self) -> None:
         contract = yaml.safe_load(
@@ -768,7 +946,8 @@ class DeploymentReadinessTests(unittest.TestCase):
         self.assertIn("COPY --chown=root:root --chmod=0555 ./pipelines", flink_dockerfile)
         self.assertIn("flink/log4j-console.properties", flink_dockerfile)
         self.assertIn("flink-sql-connector-kafka", flink_dockerfile)
-        self.assertIn("flink-connector-base", flink_dockerfile)
+        self.assertIn("FLINK_KAFKA_CONNECTOR_VERSION=5.0.0-2.2", flink_dockerfile)
+        self.assertNotIn("FLINK_CONNECTOR_BASE_VERSION", flink_dockerfile)
         self.assertIn("jdk_only_exports", flink_dockerfile)
         self.assertIn("env_or_secret_file", bridge_source)
         self.assertIn("apply_kafka_security_config", bridge_source)

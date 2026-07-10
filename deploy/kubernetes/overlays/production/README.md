@@ -6,6 +6,15 @@ It intentionally does not deploy Kafka, PostgreSQL, Redis, MQTT, or S3-compatibl
 stateful dependencies must be provided by managed services or dedicated operators and exposed to
 DEALIoT through `dealiot-runtime-config` plus the `dealiot-secrets` Secret.
 
+Install Apache Flink Kubernetes Operator `1.15.0` before applying this overlay. Production uses an
+application-mode `FlinkDeployment` with Kubernetes HA metadata, S3 checkpoints/savepoints,
+savepoint upgrades, and job-aware autoscaling. The legacy standalone package remains available for
+migration only; the `rust-normalizer` overlay is the mutually exclusive lightweight alternative.
+The JVM distribution, PyFlink package, plugins, and Python driver are aligned on Flink `2.2.1`,
+which is in the operator 1.15 validated compatibility matrix.
+Install the operator in a namespace labeled `dealiot.io/flink-operator=allowed`; the production
+NetworkPolicy permits that namespace to reach the Flink REST control endpoint.
+
 ## Release Images
 
 Replace the placeholder tags before deployment:
@@ -59,25 +68,40 @@ The runtime services require at least:
 
 - `MQTT_PASSWORD`
 - `KAFKA_SASL_PASSWORD`
-- `MANAGEMENT_CONSOLE_TOKEN`
+- `MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET`
 
-The Management Console keeps `/healthz` public for probes, but protects `/api/*` and mutation
-routes with `Authorization: Bearer <token>` when `MANAGEMENT_CONSOLE_TOKEN` is set.
+The Management Console keeps `/healthz` public for probes. Production bearer tokens are
+introspected through OIDC and mapped to read/write roles. `MANAGEMENT_CONSOLE_TOKEN` is retained as
+an optional local and migration fallback.
 
 ## Availability
 
-The overlay adds HorizontalPodAutoscalers for the MQTT bridge, Flink TaskManager, Airflow workers,
-and Management Console. It also adds PodDisruptionBudgets for the application tiers and uses
-topology spread constraints so replicas are not concentrated on one node.
+The overlay runs the MQTT bridge as a StatefulSet so each replica has a stable MQTT client ID and
+persistent session. Its HorizontalPodAutoscaler has a conservative scale-down policy to limit
+session churn. The overlay also adds HorizontalPodAutoscalers for Airflow workers and the
+Management Console, adds PodDisruptionBudgets for the application tiers, and uses topology spread
+constraints so replicas are not concentrated on one node.
+
+Flink capacity is controlled by the operator autoscaler using job backlog and utilization metrics.
+Upgrades use savepoints and the adaptive scheduler; do not attach a CPU HPA to operator-managed
+TaskManagers.
 
 ## Network Policy
 
 The overlay applies default deny ingress/egress, then opens:
 
-- namespace-internal traffic,
+- explicit Airflow, Apicurio, and Flink east-west ports,
 - DNS egress,
 - production dependency ports for Kafka, MQTT over TLS, S3 over TLS, PostgreSQL, Redis,
 - Airflow API ingress only from namespaces labeled `dealiot.io/ingress=allowed`.
 - Management Console ingress only from namespaces labeled `dealiot.io/ingress=allowed`.
 
 Patch `network-policies.yaml` with narrower `ipBlock` ranges for your actual private networks.
+
+## Optional Platform Controls
+
+Add `../../components/security-platform` only after External Secrets Operator and Kyverno 1.18+
+are installed. It materializes `dealiot-secrets` and denies unsigned DEALIoT images. Add
+`../../components/observability` after Prometheus Operator is installed to enable PodMonitors and
+the SLO alert rules. Patch the remote secret store, GitHub signer identity, and monitoring labels in
+a site-specific overlay.

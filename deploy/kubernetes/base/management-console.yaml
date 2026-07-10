@@ -48,6 +48,13 @@ spec:
                 secretKeyRef:
                   name: dealiot-secrets
                   key: MANAGEMENT_CONSOLE_TOKEN
+                  optional: true
+            - name: MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: dealiot-secrets
+                  key: MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET
+                  optional: true
           readinessProbe:
             httpGet:
               path: /healthz

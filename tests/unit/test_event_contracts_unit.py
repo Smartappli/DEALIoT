@@ -1,11 +1,42 @@
 from __future__ import annotations
 
+import json
 import unittest
+from pathlib import Path
 
 from dealiot_contracts import DLQ_TOPIC, build_dlq_event, event_time, validate_event
 
 
 class EventContractsUnitTests(unittest.TestCase):
+    def test_apicurio_raw_schemas_share_the_envelope_contract(self) -> None:
+        bootstrap_dir = Path(__file__).resolve().parents[2] / "apicurio" / "bootstrap"
+        for schema_path in bootstrap_dir.glob("raw.*.json"):
+            with self.subTest(schema=schema_path.name):
+                artifact = json.loads(schema_path.read_text(encoding="utf-8"))
+                schema = json.loads(artifact["firstVersion"]["content"]["content"])
+                properties = schema["properties"]
+                self.assertEqual(properties["event_id"]["pattern"], "^[0-9a-f]{64}$")
+                self.assertEqual(
+                    properties["schema_version"]["pattern"],
+                    r"^[0-9]+\.[0-9]+\.[0-9]+$",
+                )
+
+    def test_shared_envelope_fixtures_match_python_validation(self) -> None:
+        fixtures_path = (
+            Path(__file__).resolve().parents[2]
+            / "contracts"
+            / "fixtures"
+            / "event-envelope-cases.json"
+        )
+        cases = json.loads(fixtures_path.read_text(encoding="utf-8"))
+
+        for case in cases:
+            with self.subTest(case=case["name"]):
+                self.assertEqual(
+                    validate_event(case["topic"], case["event"]),
+                    case["expected_errors"],
+                )
+
     def test_validates_required_media_metadata(self) -> None:
         event = {
             "device_id": "cam-1",

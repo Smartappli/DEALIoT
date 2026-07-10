@@ -3,10 +3,12 @@ use dealiot_stream_normalizer::{
 };
 use log::{error, info};
 use rdkafka::config::ClientConfig;
-use rdkafka::consumer::{Consumer, StreamConsumer};
+use rdkafka::consumer::{CommitMode, Consumer, StreamConsumer};
 use rdkafka::message::Message;
 use rdkafka::producer::{FutureProducer, FutureRecord};
 use rdkafka::util::Timeout;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use thiserror::Error;
@@ -22,26 +24,49 @@ enum NormalizerError {
     Json(#[from] serde_json::Error),
 }
 
+#[derive(Default)]
+struct NormalizerMetrics {
+    ready: AtomicBool,
+    processed_total: AtomicU64,
+    committed_total: AtomicU64,
+    state_updates_total: AtomicU64,
+    errors_total: AtomicU64,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), NormalizerError> {
     env_logger::init();
     let config = NormalizerConfig::from_env();
-    start_health_server(config.health_bind.clone(), config.health_port);
-    run(config).await
+    let metrics = Arc::new(NormalizerMetrics::default());
+    start_health_server(
+        config.health_bind.clone(),
+        config.health_port,
+        Arc::clone(&metrics),
+    );
+    run(config, metrics).await
 }
 
-async fn run(config: NormalizerConfig) -> Result<(), NormalizerError> {
+async fn run(
+    config: NormalizerConfig,
+    metrics: Arc<NormalizerMetrics>,
+) -> Result<(), NormalizerError> {
     let consumer = kafka_consumer(&config)?;
     let producer = kafka_producer(&config)?;
     let topics: Vec<_> = config.source_topics.iter().map(String::as_str).collect();
     consumer.subscribe(&topics)?;
+    consumer.fetch_metadata(None, Timeout::After(Duration::from_secs(10)))?;
+    metrics.ready.store(true, Ordering::Relaxed);
     info!(
-        "Subscribed to source topics: {}",
+        "Kafka is reachable; subscribed to source topics: {}",
         config.source_topics.join(",")
     );
 
     let mut latest = LatestState::default();
+    let mut readiness_interval = tokio::time::interval(Duration::from_secs(10));
+    readiness_interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
 
+    let shutdown = shutdown_signal();
+    tokio::pin!(shutdown);
     loop {
         tokio::select! {
             message = consumer.recv() => {
@@ -50,6 +75,7 @@ async fn run(config: NormalizerConfig) -> Result<(), NormalizerError> {
                 let payload = match message.payload_view::<str>() {
                     Some(Ok(payload)) => payload,
                     Some(Err(error)) => {
+                        metrics.errors_total.fetch_add(1, Ordering::Relaxed);
                         error!("Skipping non-UTF8 Kafka payload from {source_topic}: {error}");
                         continue;
                     }
@@ -57,8 +83,10 @@ async fn run(config: NormalizerConfig) -> Result<(), NormalizerError> {
                 };
 
                 let Some(event) = normalize_record(&source_topic, payload) else {
+                    metrics.errors_total.fetch_add(1, Ordering::Relaxed);
                     continue;
                 };
+                metrics.processed_total.fetch_add(1, Ordering::Relaxed);
                 let event_json = normalized_event_json(&event)?;
                 producer
                     .send(
@@ -70,7 +98,7 @@ async fn run(config: NormalizerConfig) -> Result<(), NormalizerError> {
                     .await
                     .map_err(|(error, _)| NormalizerError::Config(format!("features send failed: {error}")))?;
 
-                if latest.accepts(&event) {
+                if config.state_output_enabled && latest.accepts(&event) {
                     producer
                         .send(
                             FutureRecord::to(&config.state_topic)
@@ -80,19 +108,47 @@ async fn run(config: NormalizerConfig) -> Result<(), NormalizerError> {
                         )
                         .await
                         .map_err(|(error, _)| NormalizerError::Config(format!("state send failed: {error}")))?;
+                    metrics.state_updates_total.fetch_add(1, Ordering::Relaxed);
                 }
 
-                consumer.store_offset(message.topic(), message.partition(), message.offset() + 1)?;
+                consumer.commit_message(&message, CommitMode::Sync)?;
+                metrics.committed_total.fetch_add(1, Ordering::Relaxed);
             }
-            signal = tokio::signal::ctrl_c() => {
-                signal.map_err(|error| NormalizerError::Config(format!("signal handler failed: {error}")))?;
+            _ = &mut shutdown => {
+                metrics.ready.store(false, Ordering::Relaxed);
                 info!("Shutdown signal received");
                 break;
+            }
+            _ = readiness_interval.tick() => {
+                let kafka_ready = consumer
+                    .fetch_metadata(None, Timeout::After(Duration::from_secs(2)))
+                    .is_ok();
+                metrics.ready.store(kafka_ready, Ordering::Relaxed);
+                if !kafka_ready {
+                    metrics.errors_total.fetch_add(1, Ordering::Relaxed);
+                }
             }
         }
     }
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
+
+        let mut terminate = signal(SignalKind::terminate()).expect("SIGTERM handler");
+        tokio::select! {
+            _ = tokio::signal::ctrl_c() => {},
+            _ = terminate.recv() => {},
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = tokio::signal::ctrl_c().await;
+    }
 }
 
 fn kafka_consumer(config: &NormalizerConfig) -> Result<StreamConsumer, NormalizerError> {
@@ -111,6 +167,7 @@ fn kafka_consumer(config: &NormalizerConfig) -> Result<StreamConsumer, Normalize
 fn kafka_producer(config: &NormalizerConfig) -> Result<FutureProducer, NormalizerError> {
     kafka_client_config(config)
         .set("acks", "all")
+        .set("enable.idempotence", "true")
         .set("retries", "10")
         .set("linger.ms", "50")
         .create()
@@ -153,7 +210,7 @@ fn apply_security_config(client_config: &mut ClientConfig) {
     }
 }
 
-fn start_health_server(bind: String, port: u16) {
+fn start_health_server(bind: String, port: u16, metrics: Arc<NormalizerMetrics>) {
     thread::spawn(move || {
         let server = match Server::http((bind.as_str(), port)) {
             Ok(server) => server,
@@ -165,10 +222,56 @@ fn start_health_server(bind: String, port: u16) {
 
         for request in server.incoming_requests() {
             if request.url() == "/healthz" {
-                let response = Response::from_string(r#"{"status":"ok"}"#)
+                let response = Response::from_string(r#"{"status":"alive"}"#)
                     .with_status_code(StatusCode(200))
                     .with_header(
                         Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
+                            .expect("static header is valid"),
+                    );
+                let _ = request.respond(response);
+            } else if request.url() == "/readyz" {
+                let is_ready = metrics.ready.load(Ordering::Relaxed);
+                let status = if is_ready {
+                    StatusCode(200)
+                } else {
+                    StatusCode(503)
+                };
+                let body = if is_ready {
+                    r#"{"status":"ready"}"#
+                } else {
+                    r#"{"status":"not_ready"}"#
+                };
+                let response = Response::from_string(body)
+                    .with_status_code(status)
+                    .with_header(
+                        Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
+                            .expect("static header is valid"),
+                    );
+                let _ = request.respond(response);
+            } else if request.url() == "/metrics" {
+                let body = format!(
+                    concat!(
+                        "# TYPE dealiot_normalizer_ready gauge\n",
+                        "dealiot_normalizer_ready {}\n",
+                        "# TYPE dealiot_normalizer_processed_total counter\n",
+                        "dealiot_normalizer_processed_total {}\n",
+                        "# TYPE dealiot_normalizer_committed_total counter\n",
+                        "dealiot_normalizer_committed_total {}\n",
+                        "# TYPE dealiot_normalizer_state_updates_total counter\n",
+                        "dealiot_normalizer_state_updates_total {}\n",
+                        "# TYPE dealiot_normalizer_errors_total counter\n",
+                        "dealiot_normalizer_errors_total {}\n"
+                    ),
+                    u8::from(metrics.ready.load(Ordering::Relaxed)),
+                    metrics.processed_total.load(Ordering::Relaxed),
+                    metrics.committed_total.load(Ordering::Relaxed),
+                    metrics.state_updates_total.load(Ordering::Relaxed),
+                    metrics.errors_total.load(Ordering::Relaxed),
+                );
+                let response = Response::from_string(body)
+                    .with_status_code(StatusCode(200))
+                    .with_header(
+                        Header::from_bytes(&b"Content-Type"[..], &b"text/plain; version=0.0.4"[..])
                             .expect("static header is valid"),
                     );
                 let _ = request.respond(response);

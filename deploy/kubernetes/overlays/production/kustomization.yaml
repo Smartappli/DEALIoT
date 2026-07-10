@@ -5,6 +5,7 @@ namespace: dealiot
 
 resources:
   - ../../base
+  - ../../processing/flink-operator
   - network-policies.yaml
   - external-dependency-contract.yaml
   - autoscaling.yaml
@@ -40,26 +41,90 @@ images:
 replicas:
   - name: mqtt-kafka-bridge
     count: 3
-  - name: stream-normalizer
-    count: 3
   - name: apicurio-registry
-    count: 3
-  - name: flink-taskmanager
     count: 3
   - name: airflow-apiserver
     count: 2
   - name: airflow-worker
     count: 3
+  - name: airflow-scheduler
+    count: 2
+  - name: airflow-triggerer
+    count: 2
+  - name: airflow-dag-processor
+    count: 2
   - name: management-console
     count: 2
 
 patches:
   - target:
       kind: Deployment
-      name: mqtt-kafka-bridge
+      labelSelector: app.kubernetes.io/part-of=dealiot
+    patch: |-
+      - op: add
+        path: /spec/template/spec/terminationGracePeriodSeconds
+        value: 120
+  - target:
+      kind: StatefulSet
+      labelSelector: app.kubernetes.io/part-of=dealiot
+    patch: |-
+      - op: add
+        path: /spec/template/spec/terminationGracePeriodSeconds
+        value: 60
+  - target:
+      kind: Deployment
+      name: apicurio-registry
     patch: |-
       apiVersion: apps/v1
       kind: Deployment
+      metadata:
+        name: apicurio-registry
+      spec:
+        template:
+          spec:
+            containers:
+              - name: registry
+                env:
+                  - name: QUARKUS_OIDC_TENANT_ENABLED
+                    value: "true"
+                  - name: QUARKUS_OIDC_AUTH_SERVER_URL
+                    valueFrom:
+                      configMapKeyRef:
+                        name: dealiot-runtime-config
+                        key: APICURIO_OIDC_AUTH_SERVER_URL
+                  - name: QUARKUS_OIDC_CLIENT_ID
+                    valueFrom:
+                      configMapKeyRef:
+                        name: dealiot-runtime-config
+                        key: APICURIO_OIDC_API_CLIENT_ID
+                  - name: APICURIO_AUTH_TYPE
+                    value: oidc
+                  - name: APICURIO_AUTH_URL
+                    valueFrom:
+                      configMapKeyRef:
+                        name: dealiot-runtime-config
+                        key: APICURIO_OIDC_AUTH_SERVER_URL
+                  - name: APICURIO_AUTH_CLIENT_ID
+                    valueFrom:
+                      configMapKeyRef:
+                        name: dealiot-runtime-config
+                        key: APICURIO_OIDC_UI_CLIENT_ID
+                  - name: APICURIO_AUTH_ROLE_BASED_AUTHORIZATION
+                    value: "true"
+                  - name: APICURIO_AUTH_ROLE_SOURCE
+                    value: token
+                  - name: APICURIO_AUTH_AUTHENTICATED_READ_ACCESS_ENABLED
+                    value: "true"
+                  - name: APICURIO_AUTH_OWNER_ONLY_AUTHORIZATION
+                    value: "true"
+                  - name: APICURIO_AUTH_OWNER_ONLY_AUTHORIZATION_LIMIT_GROUP_ACCESS
+                    value: "true"
+  - target:
+      kind: StatefulSet
+      name: mqtt-kafka-bridge
+    patch: |-
+      apiVersion: apps/v1
+      kind: StatefulSet
       metadata:
         name: mqtt-kafka-bridge
       spec:
@@ -72,6 +137,22 @@ patches:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: mqtt-kafka-bridge
+  - target:
+      kind: Deployment
+      name: management-console
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: management-console
+      spec:
+        template:
+          spec:
+            containers:
+              - name: management-console
+                env:
+                  - name: FLINK_REST_URL
+                    value: http://dealiot-streaming-rest:8081
   - target:
       kind: Deployment
       name: apicurio-registry
@@ -90,42 +171,6 @@ patches:
                 labelSelector:
                   matchLabels:
                     app.kubernetes.io/name: apicurio-registry
-  - target:
-      kind: Deployment
-      name: stream-normalizer
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: stream-normalizer
-      spec:
-        template:
-          spec:
-            topologySpreadConstraints:
-              - maxSkew: 1
-                topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: DoNotSchedule
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: stream-normalizer
-  - target:
-      kind: Deployment
-      name: flink-taskmanager
-    patch: |-
-      apiVersion: apps/v1
-      kind: Deployment
-      metadata:
-        name: flink-taskmanager
-      spec:
-        template:
-          spec:
-            topologySpreadConstraints:
-              - maxSkew: 1
-                topologyKey: kubernetes.io/hostname
-                whenUnsatisfiable: DoNotSchedule
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: flink-taskmanager
   - target:
       kind: Deployment
       name: airflow-apiserver

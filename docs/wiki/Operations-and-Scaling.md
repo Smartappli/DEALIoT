@@ -4,8 +4,8 @@
 
 | Component | Scaling unit | Production control |
 |---|---|---|
-| MQTT-Kafka bridge | Stateless replicas | HPA, shared MQTT subscriptions, PDB, topology spread |
-| Flink TaskManager | TaskManager replicas and slots | HPA, task slots, checkpoints, savepoints |
+| MQTT-Kafka bridge | Stateful identity, stateless payload handling | StatefulSet, HPA, shared MQTT subscriptions, PDB, topology spread |
+| Flink vertices | Job parallelism and TaskManagers | Operator autoscaler, adaptive scheduler, checkpoints, and savepoints |
 | Airflow workers | Celery workers | HPA, queue depth and task duration SLOs |
 | Management Console | Stateless replicas | HPA and PDB |
 | Apicurio Registry | Registry replicas | PDB and KafkaSQL storage |
@@ -17,7 +17,9 @@
 
 - Increase Kafka partitions before increasing high-volume bridge replicas beyond current partition parallelism.
 - Keep MQTT shared subscriptions enabled for bridge replicas.
-- Scale Flink TaskManagers with matching task-slot and parallelism changes.
+- Preserve stable bridge client IDs and persistent sessions; never run two replicas with one ID.
+- Let the operator change vertex parallelism and TaskManager capacity from backlog/utilization
+  metrics; never attach a CPU-only HPA to the generated pods.
 - Use savepoints before Flink job upgrades that change state schema.
 - Keep Airflow backfills bounded by time window and rate limits.
 - Monitor DLQ rate before treating increased throughput as healthy.
@@ -26,10 +28,14 @@
 
 Production overlay includes:
 
-- HPA for bridge, Flink TaskManager, Airflow worker, and Management Console.
-- PDBs for bridge, Flink TaskManager, Apicurio, Airflow API, Airflow workers, and Management Console.
+- HPA for bridge, Airflow worker, and Management Console.
+- PDBs for bridge, operator-managed Flink pods, Apicurio, Airflow control/workers, and Management Console.
 - Topology spread constraints for horizontally scaled workloads.
 - Readiness/liveness probes for runtime services.
+
+The bridge HPA removes at most one ordinal per minute and uses a ten-minute scale-down
+stabilization window. This reduces reconnect churn and preserves a clear recovery path for
+in-flight MQTT QoS 1 deliveries.
 
 ## Observability
 

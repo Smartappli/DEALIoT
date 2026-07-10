@@ -34,6 +34,7 @@ env:
   MQTT_HOST: mqtt.ci.internal
   MQTT_USERNAME: dealiot_ingestor
   S3_ENDPOINT_URL: https://s3.ci.internal
+  OIDC_BASE_URL: https://identity.ci.internal
   AWS_ACCESS_KEY_ID: ${{ github.run_id }}-${{ github.run_attempt }}-s3-access
   AWS_SECRET_ACCESS_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-s3
   AIRFLOW__CORE__FERNET_KEY: ${{ github.run_id }}-${{ github.run_attempt }}-fernet
@@ -43,6 +44,7 @@ env:
   AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:${{ github.run_id }}-${{ github.run_attempt }}@postgres.example.net:5432/airflow
   AIRFLOW__CELERY__BROKER_URL: redis://redis.example.net:6379/0
   AIRFLOW_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}-airflow-admin
+  FLINK_KUBERNETES_OPERATOR_VERSION: 1.15.0
 
 jobs:
   swarm-deployment:
@@ -70,11 +72,6 @@ jobs:
       - name: Initialize Swarm
         run: docker swarm init
 
-      - name: Create CI Swarm secrets
-        run: |
-          openssl rand -hex 24 | docker secret create mqtt_password -
-          printf '%s' "${KAFKA_SASL_PASSWORD}" | docker secret create kafka_sasl_password -
-
       - name: Deploy Swarm smoke stack
         run: |
           DEALIOT_MQTT_KAFKA_BRIDGE_IMAGE="${DEALIOT_SMOKE_BRIDGE_IMAGE}" \
@@ -95,6 +92,25 @@ jobs:
           docker service logs "${service_name}" || true
           exit 1
 
+      - name: Verify Swarm MQTT to Kafka flow
+        run: |
+          service_name="dealiot-smoke_verifier"
+          for _ in {1..120}; do
+            state="$(docker service ps "${service_name}" --format '{{.CurrentState}}' | head -n1)"
+            docker service ps "${service_name}" || true
+            if [[ "${state}" == Complete* ]]; then
+              docker service logs "${service_name}"
+              exit 0
+            fi
+            if [[ "${state}" == Failed* || "${state}" == Rejected* ]]; then
+              docker service logs "${service_name}" || true
+              exit 1
+            fi
+            sleep 2
+          done
+          docker service logs "${service_name}" || true
+          exit 1
+
       - name: Dump Swarm diagnostics on failure
         if: failure()
         run: |
@@ -106,8 +122,6 @@ jobs:
         run: |
           docker stack rm dealiot-smoke || true
           sleep 10
-          docker secret rm mqtt_password || true
-          docker secret rm kafka_sasl_password || true
           docker swarm leave --force || true
 
   kubernetes-deployment:
@@ -135,6 +149,21 @@ jobs:
         run: |
           kubectl create namespace dealiot
           kubectl create namespace dealiot-smoke
+          kubectl create namespace flink-operator
+          kubectl label namespace flink-operator dealiot.io/flink-operator=allowed
+
+      - name: Install Flink Kubernetes Operator CRDs
+        run: |
+          helm repo add flink-operator-repo \
+            "https://downloads.apache.org/flink/flink-kubernetes-operator-${FLINK_KUBERNETES_OPERATOR_VERSION}/"
+          helm upgrade --install flink-kubernetes-operator \
+            flink-operator-repo/flink-kubernetes-operator \
+            --version "${FLINK_KUBERNETES_OPERATOR_VERSION}" \
+            --namespace flink-operator \
+            --set webhook.create=false \
+            --set 'watchNamespaces={dealiot}' \
+            --wait \
+            --timeout 5m
 
       - name: Render Kubernetes production base
         run: |
@@ -147,6 +176,8 @@ jobs:
           sed -i "s|kafka-0.example.net:9092,kafka-1.example.net:9092,kafka-2.example.net:9092|${KAFKA_BOOTSTRAP_SERVERS}|g" deploy/kubernetes/overlays/production/runtime-config.production.example.env
           sed -i "s|mqtt.example.net|${MQTT_HOST}|g" deploy/kubernetes/overlays/production/runtime-config.production.example.env
           sed -i "s|https://s3.example.net|${S3_ENDPOINT_URL}|g" deploy/kubernetes/overlays/production/runtime-config.production.example.env
+          sed -i "s|https://s3.example.net|${S3_ENDPOINT_URL}|g" deploy/kubernetes/processing/flink-operator/flink-deployment.yaml
+          sed -i "s|https://identity.example.net|${OIDC_BASE_URL}|g" deploy/kubernetes/overlays/production/runtime-config.production.example.env
           kubectl kustomize deploy/kubernetes/overlays/production >/tmp/dealiot-kubernetes-production.yaml
           if grep -E "ghcr.io/smartappli/.*:(latest|local-placeholder|sha-REPLACE_WITH_RELEASE_SHA)|example\\.net|SET_FROM_SECRET_MANAGER" /tmp/dealiot-kubernetes-production.yaml; then
             echo "Production overlay must not render mutable tags, placeholder tags, example endpoints, or example secrets." >&2
@@ -165,12 +196,16 @@ jobs:
       - name: Wait for Kubernetes smoke rollout
         run: kubectl -n dealiot-smoke rollout status deployment/mqtt-kafka-bridge --timeout=180s
 
+      - name: Verify Kubernetes MQTT to Kafka flow
+        run: kubectl -n dealiot-smoke wait --for=condition=complete job/bridge-flow-verifier --timeout=240s
+
       - name: Dump Kubernetes diagnostics on failure
         if: failure()
         run: |
           kubectl -n dealiot-smoke get all || true
           kubectl -n dealiot-smoke describe deployment mqtt-kafka-bridge || true
           kubectl -n dealiot-smoke logs deploy/mqtt-kafka-bridge || true
+          kubectl -n dealiot-smoke logs job/bridge-flow-verifier --all-containers || true
 
       - name: Tear down kind cluster
         if: always()

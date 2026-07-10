@@ -33,6 +33,7 @@ pub struct NormalizerConfig {
     pub source_topics: Vec<String>,
     pub features_topic: String,
     pub state_topic: String,
+    pub state_output_enabled: bool,
     pub health_bind: String,
     pub health_port: u16,
 }
@@ -54,6 +55,7 @@ impl NormalizerConfig {
             ),
             features_topic: env_or_default("FEATURES_TOPIC", FEATURES_EVENTS_TOPIC),
             state_topic: env_or_default("STATE_TOPIC", STATE_LATEST_TOPIC),
+            state_output_enabled: bool_env("STREAM_NORMALIZER_STATE_OUTPUT_ENABLED", false),
             health_bind: env_or_default("STREAM_NORMALIZER_HEALTH_BIND", "127.0.0.1"),
             health_port: env_u16("STREAM_NORMALIZER_HEALTH_PORT", 8080),
         }
@@ -63,6 +65,7 @@ impl NormalizerConfig {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 pub struct NormalizedEvent {
     pub entity_id: String,
+    pub source_event_id: String,
     pub event_ts: String,
     pub source_topic: String,
     pub mqtt_topic: String,
@@ -103,6 +106,7 @@ pub fn normalize_record(source_topic: &str, raw_json: &str) -> Option<Normalized
 
     Some(NormalizedEvent {
         entity_id,
+        source_event_id: string_field(&record, "event_id").unwrap_or_default(),
         event_ts,
         source_topic: source_topic.to_string(),
         mqtt_topic: mqtt_topic.clone(),
@@ -214,6 +218,15 @@ pub fn env_u16(name: &str, default: u16) -> u16 {
         .unwrap_or(default)
 }
 
+pub fn bool_env(name: &str, default: bool) -> bool {
+    std::env::var(name).map_or(default, |value| {
+        matches!(
+            value.trim().to_ascii_lowercase().as_str(),
+            "1" | "true" | "yes" | "on"
+        )
+    })
+}
+
 fn csv_items(value: &str) -> Vec<String> {
     value
         .split(',')
@@ -237,11 +250,12 @@ mod tests {
 
     #[test]
     fn normalizes_raw_gps_record() {
-        let raw = r#"{"device_id":"tag-1","timestamp":"2026-01-01T00:00:00+00:00","mqtt_topic":"wildfi/tags/tag-1/gps","qos":1,"retain":false}"#;
+        let raw = r#"{"device_id":"tag-1","event_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","timestamp":"2026-01-01T00:00:00+00:00","mqtt_topic":"wildfi/tags/tag-1/gps","qos":1,"retain":false}"#;
 
         let event = normalize_record("raw.gps", raw).expect("valid json");
 
         assert_eq!(event.entity_id, "tag-1");
+        assert_eq!(event.source_event_id.len(), 64);
         assert_eq!(event.event_kind, "gps");
         assert_eq!(event.qos, 1);
         assert_eq!(event.raw_json, raw);
@@ -264,6 +278,7 @@ mod tests {
         let mut state = LatestState::default();
         let old = NormalizedEvent {
             entity_id: "sensor-1".to_string(),
+            source_event_id: "a".repeat(64),
             event_ts: "2026-01-01T00:00:00+00:00".to_string(),
             source_topic: "raw.sensor".to_string(),
             mqtt_topic: "devices/sensor-1/sensor".to_string(),
@@ -283,5 +298,13 @@ mod tests {
     #[test]
     fn env_u16_falls_back_for_missing_or_invalid_values() {
         assert_eq!(env_u16("STREAM_NORMALIZER_UNIT_MISSING", 8080), 8080);
+    }
+
+    #[test]
+    fn state_output_is_disabled_by_default() {
+        assert!(!bool_env(
+            "STREAM_NORMALIZER_STATE_OUTPUT_UNIT_MISSING",
+            false
+        ));
     }
 }

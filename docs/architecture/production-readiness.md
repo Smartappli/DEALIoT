@@ -53,17 +53,31 @@ Production runtime clients are expected to use authenticated and encrypted depen
 - Kafka defaults to `SASL_SSL` with SCRAM credentials provided by `dealiot-secrets`.
 - MQTT defaults to TLS on port `8883`; certificates can be mounted and referenced through runtime
   config.
-- Management Console mutation and API routes require a bearer token when
-  `MANAGEMENT_CONSOLE_TOKEN` is set.
+- Management Console routes use OIDC token introspection and role mapping in production. The static
+  bearer token remains a compatibility fallback for local and staged migrations.
+- Apicurio requires OIDC authentication and enforces role-based and owner-only authorization.
 - Airflow, Flink, Apicurio, the MQTT bridge, and media backfill share the same Kafka security
   environment contract.
 
-The production manifests wire readiness/liveness probes for application services and expose Flink
-Prometheus metrics on port `9250`.
+The production manifests wire startup/readiness/liveness probes for application services and expose
+Rust and Flink Prometheus metrics.
 
 Kubernetes workload manifests declare `seccompProfile: RuntimeDefault`, disable service-account
 token automount, drop Linux capabilities, prevent privilege escalation, and run containers as
 non-root. Deployment tests enforce these guardrails.
+
+## Delivery And Recovery Semantics
+
+- The MQTT bridge uses stable client identities and persistent MQTT sessions in production.
+- MQTT QoS 1 messages are acknowledged only after Kafka confirms delivery.
+- Bridge and normalizer Kafka producers enable idempotence for retry-safe production.
+- The normalizer synchronously commits its source offset only after `features.events` and, when
+  applicable, `state.latest` have both been acknowledged.
+- The resulting end-to-end contract is at-least-once. A crash between downstream delivery and
+  source acknowledgement can produce a duplicate, but a source event is not acknowledged before
+  its downstream writes succeed.
+- `/healthz` is a process liveness signal. `/readyz` reflects MQTT subscription readiness for the
+  bridge and Kafka connectivity for the normalizer.
 
 ## CI Gates
 
@@ -73,6 +87,7 @@ The repository currently enforces:
 - Kubernetes production overlay render and server-side dry-run.
 - Rejection of mutable `latest` tags in the production overlay.
 - Rejection of unresolved production placeholders in the rendered production overlay.
+- Installation of the pinned Flink Kubernetes Operator CRDs before server-side validation.
 - Swarm production stack render.
 - Swarm smoke deployment.
 - kind smoke deployment for the bridge image.
@@ -83,9 +98,9 @@ The repository currently enforces:
 
 - Replace example endpoint values with private production endpoints.
 - Narrow production `ipBlock` ranges in NetworkPolicies to the real private endpoint CIDRs.
-- Add runtime E2E tests against a staging cluster with real Kafka/MQTT/S3 dependencies.
-- Add image signature verification policy at cluster admission.
-- Decide whether to migrate the Flink session deployment to a Flink Operator CRD model for
-  savepoint-driven upgrades and native checkpoint lifecycle management.
-- Define SLOs and alert thresholds for ingest latency, Kafka lag, DLQ rate, Flink checkpointing,
-  Airflow DAG failures, and storage availability.
+- Replace the example identity, secret-store, signer, and endpoint values in a site overlay.
+- Install External Secrets Operator, Kyverno, Prometheus Operator, and the pinned Flink Kubernetes
+  Operator before enabling their repository components.
+- Run the automated E2E, broker-failure, and restore drills against the real staging dependencies
+  and retain their evidence.
+- Calibrate the initial SLO thresholds with at least two weeks of staging telemetry.

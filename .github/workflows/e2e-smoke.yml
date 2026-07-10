@@ -6,6 +6,8 @@ on:
     paths:
       - "docker-compose*.yml"
       - "scripts/smoke-e2e.sh"
+      - "scripts/backup-restore-drill.sh"
+      - "scripts/fault-injection-smoke.sh"
       - "scripts/start-*.sh"
       - "Cargo.toml"
       - "Cargo.lock"
@@ -68,6 +70,14 @@ jobs:
 
       - name: Run E2E smoke
         run: bash scripts/smoke-e2e.sh
+
+      - name: Run delivery fault-injection drill
+        run: bash scripts/fault-injection-smoke.sh
+
+      - name: Run backup and restore drill
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait airflow-postgres
+          bash scripts/backup-restore-drill.sh
 
       - name: Dump compose logs on failure
         if: failure()

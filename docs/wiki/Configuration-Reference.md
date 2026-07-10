@@ -14,6 +14,8 @@ Production runtime config is generated from `deploy/kubernetes/overlays/producti
 | `MQTT_HOST` | MQTT broker host | Replace with private endpoint |
 | `MQTT_PORT` | MQTT broker port | `8883` |
 | `MQTT_TLS_ENABLED` | MQTT TLS toggle | `true` |
+| `MQTT_CLIENT_ID` | Stable MQTT session identity | Injected from the Kubernetes pod or Swarm task slot |
+| `MQTT_CLEAN_SESSION` | Discard broker session on disconnect | `false` |
 | `MQTT_TOPICS` | MQTT subscriptions | devices and WildFi shared subscriptions |
 | `MQTT_USERNAME` | MQTT username | `dealiot_ingestor` |
 | `S3_ENDPOINT_URL` | S3 endpoint | Replace with private TLS endpoint |
@@ -57,9 +59,25 @@ When `MQTT_TLS_CA_FILE` is unset, the Rust bridge uses the platform root certifi
 
 `MQTT_TLS_INSECURE_SKIP_VERIFY` must stay disabled in production unless a temporary break-glass exception is documented.
 
+Production requires a stable `MQTT_CLIENT_ID` with `MQTT_CLEAN_SESSION=false`. Kubernetes injects
+the StatefulSet pod name and Swarm uses the task slot. Do not reuse one client ID across concurrent
+replicas.
+
+## Runtime Probes
+
+The Rust bridge and normalizer expose two unauthenticated, internal-only endpoints:
+
+- `/healthz` reports process liveness and does not depend on external services.
+- `/readyz` reports whether the service has established its required MQTT or Kafka control path.
+
+Use `/readyz` for readiness and container health checks, and `/healthz` for liveness checks.
+
 ## Management Console Auth
 
-`MANAGEMENT_CONSOLE_TOKEN` enables bearer-token protection for API and mutation routes. `/healthz` remains public for Kubernetes probes.
+Production configures OIDC introspection through `MANAGEMENT_CONSOLE_OIDC_INTROSPECTION_URL`,
+`MANAGEMENT_CONSOLE_OIDC_CLIENT_ID`, and `MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET`. Read and write
+role lists map identity-provider roles to API authorization. `MANAGEMENT_CONSOLE_TOKEN` remains a
+local compatibility fallback; `/healthz` stays public for Kubernetes probes.
 
 Example:
 

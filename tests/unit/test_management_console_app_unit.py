@@ -477,6 +477,33 @@ class ManagementConsoleAppUnitTests(unittest.TestCase):
                 response = read_json_from_request(authorized_post)
             self.assertEqual(response["status"], "queued")
 
+    def test_oidc_introspection_maps_read_and_write_roles(self) -> None:
+        active_read = app.SimpleHttpResponse(
+            HTTPStatus.OK,
+            b'{"active":true,"realm_access":{"roles":["dealiot-read"]}}',
+        )
+        active_write = app.SimpleHttpResponse(
+            HTTPStatus.OK,
+            b'{"active":true,"roles":["dealiot-write"]}',
+        )
+        oidc_env = {
+            "MANAGEMENT_CONSOLE_OIDC_INTROSPECTION_URL": "https://identity.test/introspect",
+            "MANAGEMENT_CONSOLE_OIDC_CLIENT_ID": "console",
+            "MANAGEMENT_CONSOLE_OIDC_CLIENT_SECRET": "secret",
+        }
+
+        with (
+            patch.dict("os.environ", oidc_env, clear=False),
+            patch("management_console.app.open_http_request", return_value=active_read),
+        ):
+            self.assertEqual(app.authorization_level("Bearer read-token"), "read")
+
+        with (
+            patch.dict("os.environ", oidc_env, clear=False),
+            patch("management_console.app.open_http_request", return_value=active_write),
+        ):
+            self.assertEqual(app.authorization_level("Bearer write-token"), "write")
+
     def test_run_uses_configured_bind_and_port(self) -> None:
         fake_server = Mock()
         fake_server.__enter__ = Mock(return_value=fake_server)

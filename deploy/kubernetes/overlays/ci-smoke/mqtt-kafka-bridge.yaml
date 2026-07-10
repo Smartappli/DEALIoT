@@ -28,22 +28,36 @@ spec:
         - name: bridge
           image: ghcr.io/smartappli/dealiot-mqtt-kafka-bridge:local-placeholder
           imagePullPolicy: IfNotPresent
-          command:
-            - sh
-            - -c
-            - >-
-              echo "dealiot rust bridge image ready";
-              sleep 3600
+          ports:
+            - name: health
+              containerPort: 8080
           envFrom:
             - configMapRef:
                 name: dealiot-runtime-config
           env:
-            - name: MQTT_PASSWORD_FILE
-              value: /var/run/dealiot-secrets/mqtt-password
-          volumeMounts:
-            - name: dealiot-secrets
-              mountPath: /var/run/dealiot-secrets
-              readOnly: true
+            - name: BRIDGE_HEALTH_BIND
+              value: 0.0.0.0
+            - name: MQTT_CLIENT_ID
+              value: dealiot-kind-smoke
+            - name: MQTT_CLEAN_SESSION
+              value: "true"
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 2
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: health
+            periodSeconds: 2
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 10
           resources:
             requests:
               cpu: 50m
@@ -57,10 +71,4 @@ spec:
               drop: ["ALL"]
             readOnlyRootFilesystem: true
             runAsNonRoot: true
-      volumes:
-        - name: dealiot-secrets
-          secret:
-            secretName: dealiot-secrets
-            items:
-              - key: MQTT_PASSWORD
-                path: mqtt-password
+      terminationGracePeriodSeconds: 30

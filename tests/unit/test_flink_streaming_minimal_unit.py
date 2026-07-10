@@ -455,6 +455,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         raw = json.dumps(
             {
                 "device_id": "dev-1",
+                "event_id": "a" * 64,
                 "timestamp": "2026-01-01T00:00:00+00:00",
                 "mqtt_topic": "wildfi/tags/ignored/gnss/fix",
                 "payload_b64": "abc",
@@ -470,6 +471,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             [
                 (
                     "dev-1",
+                    "a" * 64,
                     "2026-01-01T00:00:00+00:00",
                     "raw.gps",
                     "wildfi/tags/ignored/gnss/fix",
@@ -489,8 +491,8 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         processor = self.module.LatestByEntity()
         processor.open(runtime_context)
 
-        old_record = ("dev-1", "2025-12-31T23:59:59+00:00")
-        new_record = ("dev-1", "2026-01-01T00:00:01+00:00")
+        old_record = ("dev-1", "a" * 64, "2025-12-31T23:59:59+00:00")
+        new_record = ("dev-1", "b" * 64, "2026-01-01T00:00:01+00:00")
 
         self.assertEqual(list(processor.process_element(old_record, None)), [])
         self.assertEqual(list(processor.process_element(new_record, None)), [new_record])
@@ -539,6 +541,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
     def test_event_to_json_uses_contract_field_names(self) -> None:
         row = (
             "dev-1",
+            "a" * 64,
             "2026-01-01T00:00:00+00:00",
             "raw.sensor",
             "devices/dev-1/sensor",
@@ -553,6 +556,7 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             json.loads(self.module.event_to_json(row)),
             {
                 "entity_id": "dev-1",
+                "source_event_id": "a" * 64,
                 "event_ts": "2026-01-01T00:00:00+00:00",
                 "source_topic": "raw.sensor",
                 "mqtt_topic": "devices/dev-1/sensor",

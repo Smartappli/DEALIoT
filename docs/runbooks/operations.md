@@ -16,6 +16,7 @@ Run these checks before accepting a deployment change:
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.yml config -q
 bash scripts/smoke-e2e.sh
+bash scripts/fault-injection-smoke.sh
 ```
 
 The E2E smoke test must prove:
@@ -26,6 +27,7 @@ The E2E smoke test must prove:
 - Flink emits `features.events`
 - Flink updates `state.latest`
 - Apicurio contains the `raw.sensor` and `dlq.events` artifacts
+- a crash before source acknowledgement produces no loss and at most one duplicate
 
 ## Incident Triage
 

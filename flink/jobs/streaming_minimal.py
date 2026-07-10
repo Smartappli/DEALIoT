@@ -32,6 +32,7 @@ if TYPE_CHECKING:
 
 EVENT_FIELDS = (
     "entity_id",
+    "source_event_id",
     "event_ts",
     "source_topic",
     "mqtt_topic",
@@ -45,6 +46,7 @@ EVENT_FIELDS = (
 EVENT_TYPE = Types.ROW_NAMED(
     list(EVENT_FIELDS),
     [
+        Types.STRING(),
         Types.STRING(),
         Types.STRING(),
         Types.STRING(),
@@ -274,6 +276,7 @@ class NormalizeEvent(FlatMapFunction):
         return [
             Row(
                 entity_id,
+                str(record.get("event_id", "")),
                 event_ts,
                 source_topic,
                 mqtt_topic,
@@ -294,7 +297,7 @@ class LatestByEntity(KeyedProcessFunction):
 
     def process_element(self, value, ctx):
         current = self.latest_ts_state.value()
-        incoming_ts = value[1]
+        incoming_ts = value[2]
 
         if current is None or incoming_ts >= current:
             self.latest_ts_state.update(incoming_ts)
