@@ -135,7 +135,7 @@ x-apicurio-env: &apicurio-env
 
 services:
   etcd1:
-    image: registry.k8s.io/etcd:v3.6.12
+    image: registry.k8s.io/etcd:v3.7.0
     container_name: etcd1
     hostname: etcd1
     restart: unless-stopped
@@ -159,7 +159,7 @@ services:
     <<: *etcd-health
 
   etcd2:
-    image: registry.k8s.io/etcd:v3.6.12
+    image: registry.k8s.io/etcd:v3.7.0
     container_name: etcd2
     hostname: etcd2
     restart: unless-stopped
@@ -183,7 +183,7 @@ services:
     <<: *etcd-health
 
   etcd3:
-    image: registry.k8s.io/etcd:v3.6.12
+    image: registry.k8s.io/etcd:v3.7.0
     container_name: etcd3
     hostname: etcd3
     restart: unless-stopped
@@ -450,7 +450,7 @@ services:
       start_period: 60s
 
   kafka1:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka1
     hostname: kafka1
     restart: unless-stopped
@@ -471,7 +471,7 @@ services:
       start_period: 30s
 
   kafka2:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka2
     hostname: kafka2
     restart: unless-stopped
@@ -492,7 +492,7 @@ services:
       start_period: 30s
 
   kafka3:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka3
     hostname: kafka3
     restart: unless-stopped
@@ -513,7 +513,7 @@ services:
       start_period: 30s
 
   kafka-init:
-    image: apache/kafka:4.2.0
+    image: apache/kafka:4.3.1
     container_name: kafka-init
     depends_on:
       kafka1:
@@ -618,7 +618,7 @@ services:
       start_period: 40s
 
   kafka-connect-init:
-    image: curlimages/curl:8.20.0
+    image: curlimages/curl:8.21.0
     container_name: kafka-connect-init
     restart: "no"
     depends_on:
@@ -667,7 +667,7 @@ services:
       - orchestration_net
 
   seaweedfs-master1:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-master1
     hostname: seaweedfs-master1
     restart: unless-stopped
@@ -695,7 +695,7 @@ services:
       start_period: 30s
 
   seaweedfs-master2:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-master2
     hostname: seaweedfs-master2
     restart: unless-stopped
@@ -723,7 +723,7 @@ services:
       start_period: 30s
 
   seaweedfs-master3:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-master3
     hostname: seaweedfs-master3
     restart: unless-stopped
@@ -751,7 +751,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume1:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-volume1
     hostname: seaweedfs-volume1
     restart: unless-stopped
@@ -788,7 +788,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume2:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-volume2
     hostname: seaweedfs-volume2
     restart: unless-stopped
@@ -825,7 +825,7 @@ services:
       start_period: 30s
 
   seaweedfs-volume3:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-volume3
     hostname: seaweedfs-volume3
     restart: unless-stopped
@@ -929,7 +929,7 @@ services:
         max-file: "3"
 
   seaweedfs-filer:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-filer
     hostname: seaweedfs-filer
     restart: unless-stopped
@@ -1040,7 +1040,7 @@ services:
         max-file: "3"
 
   seaweedfs-s3:
-    image: chrislusf/seaweedfs:4.35
+    image: chrislusf/seaweedfs:4.38
     container_name: seaweedfs-s3
     hostname: seaweedfs-s3
     restart: unless-stopped
@@ -1109,7 +1109,7 @@ services:
         max-file: "3"
 
   seaweedfs-init:
-    image: amazon/aws-cli:2.35.11
+    image: amazon/aws-cli:2.35.19
     container_name: seaweedfs-init
     restart: "no"
     depends_on:
@@ -1446,7 +1446,7 @@ services:
       - orchestration_net
 
   beam-jobserver:
-    image: apache/beam_flink_job_server:2.74.0-flink2.0
+    image: apache/beam_flink_job_server:2.75.0-flink2.0
     container_name: beam-jobserver
     hostname: beam-jobserver
     restart: unless-stopped
@@ -1472,7 +1472,7 @@ services:
       - kafka_net
 
   beam-python-harness:
-    image: apache/beam_python3.13_sdk:2.74.0
+    image: apache/beam_python3.13_sdk:2.75.0
     container_name: beam-python-harness
     hostname: beam-python-harness
     restart: unless-stopped
@@ -1501,7 +1501,7 @@ services:
       start_period: 30s
 
   beam-cli:
-    image: apache/beam_python3.13_sdk:2.74.0
+    image: apache/beam_python3.13_sdk:2.75.0
     container_name: beam-cli
     hostname: beam-cli
     profiles: ["tools"]
@@ -1779,7 +1779,7 @@ services:
       - patroni_frontend
 
   cadvisor:
-    image: ghcr.io/google/cadvisor:v0.60.1
+    image: ghcr.io/google/cadvisor:v0.60.3
     container_name: cadvisor
     hostname: cadvisor
     restart: unless-stopped
@@ -1811,7 +1811,7 @@ services:
       - orchestration_net
 
   postgres-exporter-rw:
-    image: quay.io/prometheuscommunity/postgres-exporter:v0.19.1
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1
     container_name: postgres-exporter-rw
     hostname: postgres-exporter-rw
     restart: unless-stopped
@@ -1856,7 +1856,7 @@ services:
       - orchestration_net
 
   apicurio-init:
-    image: curlimages/curl:8.20.0
+    image: curlimages/curl:8.21.0
     container_name: apicurio-init
     restart: "no"
     depends_on:
