@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from pyflink.common import Row, Types
-from pyflink.common.serialization import SimpleStringSchema
+from pyflink.common.serialization import SerializationSchema, SimpleStringSchema
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.datastream import (
     CheckpointingMode,
@@ -62,6 +63,7 @@ EVENT_TYPE = Types.ROW_NAMED(
 DEFAULT_SOURCE_TOPICS = (
     "raw.sensor,raw.gps,raw.image2d.meta,raw.image3d.meta,raw.video2d.meta,raw.video3d.meta"
 )
+DLQ_TOPIC = "dlq.events"
 TRUTHY_VALUES = {"1", "true", "yes", "on"}
 
 SOURCE_TOPIC_EVENT_KINDS = {
@@ -259,9 +261,8 @@ class NormalizeEvent(FlatMapFunction):
     def flat_map(self, value) -> Iterable[Row]:
         source_topic, raw_value = value
 
-        try:
-            record = json.loads(raw_value)
-        except Exception:
+        record = parse_json_record(raw_value)
+        if record is None:
             return []
 
         mqtt_topic = str(record.get("mqtt_topic", ""))
@@ -287,6 +288,30 @@ class NormalizeEvent(FlatMapFunction):
                 raw_value,
             )
         ]
+
+
+def parse_json_record(raw_value: str) -> dict[str, object] | None:
+    try:
+        record = json.loads(raw_value)
+    except json.JSONDecodeError:
+        return None
+    return record if isinstance(record, dict) else None
+
+
+def invalid_event_to_dlq_json(value: tuple[str, str]) -> str:
+    source_topic, raw_value = value
+    return json.dumps(
+        {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "source": "flink-streaming-minimal",
+            "intended_topic": source_topic,
+            "source_topic": source_topic,
+            "device_id": "unknown",
+            "errors": ["record must be a JSON object"],
+            "raw_event": {"raw_payload": raw_value},
+        },
+        separators=(",", ":"),
+    )
 
 
 class LatestByEntity(KeyedProcessFunction):
@@ -346,6 +371,16 @@ def event_to_json(row) -> str:
     )
 
 
+class EventValueSerializationSchema(SerializationSchema):
+    def serialize(self, row) -> bytes:
+        return event_to_json(row).encode("utf-8")
+
+
+class EntityKeySerializationSchema(SerializationSchema):
+    def serialize(self, row) -> bytes:
+        return str(row[0]).encode("utf-8")
+
+
 def build_kafka_sink(
     bootstrap_servers: str,
     topic_name: str,
@@ -356,15 +391,39 @@ def build_kafka_sink(
     serializer_builder = (
         KafkaRecordSerializationSchema.builder()
         .set_topic(topic_name)
-        .set_value_serialization_schema(SimpleStringSchema())
+        .set_value_serialization_schema(EventValueSerializationSchema())
     )
     if include_key:
-        serializer_builder.set_key_serialization_schema(SimpleStringSchema())
+        serializer_builder.set_key_serialization_schema(EntityKeySerializationSchema())
 
     sink_builder = (
         KafkaSink.builder()
         .set_bootstrap_servers(bootstrap_servers)
         .set_record_serializer(serializer_builder.build())
+        .set_delivery_guarantee(kafka_delivery_guarantee())
+        .set_property("acks", "all")
+    )
+    return apply_kafka_properties(
+        sink_builder, kafka_properties or kafka_client_properties()
+    ).build()
+
+
+def build_string_kafka_sink(
+    bootstrap_servers: str,
+    topic_name: str,
+    *,
+    kafka_properties: dict[str, str] | None = None,
+):
+    serializer = (
+        KafkaRecordSerializationSchema.builder()
+        .set_topic(topic_name)
+        .set_value_serialization_schema(SimpleStringSchema())
+        .build()
+    )
+    sink_builder = (
+        KafkaSink.builder()
+        .set_bootstrap_servers(bootstrap_servers)
+        .set_record_serializer(serializer)
         .set_delivery_guarantee(kafka_delivery_guarantee())
         .set_property("acks", "all")
     )
@@ -419,6 +478,19 @@ def main():
         raw_stream = raw_stream.union(stream)
 
     normalized = raw_stream.flat_map(NormalizeEvent(), output_type=EVENT_TYPE)
+    raw_stream.filter(
+        lambda value: parse_json_record(value[1]) is None,
+        output_type=Types.TUPLE([Types.STRING(), Types.STRING()]),
+    ).map(
+        invalid_event_to_dlq_json,
+        output_type=Types.STRING(),
+    ).sink_to(
+        build_string_kafka_sink(
+            bootstrap_servers,
+            env_or_default("DLQ_TOPIC", DLQ_TOPIC),
+            kafka_properties=kafka_properties,
+        )
+    )
 
     latest = normalized.key_by(
         lambda row: row[0],
@@ -428,10 +500,7 @@ def main():
         output_type=EVENT_TYPE,
     )
 
-    normalized.map(
-        event_to_json,
-        output_type=Types.STRING(),
-    ).sink_to(
+    normalized.sink_to(
         build_kafka_sink(
             bootstrap_servers,
             env_or_default("FEATURES_TOPIC", "features.events"),
@@ -439,10 +508,7 @@ def main():
         )
     )
 
-    latest.map(
-        event_to_json,
-        output_type=Types.STRING(),
-    ).sink_to(
+    latest.sink_to(
         build_kafka_sink(
             bootstrap_servers,
             env_or_default("STATE_TOPIC", "state.latest"),

@@ -1,4 +1,4 @@
-use dealiot_event_contracts::{FEATURES_EVENTS_TOPIC, STATE_LATEST_TOPIC};
+use dealiot_event_contracts::{now_iso, DLQ_TOPIC, FEATURES_EVENTS_TOPIC, STATE_LATEST_TOPIC};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -33,6 +33,7 @@ pub struct NormalizerConfig {
     pub source_topics: Vec<String>,
     pub features_topic: String,
     pub state_topic: String,
+    pub dlq_topic: String,
     pub state_output_enabled: bool,
     pub health_bind: String,
     pub health_port: u16,
@@ -55,6 +56,7 @@ impl NormalizerConfig {
             ),
             features_topic: env_or_default("FEATURES_TOPIC", FEATURES_EVENTS_TOPIC),
             state_topic: env_or_default("STATE_TOPIC", STATE_LATEST_TOPIC),
+            dlq_topic: env_or_default("DLQ_TOPIC", DLQ_TOPIC),
             state_output_enabled: bool_env("STREAM_NORMALIZER_STATE_OUTPUT_ENABLED", false),
             health_bind: env_or_default("STREAM_NORMALIZER_HEALTH_BIND", "127.0.0.1"),
             health_port: env_u16("STREAM_NORMALIZER_HEALTH_PORT", 8080),
@@ -96,6 +98,7 @@ impl LatestState {
 
 pub fn normalize_record(source_topic: &str, raw_json: &str) -> Option<NormalizedEvent> {
     let record: Value = serde_json::from_str(raw_json).ok()?;
+    record.as_object()?;
     let mqtt_topic = string_field(&record, "mqtt_topic").unwrap_or_default();
     let entity_id = string_field(&record, "device_id")
         .filter(|value| !value.is_empty())
@@ -119,6 +122,21 @@ pub fn normalize_record(source_topic: &str, raw_json: &str) -> Option<Normalized
             .unwrap_or(false),
         raw_json: raw_json.to_string(),
     })
+}
+
+pub fn invalid_record_dlq_json(
+    source_topic: &str,
+    raw_payload: &str,
+) -> Result<String, serde_json::Error> {
+    serde_json::to_string(&serde_json::json!({
+        "timestamp": now_iso(),
+        "source": "stream-normalizer",
+        "intended_topic": source_topic,
+        "source_topic": source_topic,
+        "device_id": "unknown",
+        "errors": ["record must be a JSON object"],
+        "raw_event": {"raw_payload": raw_payload},
+    }))
 }
 
 pub fn normalized_event_json(event: &NormalizedEvent) -> Result<String, serde_json::Error> {
@@ -271,6 +289,19 @@ mod tests {
     #[test]
     fn drops_invalid_json() {
         assert!(normalize_record("raw.sensor", "{bad json").is_none());
+        assert!(normalize_record("raw.sensor", "[]").is_none());
+    }
+
+    #[test]
+    fn serializes_invalid_record_for_dlq() {
+        let event: Value = serde_json::from_str(
+            &invalid_record_dlq_json("raw.sensor", "{bad json").expect("dlq json"),
+        )
+        .expect("valid JSON");
+
+        assert_eq!(event["source"], "stream-normalizer");
+        assert_eq!(event["intended_topic"], "raw.sensor");
+        assert_eq!(event["raw_event"]["raw_payload"], "{bad json");
     }
 
     #[test]

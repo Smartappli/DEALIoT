@@ -1,5 +1,6 @@
 use dealiot_stream_normalizer::{
-    normalize_record, normalized_event_json, LatestState, NormalizerConfig,
+    invalid_record_dlq_json, normalize_record, normalized_event_json, LatestState,
+    NormalizerConfig,
 };
 use log::{error, info};
 use rdkafka::config::ClientConfig;
@@ -77,6 +78,16 @@ async fn run(
                     Some(Err(error)) => {
                         metrics.errors_total.fetch_add(1, Ordering::Relaxed);
                         error!("Skipping non-UTF8 Kafka payload from {source_topic}: {error}");
+                        send_dlq_event(
+                            &producer,
+                            &config.dlq_topic,
+                            &source_topic,
+                            "payload is not valid UTF-8",
+                            r#"{"payload_encoding":"non-utf8"}"#,
+                        )
+                        .await?;
+                        consumer.commit_message(&message, CommitMode::Sync)?;
+                        metrics.committed_total.fetch_add(1, Ordering::Relaxed);
                         continue;
                     }
                     None => continue,
@@ -84,6 +95,18 @@ async fn run(
 
                 let Some(event) = normalize_record(&source_topic, payload) else {
                     metrics.errors_total.fetch_add(1, Ordering::Relaxed);
+                    let dlq_event = invalid_record_dlq_json(&source_topic, payload)?;
+                    producer
+                        .send(
+                            FutureRecord::to(&config.dlq_topic).payload(&dlq_event),
+                            Timeout::After(Duration::from_secs(30)),
+                        )
+                        .await
+                        .map_err(|(error, _)| {
+                            NormalizerError::Config(format!("DLQ send failed: {error}"))
+                        })?;
+                    consumer.commit_message(&message, CommitMode::Sync)?;
+                    metrics.committed_total.fetch_add(1, Ordering::Relaxed);
                     continue;
                 };
                 metrics.processed_total.fetch_add(1, Ordering::Relaxed);
@@ -131,6 +154,33 @@ async fn run(
         }
     }
 
+    Ok(())
+}
+
+async fn send_dlq_event(
+    producer: &FutureProducer,
+    dlq_topic: &str,
+    source_topic: &str,
+    error_message: &str,
+    raw_event: &str,
+) -> Result<(), NormalizerError> {
+    let event = serde_json::json!({
+        "timestamp": dealiot_event_contracts::now_iso(),
+        "source": "stream-normalizer",
+        "intended_topic": source_topic,
+        "source_topic": source_topic,
+        "device_id": "unknown",
+        "errors": [error_message],
+        "raw_event": serde_json::from_str::<serde_json::Value>(raw_event)?,
+    });
+    let payload = serde_json::to_string(&event)?;
+    producer
+        .send(
+            FutureRecord::to(dlq_topic).payload(&payload),
+            Timeout::After(Duration::from_secs(30)),
+        )
+        .await
+        .map_err(|(error, _)| NormalizerError::Config(format!("DLQ send failed: {error}")))?;
     Ok(())
 }
 

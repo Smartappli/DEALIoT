@@ -49,6 +49,10 @@ class _FakeSimpleStringSchema:
     pass
 
 
+class _FakeSerializationSchema:
+    pass
+
+
 class _FakeWatermarkStrategy:
     @staticmethod
     def no_watermarks():
@@ -218,6 +222,10 @@ class _FakeStream:
         self.operations.append(("flat_map", mapper, output_type))
         return self
 
+    def filter(self, filter_function, output_type=None):
+        self.operations.append(("filter", filter_function, output_type))
+        return self
+
     def key_by(self, key_selector, key_type=None):
         self.operations.append(("key_by", key_selector, key_type))
         return self
@@ -294,6 +302,7 @@ def _load_streaming_module():
     cast("Any", fake_common).Row = _fake_row
     cast("Any", fake_common).Types = _FakeTypes
     cast("Any", fake_serialization).SimpleStringSchema = _FakeSimpleStringSchema
+    cast("Any", fake_serialization).SerializationSchema = _FakeSerializationSchema
     cast("Any", fake_watermark_strategy).WatermarkStrategy = _FakeWatermarkStrategy
     cast("Any", fake_datastream).CheckpointingMode = _FakeCheckpointingMode
     cast("Any", fake_datastream).RuntimeExecutionMode = _FakeRuntimeExecutionMode
@@ -484,6 +493,15 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             ],
         )
         self.assertEqual(normalizer.flat_map(("raw.sensor", "{bad json")), [])
+        self.assertEqual(normalizer.flat_map(("raw.sensor", "[]")), [])
+
+    def test_invalid_event_is_serialized_for_the_dlq(self) -> None:
+        payload = json.loads(self.module.invalid_event_to_dlq_json(("raw.sensor", "{bad json")))
+
+        self.assertEqual(payload["source"], "flink-streaming-minimal")
+        self.assertEqual(payload["intended_topic"], "raw.sensor")
+        self.assertEqual(payload["errors"], ["record must be a JSON object"])
+        self.assertEqual(payload["raw_event"], {"raw_payload": "{bad json"})
 
     def test_latest_by_entity_keeps_newer_records_only(self) -> None:
         state = _FakeState("2026-01-01T00:00:00+00:00")
@@ -531,12 +549,36 @@ class StreamingMinimalUnitTests(unittest.TestCase):
         self.assertIn("value_schema", sink.config["serializer"].config)
         self.assertNotIn("key_schema", sink.config["serializer"].config)
 
+        value_schema = sink.config["serializer"].config["value_schema"]
+        serialized_value = json.loads(
+            value_schema.serialize(
+                (
+                    "dev-1",
+                    "event-1",
+                    "2026-01-01T00:00:00+00:00",
+                    "raw.sensor",
+                    "devices/dev-1/sensor",
+                    "sensor",
+                    "",
+                    1,
+                    False,
+                    "{}",
+                )
+            )
+        )
+        self.assertEqual(
+            (serialized_value["entity_id"], serialized_value["source_event_id"]),
+            ("dev-1", "event-1"),
+        )
+
         keyed_sink = self.module.build_kafka_sink(
             "kafka:9092",
             "state.latest",
             include_key=True,
         )
         self.assertIn("key_schema", keyed_sink.config["serializer"].config)
+        key_schema = keyed_sink.config["serializer"].config["key_schema"]
+        self.assertEqual(key_schema.serialize(("dev-1", "event-1")), b"dev-1")
 
     def test_event_to_json_uses_contract_field_names(self) -> None:
         row = (
@@ -606,6 +648,13 @@ class StreamingMinimalUnitTests(unittest.TestCase):
             any(
                 operation[0] == "sink_to"
                 and operation[1].config["serializer"].config["topic"] == "state.custom"
+                for operation in raw_stream.operations
+            )
+        )
+        self.assertTrue(
+            any(
+                operation[0] == "sink_to"
+                and operation[1].config["serializer"].config["topic"] == "dlq.events"
                 for operation in raw_stream.operations
             )
         )
