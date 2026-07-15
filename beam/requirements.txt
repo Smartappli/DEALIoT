@@ -4,9 +4,9 @@ boto3==1.43.45 \
     --hash=sha256:65e0ae541a9948ac41b706d5c7165d96ebf155812562b6518b862be027ee7347 \
     --hash=sha256:bb076647526c491ce75cab896543afcda5b81c97d3f8e8da08a033fc1ddb7429
     # via -r D:/tmp/dealiot-beam-requirements.in
-botocore==1.43.47 \
-    --hash=sha256:4d16559a3a1866fa7b9e651dd1422c1a033497e069f8a73cae5eebafe70ff39c \
-    --hash=sha256:9e04d8da7f9cff8a911b14284829f78b74e1ce785444833199837decb5ecc17a
+botocore==1.43.48 \
+    --hash=sha256:4f60c1072fb529610359cdb6df92c59615d739df3b0a124091d3bbd28f7ea00c \
+    --hash=sha256:cc9b4e925c1913d662194507f4f9b37aa744dcd2361af31c013672eafe824490
     # via
     #   boto3
     #   s3transfer
